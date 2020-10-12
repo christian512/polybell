@@ -1,4 +1,7 @@
 # Bell Inequalities from Linear Programming
+
+*This is still work in progress*
+
 In this repository, I try to explain the usage of linear programming, for finding Bell inequalities, for a given 
 probability distribution. I follow the paper *Bell nonlocality* by *Brunner et. al. (2014)*, which can be found on the [*arXiv*](https://arxiv.org/abs/1303.2849).
 
