@@ -2,7 +2,7 @@ from itertools import product
 import numpy as np
 
 
-def get_deterministic_behaviors(inputs_a, inputs_b, outputs=[-1, 1]):
+def get_deterministic_behaviors(inputs_a, inputs_b, outputs):
     """
     TODO: For speed up one could use sparse matrices or just integer implementation with binaries
     Returns all deterministic behaviors corresponding to inputs for ALICE and BOB
@@ -12,9 +12,7 @@ def get_deterministic_behaviors(inputs_a, inputs_b, outputs=[-1, 1]):
     :param outputs: possible outputs
     :return: list of np.arrays
     """
-    # check the number of outputs
-    assert len(outputs) == 2
-    # calculate dimensions
+    # calculate dimension of each behavior
     dim = len(inputs_a) * len(inputs_b) * (len(outputs) ** 2)
     # define all hidden variables
     lhvs = product(outputs, repeat=len(inputs_a) + len(inputs_b))
