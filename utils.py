@@ -23,8 +23,8 @@ def get_deterministic_behaviors(inputs_a, inputs_b, outputs):
         # empty deterministic behavior
         d = np.zeros(dim)
         # iterate over the possible input and output combinations
-        for x, y in product(range(len(inputs_a)), range(len(inputs_b))):
-            for a, b in product(outputs, outputs):
+        for a, b in product(outputs, outputs):
+            for x, y in product(range(len(inputs_a)), range(len(inputs_b))):
                 if lhv[x] == a and lhv[y + len(inputs_a)] == b:
                     d[counter] = 1.0
                 counter += 1
@@ -60,6 +60,42 @@ def general_pr_box(a, b, x, y):
         y_bin = np.fromiter(map(int, np.binary_repr(y, width=l)), dtype=int)
     # multiply the two sides together
     t = np.dot(x_bin, y_bin) % 2
-    # bianry sum of the outputs
+    # binary sum of the outputs
     s = (a + b) % 2
     return 1 / 2 * int(s == t)
+
+
+def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without_failure):
+    """
+    Returns the probability distribution for a PR box, where the detectors have efficiency eta.
+    The value 2 is used for value, i.e. a = 2 means that ALICE measurement has failed
+    :param outputs_without_failure:
+    :param inputs_b:
+
+    :param a: ALICEs output
+    :param b: BOBs output
+    :param x: Alices input
+    :param y: Bobs input
+    :param eta: detection efficiency
+    :param inputs_a: all possible inputs for ALICE
+    :param inputs_b: all possible inputs for BOB
+    :param outputs_without_failure: all possible outputs without the failure case = 2
+    """
+    assert x >= 0
+    assert y >= 0
+    # if both sides experience failure
+    if a == 2 and b == 2:
+        return (1 - eta) ** 2
+    # if both sides have no failure
+    elif a != 2 and b != 2:
+        return (eta ** 2) * general_pr_box(a, b, x, y)
+    # if only ALICE has a failure
+    elif a == 2 and b != 2:
+        s = np.sum([general_pr_box(a_new, b, x, y) for a_new in outputs_without_failure])
+        return eta * (1 - eta) * s
+    elif a != 2 and b == 2:
+        s = np.sum([general_pr_box(a, b_new, x, y) for b_new in outputs_without_failure])
+        return eta * (1 - eta) * s
+    else:
+        print('ERROR in calculation of general_pr_box_extended -> undefined outputs')
+        return 0
