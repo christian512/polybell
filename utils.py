@@ -1,4 +1,5 @@
 from itertools import product
+from scipy.optimize import linprog
 import numpy as np
 
 
@@ -99,3 +100,56 @@ def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without
     else:
         print('ERROR in calculation of general_pr_box_extended -> undefined outputs')
         return 0
+
+
+def facet_inequality_check(deterministics, bell_expression, bell_value, tol=1e-8):
+    """
+    Checks if a given bell inequality is a facet. This is done by getting all deterministic local behaviors,
+    that equalize the inequality. Then checking the dimensions, that these behaviors span
+    :return:
+    """
+    equalizing_dets = []
+    # iterate through deterministics
+    for d in deterministics:
+        print(d @ bell_expression)
+        # check if this is zero (up to numerical tolerance)
+        if np.abs(d @ bell_expression-1) < tol:
+            # append the behavior to the equalizing behaviors and remove the last entry (as it was just for calculating the Bell value)
+            equalizing_dets.append(d)
+        if np.abs(d @ bell_expression - bell_value) < tol:
+            equalizing_dets.append(d)
+            print('CHECK THE UTILS IMPLEMENTATION OF FACET INEQUALITY CHECK IF YOU SEE THIS!')
+    equalizing_dets = np.array(equalizing_dets)
+    # TODO: just return boolean if the dimension of the equalizing_dets is correct
+    return equalizing_dets
+
+
+def find_bell_inequality(p, dets, method='interior-point'):
+    """ Finds a Bell inequality that is violated if the behavior p is non local """
+    # reformulate for the SciPy solver
+    p = np.r_[p, [-1.0]]
+    dets = np.c_[dets, -1.0 * np.ones(dets.shape[0])]
+    # objective function and inequalities
+    obj = -p
+    lhs_ineq = np.append(dets, [p], axis=0)
+    rhs_ineq = np.r_[np.zeros(dets.shape[0]), [1.0]]
+    # run the optimizer
+    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method)
+    # unpack the results
+    s = opt.x[:-1]
+    sl = opt.x[-1]
+    # drop the -1.0's from p and dets to prevent changed p or dets when using after function call
+    p = np.delete(p, -1, axis=0)
+    dets = np.delete(dets, -1, axis=1)
+    return opt, s, sl
+
+
+def find_local_weight(p, dets, method='interior-point'):
+    """ Finds the local weight for a behavior p """
+    # objective function and inequalities
+    obj = p
+    lhs_ineq = np.copy(-1.0*dets)
+    rhs_ineq = -1.0*np.ones(dets.shape[0])
+    # run the optimizer
+    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
+    return opt, opt.x
