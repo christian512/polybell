@@ -106,7 +106,7 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
     """
     Checks if a given bell inequality is a facet. This is done by getting all deterministic local behaviors,
     that equalize the inequality (rescaling might be needed). Then checking the dimensions, that these behaviors span.
-    :return:
+    :return: is_facet, scaled_bell_expression, equalizing deterministics
     """
     equalizing_dets = []
     # rescale the bell expression
