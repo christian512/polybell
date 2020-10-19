@@ -105,7 +105,7 @@ def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without
 def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-8):
     """
     Checks if a given bell inequality is a facet. This is done by getting all deterministic local behaviors,
-    that equalize the inequality. Then checking the dimensions, that these behaviors span
+    that equalize the inequality (rescaling might be needed). Then checking the dimensions, that these behaviors span.
     :return:
     """
     equalizing_dets = []
@@ -118,14 +118,14 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
             # append the behavior to the equalizing behaviors
             equalizing_dets.append(d)
     # define the array of equalizing dets with the first subtracted
-    first_eq_det = np.array(equalizing_dets[0])
-    equalizing_dets = np.array(equalizing_dets[1:]) - first_eq_det
+    equalizing_dets = np.array(equalizing_dets)
+    eq_dets_new = equalizing_dets - equalizing_dets[0]
     # calculate the rank of the matrix
-    rank = np.linalg.matrix_rank(equalizing_dets)
+    rank = np.linalg.matrix_rank(eq_dets_new)
     # check if it's a facet by rank check
     is_facet = rank == (m_a * (n - 1) + 1) * (m_b * (n - 1) + 1) - 2
     # return is_facet and the rescaled bell expression
-    return is_facet, bell_expression
+    return is_facet, bell_expression, np.array(equalizing_dets)
 
 
 def find_bell_inequality(p, dets, method='interior-point'):
@@ -155,5 +155,55 @@ def find_local_weight(p, dets, method='interior-point'):
     lhs_ineq = np.copy(-1.0 * dets)
     rhs_ineq = -1.0 * np.ones(dets.shape[0])
     # run the optimizer
-    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
+    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method)
     return opt, opt.x
+
+
+def extremal_ns_binary_vertices(inputs_a, inputs_b, outputs):
+    """
+    Returns a list of all extremal points of the no signalling set with 2 outputs.
+    :param inputs_a: List of all inputs for ALICE
+    :param inputs_b: List of all inputs for BOB
+    :param outputs: List of all outputs for both
+    :return: List of all extremal vertices
+    """
+    # change inputs and outputs to start with zero, to use as indices
+    inputs_a = range(len(inputs_a))
+    inputs_b = range(len(inputs_b))
+    outputs = range(len(outputs))
+    assert len(outputs) == 2, 'This only works for binary outputs'
+    # symmetric and antisymmetric matrices
+    S = 1 / 2 * np.eye(2)
+    A = 1 / 2 * np.array([[0, 1.0], [1.0, 0]])
+    # the first row and the first column are set to be symmetric matrices.
+    # there are 2^((m_a-1)*(m_b-1)) options to set either sym or antisym
+    # create a list of possible binary combinations
+    # 0 is for symmetric and 1 is for anti-symmetric matrix
+    settings = product([0, 1], repeat=((len(inputs_a) - 1) * (len(inputs_b) - 1)) - 1)
+    # list of extremal points
+    extremals = []
+    # iterate through all possible settings of symmetric / anti-symmetric matrices
+    for sett in settings:
+        # append a one to setting, as the entry where x = 1 and y = 1 is anti symmetric
+        s = [1] + list(sett)
+        # define a behavior
+        p = []
+        # iterate through outputs
+        for a, b, x, y in product(outputs, outputs, inputs_a, inputs_b):
+            # if first row or first column
+            if x == 0 or y == 0:
+                p.append(S[a, b])
+            # if not first row or column
+            else:
+                # set index for translation of matrix to vector
+                idx = (x - 1) * (len(inputs_b) - 1) + (y - 1)
+                # check if entry would be symmetric or anti-symm and add corresponding probability
+                if s[idx] == 0:
+                    p.append(S[a, b])
+                if s[idx] == 1:
+                    p.append(A[a, b])
+        # append to all extremal points
+        extremals.append(p)
+    extremals = np.array(extremals)
+    assert extremals.shape[0] == 2 ** ((len(inputs_a) - 1) * (len(inputs_b) - 1) - 1)
+    return extremals
