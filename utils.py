@@ -207,3 +207,32 @@ def extremal_ns_binary_vertices(inputs_a, inputs_b, outputs):
     extremals = np.array(extremals)
     assert extremals.shape[0] == 2 ** ((len(inputs_a) - 1) * (len(inputs_b) - 1) - 1)
     return extremals
+
+
+def check_diff_repr_same_ineq(bell1, bell2, dets):
+    """
+    Checks whether two bell expression represent the same inequality
+    :param bell1: scaled first bell expression
+    :param bell2: scaled second bell expression
+    :param dets: deterministic behaviors
+    :return: boolean
+    """
+    # Generate Bell expressions
+    v1 = np.array([d @ bell1 for d in dets])
+    v2 = np.array([d @ bell2 for d in dets])
+    assert np.round(np.min(v1), decimals=4) == 1.0, 'Minimum of v1 is not 1, did you give scaled bell expression?'
+    assert np.round(np.min(v2), decimals=4) == 1.0, 'Minimum of v2 is not 1, did you give scaled bell expression?'
+    # get the second largest value
+    # TODO: Add handling if all values are the same
+    s1 = np.min(v1[v1 > np.min(v1) + 1e-6])
+    s2 = np.min(v2[v2 > np.min(v2) + 1e-6])
+    assert np.round(s1, decimals=4) > 1.0
+    assert np.round(s2, decimals=4) > 1.0
+    # rescale
+    v1_new = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
+    v2_new = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
+    # check that the second largest value is 1
+    assert np.min(v1_new[v1_new > np.min(v1_new) + 1e-6]) == 2.0, 'Second smallest value is not 2.0'
+    assert np.min(v2_new[v2_new > np.min(v2_new) + 1e-6]) == 2.0, 'Second smallest value is not 2.0'
+    # if the two new vectors are the same, they represent the same inequality
+    return np.allclose(v1_new, v2_new)
