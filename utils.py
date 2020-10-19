@@ -102,26 +102,30 @@ def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without
         return 0
 
 
-def facet_inequality_check(deterministics, bell_expression, bell_value, tol=1e-8):
+def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-8):
     """
     Checks if a given bell inequality is a facet. This is done by getting all deterministic local behaviors,
     that equalize the inequality. Then checking the dimensions, that these behaviors span
     :return:
     """
     equalizing_dets = []
-    # iterate through deterministics
+    # rescale the bell expression
+    bell_expression = bell_expression / np.min([d @ bell_expression for d in deterministics])
+    # iterate over the deterministics
     for d in deterministics:
-        print(d @ bell_expression)
         # check if this is zero (up to numerical tolerance)
-        if np.abs(d @ bell_expression-1) < tol:
-            # append the behavior to the equalizing behaviors and remove the last entry (as it was just for calculating the Bell value)
+        if np.abs(d @ bell_expression - 1) < tol:
+            # append the behavior to the equalizing behaviors
             equalizing_dets.append(d)
-        if np.abs(d @ bell_expression - bell_value) < tol:
-            equalizing_dets.append(d)
-            print('CHECK THE UTILS IMPLEMENTATION OF FACET INEQUALITY CHECK IF YOU SEE THIS!')
-    equalizing_dets = np.array(equalizing_dets)
-    # TODO: just return boolean if the dimension of the equalizing_dets is correct
-    return equalizing_dets
+    # define the array of equalizing dets with the first subtracted
+    first_eq_det = np.array(equalizing_dets[0])
+    equalizing_dets = np.array(equalizing_dets[1:]) - first_eq_det
+    # calculate the rank of the matrix
+    rank = np.linalg.matrix_rank(equalizing_dets)
+    # check if it's a facet by rank check
+    is_facet = rank == (m_a * (n - 1) + 1) * (m_b * (n - 1) + 1) - 2
+    # return is_facet and the rescaled bell expression
+    return is_facet, bell_expression
 
 
 def find_bell_inequality(p, dets, method='interior-point'):
@@ -148,8 +152,8 @@ def find_local_weight(p, dets, method='interior-point'):
     """ Finds the local weight for a behavior p """
     # objective function and inequalities
     obj = p
-    lhs_ineq = np.copy(-1.0*dets)
-    rhs_ineq = -1.0*np.ones(dets.shape[0])
+    lhs_ineq = np.copy(-1.0 * dets)
+    rhs_ineq = -1.0 * np.ones(dets.shape[0])
     # run the optimizer
     opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
