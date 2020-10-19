@@ -1,4 +1,4 @@
-from utils import general_pr_box, get_deterministic_behaviors, find_local_weight
+from utils import general_pr_box, get_deterministic_behaviors, find_local_weight, extremal_ns_binary_vertices
 from itertools import product
 import numpy as np
 
@@ -48,6 +48,22 @@ def test_local_weight():
     assert np.abs(bell_expression @ p - 1 / 2) < 1e-9
 
 
+def test_extremal_points_binary_ns():
+    """ Tests if the extremal points of the binary NS polytope have zero local weight """
+    inputs_a = range(4)
+    inputs_b = range(4)
+    outputs = range(2)
+    # get the extremal points
+    extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
+    dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+    for e in extremals:
+        opt, bell_exp = find_local_weight(e, dets)
+        assert np.abs(bell_exp @ e) < 1e-8
+
+
+
+
 if __name__ == '__main__':
     test_general_pr_box_two_input_two_output_case()
     test_local_weight()
+    test_extremal_points_binary_ns()
