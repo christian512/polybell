@@ -148,14 +148,18 @@ def find_bell_inequality(p, dets, method='interior-point'):
     return opt, s, sl
 
 
-def find_local_weight(p, dets, method='interior-point'):
+def find_local_weight(p, dets, method='interior-point',options={"maxiter": 1000}):
     """ Finds the local weight for a behavior p """
     # objective function and inequalities
     obj = p
     lhs_ineq = np.copy(-1.0 * dets)
     rhs_ineq = -1.0 * np.ones(dets.shape[0])
     # run the optimizer
-    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method)
+    opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method, options=options)
+    # if not found -> retry with standard method
+    if not opt.success:
+        print('Could not find local weight, retry with standard params and return')
+        opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
 
 
