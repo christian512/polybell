@@ -63,18 +63,19 @@ def test_extremal_points_binary_ns():
 
 def test_allowed_relabellings():
     """ Test if we get the correct allowed relabellings back """
-    inputs_a = range(1)
-    inputs_b = range(3)
+    inputs_a = range(4)
+    inputs_b = range(2)
     outputs = range(2)
     # get the allowed relabellings
-    allowed_perms, _ = get_allowed_relabelling(inputs_a, inputs_b, outputs)
-    print(allowed_perms)
-
-
+    allowed_perms = get_allowed_relabellings(inputs_a, inputs_b, outputs)
+    # check that the length of the found allowed permutations is correct.
+    assert len(allowed_perms) == np.math.factorial(
+        len(inputs_a)) * np.math.factorial(len(inputs_b)), 'Found relabellings: {} ; factorial product: {}'.format(
+        len(allowed_perms), np.math.factorial(len(inputs_a)) * np.math.factorial(len(inputs_b)))
 
 
 if __name__ == '__main__':
-    #test_general_pr_box_two_input_two_output_case()
-    #test_local_weight()
-    #test_extremal_points_binary_ns()
+    test_general_pr_box_two_input_two_output_case()
+    test_local_weight()
+    test_extremal_points_binary_ns()
     test_allowed_relabellings()
