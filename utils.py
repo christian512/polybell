@@ -1,4 +1,4 @@
-from itertools import product
+from itertools import product, permutations
 from scipy.optimize import linprog
 import numpy as np
 
@@ -209,7 +209,7 @@ def extremal_ns_binary_vertices(inputs_a, inputs_b, outputs):
     return extremals
 
 
-def check_diff_repr_same_ineq(bell1, bell2, dets):
+def check_diff_repr_same_ineq(bell1, bell2, dets, tol=1e-6):
     """
     Checks whether two bell expression represent the same inequality
     :param bell1: scaled first bell expression
@@ -217,22 +217,137 @@ def check_diff_repr_same_ineq(bell1, bell2, dets):
     :param dets: deterministic behaviors
     :return: boolean
     """
+    # get decimal tolerance from tolerance
+    dec = int(-1 * np.log10(tol))
     # Generate Bell expressions
     v1 = np.array([d @ bell1 for d in dets])
     v2 = np.array([d @ bell2 for d in dets])
-    assert np.round(np.min(v1), decimals=4) == 1.0, 'Minimum of v1 is not 1, did you give scaled bell expression?'
-    assert np.round(np.min(v2), decimals=4) == 1.0, 'Minimum of v2 is not 1, did you give scaled bell expression?'
+    # round the arrays
+    v1 = np.round(v1, decimals=dec)
+    v2 = np.round(v2, decimals=dec)
+
+    # check that minimal value is 1
+    assert np.min(v1) == 1.0, 'Minimum of v1 is not 1, did you give scaled bell expression?'
+    assert np.min(v2) == 1.0, 'Minimum of v2 is not 1, did you give scaled bell expression?'
+
+    # check if there is more than one unique element in the array
+    if len(np.unique(v1)) == 1 or len(np.unique(v2)) == 1:
+        # if both have only one entry, it is one, thus the same representation
+        if len(np.unique(v1)) == len(np.unique(v2)):
+            return True
+        # if one array has only one unique value and the other more than 1, they can not be the same
+        # TODO: Is this assumption correct?
+        return False
+
     # get the second largest value
-    # TODO: Add handling if all values are the same
-    s1 = np.min(v1[v1 > np.min(v1) + 1e-6])
-    s2 = np.min(v2[v2 > np.min(v2) + 1e-6])
-    assert np.round(s1, decimals=4) > 1.0
-    assert np.round(s2, decimals=4) > 1.0
+    s1 = np.min(v1[v1 > np.min(v1) + tol])
+    s2 = np.min(v2[v2 > np.min(v2) + tol])
+    assert s1 > 1.0
+    assert s2 > 1.0
     # rescale
     v1_new = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
     v2_new = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
     # check that the second largest value is 1
-    assert np.min(v1_new[v1_new > np.min(v1_new) + 1e-6]) == 2.0, 'Second smallest value is not 2.0'
-    assert np.min(v2_new[v2_new > np.min(v2_new) + 1e-6]) == 2.0, 'Second smallest value is not 2.0'
+    assert np.min(v1_new[v1_new > np.min(v1_new) + tol]) == 2.0, 'Second smallest value is not 2.0'
+    assert np.min(v2_new[v2_new > np.min(v2_new) + tol]) == 2.0, 'Second smallest value is not 2.0'
     # if the two new vectors are the same, they represent the same inequality
     return np.allclose(v1_new, v2_new)
+
+
+def check_equiv_relabel_indcies(bell1, bell2, allowed_indices):
+    """
+    Checks if two bell expressions are equivalent under relabelling
+    :param bell1:
+    :param bell2:
+    :param allowed_indices
+    :return:
+    """
+    # round bell expressions
+    bell1 = np.round(bell1, decimals=5)
+    bell2 = np.round(bell2, decimals=5)
+    # get the counts for each unique value in the array
+    d1 = dict(zip(*np.unique(bell1, return_counts=True)))
+    d2 = dict(zip(*np.unique(bell2, return_counts=True)))
+    # check if they are similar
+    if not d1 == d2:
+        return False
+    # continue with a check for relabellings
+    # TODO: This will probably take to long, also store the allowed permutations and then only iterate over them
+    for i, perm in enumerate(permutations(bell1)):
+        # check if permutation is equal to the second bell inequality
+        if np.array(perm) == bell2 and i in allowed_indices:
+            return True
+    return False
+
+def check_equiv_relabel(bell1, bell2, allowed_perms, tol=1e-6):
+    """
+    Checks if two bell expressions are equivalent under relabelling
+    :param bell1:
+    :param bell2:
+    :param allowed_perms:
+    :return:
+    """
+    # get decimal tolerance from tolerance
+    dec = int(-1 * np.log10(tol))
+    # round bell expressions
+
+
+def get_allowed_relabelling(inputs_a, inputs_b, outputs):
+    """
+    Get the indices for itertools.permuations that are allowed under relabelling conditions for measurmenet options
+    :param inputs_a: inputs for Alice
+    :param inputs_b: inputs for Bob
+    :param outputs: outputs for both
+    :return: list of indices
+    """
+    # get list of all configs at each index
+    configs = [(a, b, x, y) for a, b, x, y in product(outputs, outputs, inputs_a, inputs_b)]
+    # list of allowed indices of permutations
+    allowed_perms = []
+    allowed_perms_idx = []
+    # iterate over all possible permutations
+    for perm_idx, perm in enumerate(permutations(range(len(configs)))):
+        print("{} / {}".format(perm_idx,np.math.factorial(len(configs))))
+        perm = list(perm)
+        # indicator if permutation is allowed
+        allowed = True
+        # dicts to map x_old to x_new and y_old to y_new
+        relabel_x = {}
+        relabel_y = {}
+        # iterate over each entry in the permutation and the original value
+        for old_idx, new_idx in enumerate(perm):
+            # check if the outputs are the same
+            if configs[old_idx][0] != configs[new_idx][0] or configs[old_idx][1] != configs[new_idx][1]:
+                allowed = False
+                break
+
+            # set values of new and old index
+            x_old, y_old = configs[old_idx][2], configs[old_idx][3]
+            x_new, y_new = configs[new_idx][2], configs[new_idx][3]
+
+
+            # check if the relabellign x_old -> x_new is contained in the relabel dict
+            if relabel_x.get(x_old, x_new) != x_new:
+                # permutation is not allowed
+                allowed = False
+                break
+            else:
+                # append new relabelling to dict
+                relabel_x[x_old] = x_new
+            # to the same relabelling check for y
+            if relabel_y.get(y_old, y_new) != y_new:
+                # permutation is not allowed
+                allowed = False
+                break
+            else:
+                # add new relabelling to dict
+                relabel_y[y_old] = y_new
+        # add index of permutation to allowed indices if no error was found
+        if allowed:
+            print('Found new allowed')
+            allowed_perms.append(list(perm))
+            allowed_perms_idx.append(perm_idx)
+    # return the list of indices
+    return allowed_perms, allowed_perms_idx
+
+

@@ -1,4 +1,4 @@
-from utils import general_pr_box, get_deterministic_behaviors, find_local_weight, extremal_ns_binary_vertices
+from utils import *
 from itertools import product
 import numpy as np
 
@@ -61,9 +61,20 @@ def test_extremal_points_binary_ns():
         assert np.abs(bell_exp @ e) < 1e-8
 
 
+def test_allowed_relabellings():
+    """ Test if we get the correct allowed relabellings back """
+    inputs_a = range(1)
+    inputs_b = range(3)
+    outputs = range(2)
+    # get the allowed relabellings
+    allowed_perms, _ = get_allowed_relabelling(inputs_a, inputs_b, outputs)
+    print(allowed_perms)
+
+
 
 
 if __name__ == '__main__':
-    test_general_pr_box_two_input_two_output_case()
-    test_local_weight()
-    test_extremal_points_binary_ns()
+    #test_general_pr_box_two_input_two_output_case()
+    #test_local_weight()
+    #test_extremal_points_binary_ns()
+    test_allowed_relabellings()
