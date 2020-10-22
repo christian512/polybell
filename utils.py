@@ -148,7 +148,7 @@ def find_bell_inequality(p, dets, method='interior-point'):
     return opt, s, sl
 
 
-def find_local_weight(p, dets, method='interior-point',options={"maxiter": 1000}):
+def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000}):
     """ Finds the local weight for a behavior p """
     # objective function and inequalities
     obj = p
@@ -273,7 +273,7 @@ def check_equiv_relabel(bell1, bell2, allowed_perms, tol=1e-6):
             return True
 
 
-def get_allowed_relabellings(inputs_a, inputs_b, outputs):
+def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
     """
     Get the allowed relabellings for given inputs
     :param inputs_a:
@@ -284,22 +284,27 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs):
     # list for all allowed permutations
     allowed_permutations = []
     # list of all configurations
-    configurations = [(a, b, x, y) for a, b, x, y in product(outputs, outputs, inputs_a, inputs_b)]
+    configurations = [(a, b, x, y) for a, b, x, y in product(outputs_a, outputs_b, inputs_a, inputs_b)]
     # iterate over all possible relabellings for x
-    for relabel_a in permutations(range(len(inputs_a))):
+    for relabel_x in permutations(range(len(inputs_a))):
         # iterate over all possible relabellings for y
-        for relabel_b in permutations(range(len(inputs_b))):
-            # create empty permutation of dimension of a behavior
-            perm = list(range(len(configurations)))
-            # iterate over all configs and relabel according to currently chosen relabelling
-            for old_idx, config in enumerate(configurations):
-                # get current config
-                a, b, x_old, y_old = config
-                # get new labels for x and y
-                x_new, y_new = relabel_a[x_old], relabel_b[y_old]
-                # find new index
-                new_idx = configurations.index((a, b, x_new, y_new))
-                # set new idx in the permuation
-                perm[old_idx] = new_idx
-            allowed_permutations.append(perm)
+        for relabel_y in permutations(range(len(inputs_b))):
+            # iterate over all possible relabellings of a
+            for relabel_a in permutations(range(len(outputs_a))):
+                # ierate over all possible relabellings of b
+                for relabel_b in permutations(range(len(outputs_b))):
+                    # create empty permutation of dimension of a behavior
+                    perm = list(range(len(configurations)))
+                    # iterate over all configs and relabel according to currently chosen relabelling
+                    for old_idx, config in enumerate(configurations):
+                        # get current config
+                        a_old, b_old, x_old, y_old = config
+                        # get new labels for x and y
+                        a_new, b_new, x_new, y_new = relabel_a[a_old], relabel_b[b_old], relabel_x[x_old], relabel_y[
+                            y_old]
+                        # find new index
+                        new_idx = configurations.index((a_new, b_new, x_new, y_new))
+                        # set new idx in the permuation
+                        perm[old_idx] = new_idx
+                    allowed_permutations.append(perm)
     return allowed_permutations
