@@ -245,8 +245,6 @@ def check_diff_repr_same_ineq(bell1, bell2, dets, tol=1e-6):
         if len(np.unique(v1)) == len(np.unique(v2)):
             return True
         # if one array has only one unique value and the other more than 1, they can not be the same
-        # TODO: Is this assumption correct?
-        print('returned false here')
         return False
 
     # get the second largest value
@@ -264,6 +262,15 @@ def check_diff_repr_same_ineq(bell1, bell2, dets, tol=1e-6):
     return np.allclose(v1_new, v2_new)
 
 
+def check_equiv_relabel_repr(bell1, bell2, allowed_perms, dets, tol=1e-6):
+    for perm in allowed_perms:
+        if np.allclose(bell1, bell2[perm], atol=tol):
+            return True
+        if check_diff_repr_same_ineq(bell1, bell2[perm], dets):
+            return True
+    return False
+
+
 def check_equiv_relabel(bell1, bell2, allowed_perms, tol=1e-6):
     """
     Checks if two bell expressions are equivalent under relabelling
@@ -277,6 +284,7 @@ def check_equiv_relabel(bell1, bell2, allowed_perms, tol=1e-6):
         # check if they bell1 is equal to permuted bell2 expression
         if np.allclose(bell1, bell2[perm], atol=tol):
             return True
+    return False
 
 
 def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
@@ -287,6 +295,11 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
     :param outputs:
     :return:
     """
+    # Check if interchanging of sides is possible
+    interchange = False
+    if len(inputs_a) == len(inputs_b):
+        interchange = True
+
     # list for all allowed permutations
     allowed_permutations = []
     # list of all configurations
@@ -296,15 +309,19 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
         # iterate over all possible relabellings for y
         for relabel_y in permutations(range(len(inputs_b))):
             # iterate over all possible relabellings of a
-            for relabel_a in permutations(range(len(outputs_a))):
+            for relabel_a_list in product(list(permutations(range(len(outputs_a)))), repeat=len(inputs_a)):
                 # ierate over all possible relabellings of b
-                for relabel_b in permutations(range(len(outputs_b))):
+                for relabel_b_list in product(list(permutations(range(len(outputs_b)))), repeat=len(inputs_b)):
                     # create empty permutation of dimension of a behavior
                     perm = list(range(len(configurations)))
+                    perm_sides_interchanged = list(range(len(configurations)))
                     # iterate over all configs and relabel according to currently chosen relabelling
                     for old_idx, config in enumerate(configurations):
                         # get current config
                         a_old, b_old, x_old, y_old = config
+                        # get the relabelings for the outputs according to the input
+                        relabel_a = relabel_a_list[x_old]
+                        relabel_b = relabel_b_list[y_old]
                         # get new labels for x and y
                         a_new, b_new, x_new, y_new = relabel_a[a_old], relabel_b[b_old], relabel_x[x_old], relabel_y[
                             y_old]
@@ -312,5 +329,12 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
                         new_idx = configurations.index((a_new, b_new, x_new, y_new))
                         # set new idx in the permutation
                         perm[old_idx] = new_idx
+                        # and add permutation where Alice and Bob are interchanged
+                        if interchange:
+                            new_idx = configurations.index((b_new, a_new, y_new, x_new))
+                            perm_sides_interchanged[old_idx] = new_idx
                     allowed_permutations.append(perm)
+                    if interchange:
+                        allowed_permutations.append(perm_sides_interchanged)
+
     return allowed_permutations

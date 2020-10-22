@@ -61,22 +61,55 @@ def test_extremal_points_binary_ns():
         assert np.abs(bell_exp @ e) < 1e-8
 
 
-def test_allowed_relabellings():
+def test_allowed_relabellings_antisymmetric():
+    """ Test if we get the correct allowed relabellings back """
+    inputs_a = range(3)
+    inputs_b = range(2)
+    outputs_a = range(2)
+    outputs_b = range(2)
+    # set numbers
+    ma = len(inputs_a)
+    mb = len(inputs_b)
+    na = len(outputs_a)
+    nb = len(outputs_b)
+
+    # get the allowed relabellings
+    allowed_perms = get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b)
+
+    fac = np.math.factorial
+    theoretical_num = (fac(na) ** ma) * (fac(nb) ** mb) * fac(ma) * fac(mb)
+
+    # check that the length of the found allowed permutations is correct.
+    assert len(allowed_perms) == theoretical_num, 'Found {} permutation, theoretical num: {}'.format(len(allowed_perms),
+                                                                                                     theoretical_num)
+
+
+def test_allowed_relabellings_symmetric():
     """ Test if we get the correct allowed relabellings back """
     inputs_a = range(3)
     inputs_b = range(3)
     outputs_a = range(2)
     outputs_b = range(2)
+    # set numbers
+    ma = len(inputs_a)
+    mb = len(inputs_b)
+    na = len(outputs_a)
+    nb = len(outputs_b)
+
     # get the allowed relabellings
     allowed_perms = get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b)
+
+    fac = np.math.factorial
+    theoretical_num = 2 * (fac(na) ** ma) * (fac(nb) ** mb) * fac(ma) * fac(mb)
+
     # check that the length of the found allowed permutations is correct.
-    assert len(allowed_perms) == np.math.factorial(
-        len(inputs_a)) * np.math.factorial(len(inputs_b)) * np.math.factorial(len(outputs_a)) * np.math.factorial(
-        len(outputs_b))
+    assert len(allowed_perms) == theoretical_num, 'Found {} permutation, theoretical num: {}'.format(len(allowed_perms),
+                                                                                                     theoretical_num)
 
 
 if __name__ == '__main__':
     test_general_pr_box_two_input_two_output_case()
     test_local_weight()
     test_extremal_points_binary_ns()
-    test_allowed_relabellings()
+    test_allowed_relabellings_symmetric()
+    test_allowed_relabellings_antisymmetric()
