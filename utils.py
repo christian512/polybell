@@ -110,13 +110,18 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
     """
     equalizing_dets = []
     # rescale the bell expression
-    bell_expression = bell_expression / np.min([d @ bell_expression for d in deterministics])
+    # TODO: WHICH KIND OF RESCALING? THE SECOND One ensures that there the smallest value is 1
+    # bell_expression = bell_expression / np.min([d @ bell_expression for d in deterministics])
+    bell_expression = bell_expression / np.min(bell_expression[bell_expression > tol])
     # iterate over the deterministics
     for d in deterministics:
         # check if this is zero (up to numerical tolerance)
         if np.abs(d @ bell_expression - 1) < tol:
             # append the behavior to the equalizing behaviors
             equalizing_dets.append(d)
+    # return if no equalizing dets
+    if len(equalizing_dets) == 0:
+        return False, bell_expression, np.array(equalizing_dets)
     # define the array of equalizing dets with the first subtracted
     equalizing_dets = np.array(equalizing_dets)
     eq_dets_new = equalizing_dets - equalizing_dets[0]
@@ -241,6 +246,7 @@ def check_diff_repr_same_ineq(bell1, bell2, dets, tol=1e-6):
             return True
         # if one array has only one unique value and the other more than 1, they can not be the same
         # TODO: Is this assumption correct?
+        print('returned false here')
         return False
 
     # get the second largest value
@@ -304,7 +310,7 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
                             y_old]
                         # find new index
                         new_idx = configurations.index((a_new, b_new, x_new, y_new))
-                        # set new idx in the permuation
+                        # set new idx in the permutation
                         perm[old_idx] = new_idx
                     allowed_permutations.append(perm)
     return allowed_permutations
