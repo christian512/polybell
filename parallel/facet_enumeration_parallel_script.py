@@ -1,6 +1,6 @@
-from src.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
+from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
 import numpy as np
-from src.utils import find_local_weight, facet_inequality_check, check_equiv_bell
+from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
 import time
 
 # set inputs / outputs

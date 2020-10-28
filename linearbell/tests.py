@@ -1,4 +1,3 @@
-from src.utils import *
 from itertools import product
 import numpy as np
 
