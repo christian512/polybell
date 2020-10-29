@@ -109,10 +109,13 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
     :return: is_facet, scaled_bell_expression, equalizing deterministics
     """
     equalizing_dets = []
-    # rescale the bell expression
-    # TODO: WHICH KIND OF RESCALING? THE SECOND One ensures that the smallest value is 1
-    # bell_expression = bell_expression / np.min([d @ bell_expression for d in deterministics])
-    bell_expression = bell_expression / np.min(bell_expression[bell_expression > tol])
+    # factor for rescaling
+    fac = np.min(deterministics @ bell_expression)
+    # or fac =  np.min(bell_expression[bell_expression > tol])
+    if np.abs(fac - 1) > tol:
+        print('rescale factor is not close to 1')
+        # rescale
+        bell_expression = bell_expression / fac
     # iterate over the deterministics
     mask = deterministics @ bell_expression - 1 < tol
     equalizing_dets = deterministics[mask]
@@ -223,68 +226,28 @@ def check_diff_repr_same_ineq_vec(bell, perm_bells, dets, tol=1e-6):
     :param perm_bells:
     :param dets:
     :param tol:
-    :return:
-    """
-    v1 = dets @ bell
-    v2s = np.dot(dets, perm_bells.transpose()).transpose()
-    v2 = v2s[0]
-
-    # get the second largest value of v1 and v2
-    # as all v2s are just permuted it's always the same second largest value
-    s1 = np.min(v1[v1 > np.min(v1) + tol])
-    s2 = np.min(v2[v2 > np.min(v2) + tol])
-
-    # rescale
-    v1_new = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
-    v2s_new = v2s / (s2 - 1) + (s2 - 2) / (s2 - 1)
-
-    # check if any two vectors are the same
-    return np.any(np.sum((v1 - v2s) ** 2, axis=1) < tol ** 2)
-
-
-def check_diff_repr_same_ineq(bell1, bell2, dets, tol=1e-6):
-    """
-    Checks whether two bell expression represent the same inequality
-    :param bell1: scaled first bell expression
-    :param bell2: scaled second bell expression
-    :param dets: deterministic behaviors
     :return: boolean
     """
-    # get decimal tolerance from tolerance
-    dec = int(-1 * np.log10(tol))
-    # Generate Bell expressions
-    v1 = dets @ bell1
-    v2 = dets @ bell2
-    # round the arrays
-    # v1 = np.round(v1, decimals=dec)
-    # v2 = np.round(v2, decimals=dec)
 
-    # check that minimal value is 1
-    # assert np.abs(np.min(v1) - 1.0) < tol, 'Minimum of v1 is not 1, did you give scaled bell expression?'
-    # assert np.abs(np.min(v2) - 1.0) < tol, 'Minimum of v2 is not 1, did you give scaled bell expression?'
-    """
-    # check if there is more than one unique element in the array
-    if len(np.unique(v1)) == 1 or len(np.unique(v2)) == 1:
-        # if both have only one entry, it is one, thus the same representation
-        if len(np.unique(v1)) == len(np.unique(v2)):
-            return True
-        # if one array has only one unique value and the other more than 1, they can not be the same
-        return False
-    """
+    v1 = dets @ bell
+    v2s = np.dot(dets, perm_bells.transpose()).transpose()
+    # get second smallest value for v1
+    s1 = np.min(v1[v1 > np.min(v1) + tol])
+    # Get second smallest value for each row in v2s
+    # TODO: Find a more efficient way to do this for loop
+    s2s = np.empty(v2s.shape[0])
+    for i in range(v2s.shape[0]):
+        v2 = v2s[i]
+        s2s[i] = np.min(v2[v2 > np.min(v2) + tol])
 
     # get the second largest value
-    s1 = np.min(v1[v1 > np.min(v1) + tol])
-    s2 = np.min(v2[v2 > np.min(v2) + tol])
-    # assert s1 > 1.0
-    # assert s2 > 1.0
-    # rescale
+    s2s = s2s[:, np.newaxis]
+    # rescaling
     v1_new = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
-    v2_new = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
-    # check that the second largest value is 1
-    # assert np.min(v1_new[v1_new > np.min(v1_new) + tol]) == 2.0, 'Second smallest value is not 2.0'
-    # assert np.min(v2_new[v2_new > np.min(v2_new) + tol]) == 2.0, 'Second smallest value is not 2.0'
-    # if the two new vectors are the same, they represent the same inequality
-    return np.sum((v1_new - v2_new) ** 2) < tol ** 2
+    v2s_new = v2s / (s2s - 1) + (s2s - 2) / (s2s - 1)
+
+    # check if any two vectors are the same
+    return np.any(np.sum((v1_new - v2s_new) ** 2, axis=1) < tol ** 2)
 
 
 def check_equiv_bell(bell1, bell2, allowed_perms, dets, tol=1e-6):
@@ -302,36 +265,17 @@ def check_equiv_bell(bell1, bell2, allowed_perms, dets, tol=1e-6):
         return True
 
     # iterate over all allowed permutations
-    if np.any(np.sum((bell1 - bell2[allowed_perms]) ** 2, axis=1) < tol ** 2):
-        return True
+    #if np.any(np.sum((bell1 - bell2[allowed_perms]) ** 2, axis=1) < tol ** 2):
+    #    return True
 
     # check if the two bell expressions are equivalent
     if check_diff_repr_same_ineq_vec(bell1, bell2[allowed_perms], dets, tol=tol):
         return True
-    """
-    for perm in allowed_perms:
-        if check_diff_repr_same_ineq(bell1, bell2[perm], dets):
-            print('Different representation of the same bell inequality')
-            return True
-    """
+
 
     return False
 
 
-def check_relabel(bell1, bell2, allowed_perms, tol=1e-6):
-    """
-    Checks if two bell expressions are equivalent under relabelling
-    :param bell1:
-    :param bell2:
-    :param allowed_perms:
-    :return:
-    """
-    # iterate through all possible permutations
-    for perm in allowed_perms:
-        # check if they bell1 is equal to permuted bell2 expression
-        if np.allclose(bell1, bell2[perm], atol=tol):
-            return True
-    return False
 
 
 def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
