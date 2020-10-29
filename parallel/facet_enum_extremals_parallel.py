@@ -88,7 +88,7 @@ def facet_writer(queue):
             # check if the facet that should be written was the last facet found
             # maybe the facet worker did not read it from the file yet
             # Maybe you can add here multiple new_facets if you have more workers available
-            if new_facet:
+            if not new_facet is None:
                 # get the facet from the string
                 f1 = np.array([[float(r) for r in m[:-2].split(' ')]])
                 # check if the received facet is equal to the last newly found facet
@@ -99,10 +99,10 @@ def facet_writer(queue):
                     new_facet = f1
                     print('wrote facet: {}'.format(new_facet))
             # if there is no new facet yet found
-            if not new_facet:
+            if new_facet is None:
                 out.write(m)
                 out.flush()
-                # new_facet = np.array([float(r) for r in m[:-2].split(' ')])
+                #new_facet = np.array([float(r) for r in m[:-2].split(' ')])
                 print('wrote facet')
     return True
 
@@ -122,22 +122,22 @@ def eqdets_writer(queue):
 
 import multiprocessing as mp
 
+# setup multiprocessing pool, queues and manager
 manager = mp.Manager()
 facet_q = manager.Queue()
 extremal_q = manager.Queue()
 pool = mp.Pool(mp.cpu_count() + 2)
 # setup watchers
-time.sleep(5)
 watcher_facets = pool.apply_async(facet_writer, (facet_q,))
 watcher_eqdets = pool.apply_async(eqdets_writer, (extremal_q,))
-time.sleep(5)
+
 # start workers
 jobs = []
 for e in extremals:
     job = pool.apply_async(get_facet, (e, facet_q, extremal_q))
     jobs.append(job)
 # run the jobs
-time.sleep(5)
+
 for i, job in enumerate(jobs):
     if i % 20 == 0:
         print("{} / {}".format(i, len(jobs)))

@@ -2,7 +2,28 @@ import multiprocessing as mp
 import numpy as np
 from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
 from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
-import random
+
+# set inputs / outputs
+inputs_a = range(4)
+inputs_b = range(4)
+outputs = range(2)
+# get extremal points
+extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
+
+# get deterministic points
+dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+
+# get allowed relabellings
+allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
+# set the epsilons that we want to use
+epsilons = np.linspace(1 / 3, 2 / 3, num=1)
+# options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
+options = {"disp": False, "maxiter": 5000, "bland": True}
+method = 'simplex'
+
+# eq_dets_file
+eq_dets_file = '../data/equalizing_deterministics/4422_finished.txt'
+facets_file = '../data/facets/4422.txt'
 
 
 def get_string_from_numpy_array(arr):
@@ -93,28 +114,6 @@ def eqdets_writer(queue):
     return True
 
 
-# set inputs / outputs
-inputs_a = range(4)
-inputs_b = range(4)
-outputs = range(2)
-# get extremal points
-extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
-
-# get deterministic points
-dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
-
-# get allowed relabellings
-allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
-# set the epsilons that we want to use
-epsilons = np.linspace(1 / 3, 2 / 3, num=1)
-# options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
-options = {"disp": False, "maxiter": 5000, "bland": True}
-method = 'simplex'
-
-# eq_dets_file
-eq_dets_file = '../data/equalizing_deterministics/4422_finished.txt'
-facets_file = '../data/facets/4422.txt'
-
 # setup parallel environment
 manager = mp.Manager()
 facet_q = manager.Queue()
@@ -137,16 +136,15 @@ for i, line in enumerate(lines):
         behaviors = []
         eqdets = np.array(eqdets)
         for j in range(eqdets.shape[0]):
-            for k in range(j, eqdets.shape[0]):
+            for k in range(j+1, eqdets.shape[0]):
                 for eps in epsilons:
                     b = (1 - 3 * eps / 2) * extremals[extremal_counter] + eps * eqdets[j] + eps / 2 * eqdets[k]
                     behaviors.append(b)
         extremal_counter += 1
         eqdets = []
 
-        # start workers
+        # start and run workers
         jobs = []
-        random.shuffle(behaviors)
         for e in behaviors:
             job = pool.apply_async(get_facet, (e, facet_q, False))
             jobs.append(job)
