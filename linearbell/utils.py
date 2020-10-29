@@ -3,6 +3,14 @@ from scipy.optimize import linprog
 import numpy as np
 
 
+def get_configs(inputs_a, inputs_b, outputs_a, outputs_b):
+    """
+    Returns the settings of a,b,x,y for each index in a probability distribution
+    """
+    configs = [(a, b, x, y) for a, b, x, y in product(outputs_a, outputs_b, inputs_a, inputs_b)]
+    return configs
+
+
 def get_deterministic_behaviors(inputs_a, inputs_b, outputs):
     """
     TODO: For speed up one could use sparse matrices or just integer implementation with binaries
@@ -32,6 +40,67 @@ def get_deterministic_behaviors(inputs_a, inputs_b, outputs):
         deterministics.append(d)
     assert len(deterministics) == len(outputs) ** (len(inputs_a) + len(inputs_b))
     return np.array(deterministics)
+
+
+def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
+    """
+    Get the allowed relabellings for given inputs
+    :param inputs_a: inputs for ALICE
+    :param inputs_b: inputs for BOB
+    :param outputs_a: outputs for ALICE
+    :param outputs_b: output for BOB
+    :return: list of permutation indices
+    """
+    # Check if interchanging of sides is possible
+    interchange = False
+    if len(inputs_a) == len(inputs_b) and len(outputs_a) == len(outputs_b):
+        interchange = True
+
+    # list for all allowed permutations
+    allowed_permutations = []
+    # list of all configurations
+    configurations = [(a, b, x, y) for a, b, x, y in product(outputs_a, outputs_b, inputs_a, inputs_b)]
+    # iterate over all possible relabellings for x
+    for relabel_x in permutations(range(len(inputs_a))):
+        # iterate over all possible relabellings for y
+        for relabel_y in permutations(range(len(inputs_b))):
+            # iterate over all possible relabellings of a
+            for relabel_a_list in product(list(permutations(range(len(outputs_a)))), repeat=len(inputs_a)):
+                # ierate over all possible relabellings of b
+                for relabel_b_list in product(list(permutations(range(len(outputs_b)))), repeat=len(inputs_b)):
+                    # create empty permutation of dimension of a behavior
+                    perm = list(range(len(configurations)))
+                    perm_sides_interchanged = list(range(len(configurations)))
+                    # iterate over all configs and relabel according to currently chosen relabelling
+                    for old_idx, config in enumerate(configurations):
+                        # get current config
+                        a_old, b_old, x_old, y_old = config
+                        # get the relabelings for the outputs according to the input
+                        relabel_a = relabel_a_list[x_old]
+                        relabel_b = relabel_b_list[y_old]
+                        # get new labels for x and y
+                        a_new, b_new, x_new, y_new = relabel_a[a_old], relabel_b[b_old], relabel_x[x_old], relabel_y[
+                            y_old]
+                        # find new index
+                        new_idx = configurations.index((a_new, b_new, x_new, y_new))
+                        # set new idx in the permutation
+                        perm[old_idx] = new_idx
+                        # and add permutation where Alice and Bob are interchanged
+                        if interchange:
+                            new_idx = configurations.index((b_new, a_new, y_new, x_new))
+                            perm_sides_interchanged[old_idx] = new_idx
+                    allowed_permutations.append(perm)
+                    if interchange:
+                        allowed_permutations.append(perm_sides_interchanged)
+
+    return allowed_permutations
+
+
+def get_possible_liftings(inputs, outputs):
+    """
+    Gets all possible liftings for given inputs and outputs
+    """
+    return list(product(outputs, repeat=len(inputs)))
 
 
 def general_pr_box(a, b, x, y):
@@ -66,7 +135,7 @@ def general_pr_box(a, b, x, y):
     return 1 / 2 * int(s == t)
 
 
-def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without_failure):
+def general_pr_box_extended(a, b, x, y, eta, outputs_without_failure, failure_indicator=2):
     """
     Returns the probability distribution for a PR box, where the detectors have efficiency eta.
     The value 2 is used for value, i.e. a = 2 means that ALICE measurement has failed
@@ -84,22 +153,44 @@ def general_pr_box_extended(a, b, x, y, eta, inputs_a, inputs_b, outputs_without
     """
     assert x >= 0
     assert y >= 0
+    assert failure_indicator not in outputs_without_failure
     # if both sides experience failure
-    if a == 2 and b == 2:
+    if a == failure_indicator and b == failure_indicator:
         return (1 - eta) ** 2
     # if both sides have no failure
-    elif a != 2 and b != 2:
+    elif a != failure_indicator and b != failure_indicator:
         return (eta ** 2) * general_pr_box(a, b, x, y)
     # if only ALICE has a failure
-    elif a == 2 and b != 2:
+    elif a == failure_indicator and b != failure_indicator:
         s = np.sum([general_pr_box(a_new, b, x, y) for a_new in outputs_without_failure])
         return eta * (1 - eta) * s
-    elif a != 2 and b == 2:
+    elif a != failure_indicator and b == failure_indicator:
         s = np.sum([general_pr_box(a, b_new, x, y) for b_new in outputs_without_failure])
         return eta * (1 - eta) * s
     else:
         print('ERROR in calculation of general_pr_box_extended -> undefined outputs')
         return 0
+
+
+def reduce_extended_pr_box(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
+    # check length
+    assert len(configs_ext) == len(pr_box)
+    # create empty reduced pr box
+    pr_red = np.zeros(len(configs_red))
+    # iterate through the configs
+    for i, c in enumerate(configs_ext):
+        # get explicit configuration
+        a, b, x, y = c
+        # check if a or b is a failure
+        if a == failure_indicator:
+            a = lift_a[x]
+        if b == failure_indicator:
+            b = lift_b[y]
+        # get the index where this new configuration is located
+        idx = configs_red.index((a, b, x, y))
+        # add the probability of the extended PR box to this example
+        pr_red[idx] += pr_box[i]
+    return pr_red
 
 
 def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-8):
@@ -154,7 +245,7 @@ def find_bell_inequality(p, dets, method='interior-point'):
     return opt, s, sl
 
 
-def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000}):
+def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000}, retry=True):
     """ Finds the local weight for a behavior p """
     # objective function and inequalities
     obj = p
@@ -163,7 +254,7 @@ def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000
     # run the optimizer
     opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method, options=options)
     # if not found -> retry with standard method
-    if not opt.success:
+    if not opt.success and retry:
         print('Could not find local weight, retry with standard params and return')
         opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
@@ -265,68 +356,11 @@ def check_equiv_bell(bell1, bell2, allowed_perms, dets, tol=1e-6):
         return True
 
     # iterate over all allowed permutations
-    #if np.any(np.sum((bell1 - bell2[allowed_perms]) ** 2, axis=1) < tol ** 2):
+    # if np.any(np.sum((bell1 - bell2[allowed_perms]) ** 2, axis=1) < tol ** 2):
     #    return True
 
     # check if the two bell expressions are equivalent
     if check_diff_repr_same_ineq_vec(bell1, bell2[allowed_perms], dets, tol=tol):
         return True
 
-
     return False
-
-
-
-
-def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
-    """
-    Get the allowed relabellings for given inputs
-    :param inputs_a: inputs for ALICE
-    :param inputs_b: inputs for BOB
-    :param outputs_a: outputs for ALICE
-    :param outputs_b: output for BOB
-    :return: list of permutation indices
-    """
-    # Check if interchanging of sides is possible
-    interchange = False
-    if len(inputs_a) == len(inputs_b) and len(outputs_a) == len(outputs_b):
-        interchange = True
-
-    # list for all allowed permutations
-    allowed_permutations = []
-    # list of all configurations
-    configurations = [(a, b, x, y) for a, b, x, y in product(outputs_a, outputs_b, inputs_a, inputs_b)]
-    # iterate over all possible relabellings for x
-    for relabel_x in permutations(range(len(inputs_a))):
-        # iterate over all possible relabellings for y
-        for relabel_y in permutations(range(len(inputs_b))):
-            # iterate over all possible relabellings of a
-            for relabel_a_list in product(list(permutations(range(len(outputs_a)))), repeat=len(inputs_a)):
-                # ierate over all possible relabellings of b
-                for relabel_b_list in product(list(permutations(range(len(outputs_b)))), repeat=len(inputs_b)):
-                    # create empty permutation of dimension of a behavior
-                    perm = list(range(len(configurations)))
-                    perm_sides_interchanged = list(range(len(configurations)))
-                    # iterate over all configs and relabel according to currently chosen relabelling
-                    for old_idx, config in enumerate(configurations):
-                        # get current config
-                        a_old, b_old, x_old, y_old = config
-                        # get the relabelings for the outputs according to the input
-                        relabel_a = relabel_a_list[x_old]
-                        relabel_b = relabel_b_list[y_old]
-                        # get new labels for x and y
-                        a_new, b_new, x_new, y_new = relabel_a[a_old], relabel_b[b_old], relabel_x[x_old], relabel_y[
-                            y_old]
-                        # find new index
-                        new_idx = configurations.index((a_new, b_new, x_new, y_new))
-                        # set new idx in the permutation
-                        perm[old_idx] = new_idx
-                        # and add permutation where Alice and Bob are interchanged
-                        if interchange:
-                            new_idx = configurations.index((b_new, a_new, y_new, x_new))
-                            perm_sides_interchanged[old_idx] = new_idx
-                    allowed_permutations.append(perm)
-                    if interchange:
-                        allowed_permutations.append(perm_sides_interchanged)
-
-    return allowed_permutations
