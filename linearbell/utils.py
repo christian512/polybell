@@ -243,6 +243,7 @@ def find_bell_inequality(p, dets, method='interior-point'):
     lhs_ineq = np.append(dets, [p], axis=0)
     rhs_ineq = np.r_[np.zeros(dets.shape[0]), [1.0]]
     # run the optimizer
+    print('WATCH OUT, YOU RUN THE SLOW SCIPY LINPROG SOLVER')
     opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq, method=method)
     # unpack the results
     s = opt.x[:-1]
