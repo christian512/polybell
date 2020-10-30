@@ -2,11 +2,23 @@ import multiprocessing as mp
 import numpy as np
 from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
 from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(dest='ma', help="number of inputs for ALICE")
+parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argument(dest='n', help='number of outputs')
+parser.add_argument(dest='num_cpu', help='number of cpu corse to be used')
+args = parser.parse_args()
+ma = int(args.ma)
+mb = int(args.mb)
+n = int(args.n)
+num_cpu = int(args.num_cpu)
 
 # set inputs / outputs
-inputs_a = range(4)
-inputs_b = range(4)
-outputs = range(2)
+inputs_a = range(ma)
+inputs_b = range(mb)
+outputs = range(n)
 # get extremal points
 extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
 
@@ -22,8 +34,8 @@ options = {"disp": False, "maxiter": 5000, "bland": True}
 method = 'simplex'
 
 # eq_dets_file
-eq_dets_file = '../data/equalizing_deterministics/4422.txt'
-facets_file = '../data/facets/4422.txt'
+eq_dets_file = '../data/equalizing_deterministics/{}{}{}{}.txt'.format(ma, mb, n, n)
+facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
 
 
 def get_string_from_numpy_array(arr):
@@ -45,7 +57,7 @@ def get_facet(extremal, facet_q, eqdets_q):
         curr_facets.append(f)
     curr_facets = np.array(curr_facets)
     # calculate local weight
-    _, bell_exp = find_local_weight(extremal, dets, method=method, options=options)
+    bell_exp = find_local_weight(extremal, dets)
     # check if there is a facet
     isf, bell, eq_dets = facet_inequality_check(dets, bell_exp, len(inputs_a), len(inputs_b), len(outputs))
     if isf:
@@ -117,7 +129,7 @@ def eqdets_writer(queue):
 # setup parallel environment
 manager = mp.Manager()
 facet_q = manager.Queue()
-pool = mp.Pool(mp.cpu_count() + 2)
+pool = mp.Pool(num_cpu)
 
 # start the worker for writing facets
 watcher = pool.apply_async(facet_writer, (facet_q,))
@@ -136,7 +148,7 @@ for i, line in enumerate(lines):
         behaviors = []
         eqdets = np.array(eqdets)
         for j in range(eqdets.shape[0]):
-            for k in range(j+1, eqdets.shape[0]):
+            for k in range(j + 1, eqdets.shape[0]):
                 for eps in epsilons:
                     b = (1 - 3 * eps / 2) * extremals[extremal_counter] + eps * eqdets[j] + eps / 2 * eqdets[k]
                     behaviors.append(b)

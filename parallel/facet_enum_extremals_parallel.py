@@ -1,12 +1,23 @@
 from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
 import numpy as np
 from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
-import time
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(dest='ma', help="number of inputs for ALICE")
+parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argument(dest='n', help='number of outputs')
+parser.add_argument(dest='num_cpu', help='number of cpu cores to be used')
+args = parser.parse_args()
+ma = int(args.ma)
+mb = int(args.mb)
+n = int(args.n)
+num_cpu = int(args.num_cpu)
 
 # set inputs / outputs
-inputs_a = range(4)
-inputs_b = range(4)
-outputs = range(2)
+inputs_a = range(ma)
+inputs_b = range(mb)
+outputs = range(n)
 
 # files where to store the facets and equalizing deterministics for later
 facets_file = '../data/facets/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b), len(outputs), len(outputs))
@@ -21,14 +32,10 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
 
-# options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
-options = {"disp": False, "maxiter": 5000, "bland": True}
-method = 'simplex'
-
 # open files to create them
-f = open(facets_file, 'a+')
+f = open(facets_file, 'w+')
 f.close()
-f = open(eq_dets_file, 'a+')
+f = open(eq_dets_file, 'w+')
 f.close()
 
 
@@ -51,7 +58,7 @@ def get_facet(extremal, facet_q, eqdets_q):
         curr_facets.append(f)
     curr_facets = np.array(curr_facets)
     # calculate local weight
-    _, bell_exp = find_local_weight(extremal, dets, method=method, options=options)
+    bell_exp = find_local_weight(extremal, dets)
     # check if there is a facet
     isf, bell, eq_dets = facet_inequality_check(dets, bell_exp, len(inputs_a), len(inputs_b), len(outputs))
     if isf:
@@ -102,7 +109,7 @@ def facet_writer(queue):
             if new_facet is None:
                 out.write(m)
                 out.flush()
-                #new_facet = np.array([float(r) for r in m[:-2].split(' ')])
+                # new_facet = np.array([float(r) for r in m[:-2].split(' ')])
                 print('wrote facet')
     return True
 
@@ -126,7 +133,7 @@ import multiprocessing as mp
 manager = mp.Manager()
 facet_q = manager.Queue()
 extremal_q = manager.Queue()
-pool = mp.Pool(mp.cpu_count() + 2)
+pool = mp.Pool(num_cpu)
 # setup watchers
 watcher_facets = pool.apply_async(facet_writer, (facet_q,))
 watcher_eqdets = pool.apply_async(eqdets_writer, (extremal_q,))
@@ -148,5 +155,3 @@ extremal_q.put('kill')
 watcher_facets.get()
 pool.close()
 pool.join()
-
-
