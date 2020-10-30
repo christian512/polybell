@@ -212,7 +212,7 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
     fac = np.min(deterministics @ bell_expression)
     # or fac =  np.min(bell_expression[bell_expression > tol])
     if np.abs(fac - 1) > tol:
-        print('rescale factor is not close to 1')
+        print('rescale factor is not close to 1: fac = {}'.format(fac))
         # rescale
         bell_expression = bell_expression / fac
     # iterate over the deterministics
