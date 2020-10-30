@@ -4,6 +4,7 @@ Checking if there is a lifted PR box for the finite efficiency PR box with m inp
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
     reduce_extended_pr_box, find_local_weight
+from guro import find_local_weight_guro
 
 # set input parameters
 inputs_a = range(6)
@@ -17,7 +18,7 @@ eta = 4 / (len(inputs_a) + 4) + epsilon
 print('epsilon: {}'.format(epsilon))
 
 # options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
-options = {"disp": False, "maxiter": 50000, "bland": True}
+options = {"disp": False, "maxiter": 10000, "bland": True}
 method = 'simplex'
 
 # get deterministics for the non output
@@ -40,14 +41,16 @@ niter = len(poss_lifts_a) * len(poss_lifts_b)
 counter = 0
 for lift_a in poss_lifts_a:
     for lift_b in poss_lifts_b:
-        print("{} / {}".format(counter, niter))
+        #print("{} / {}".format(counter, niter))
         counter += 1
         # get reduced pr box under this liftings
         pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
         # find the local weight of the reduced pr box
-        opt, bell_exp = find_local_weight(pr_red, dets, method=method, options=options, retry=False)
+        #opt, bell_exp = find_local_weight(pr_red, dets, method=method, options=options, retry=False)
+        bell_exp = find_local_weight_guro(pr_red, dets)
+        # TODO: Should we rescale the bell expression that min(bell_exp @ dets) = 1
         # check if bell expression is correct
-        if not opt.success:
-            print('optimizer failed')
-        if bell_exp @ pr_red < 1:
-            print('Found a Bell expression')
+        #if not opt.success:
+        #    print('optimizer failed')
+        if bell_exp @ pr_red < 1 - 1e-6:
+            print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
