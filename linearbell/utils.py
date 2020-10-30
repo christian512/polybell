@@ -1,6 +1,14 @@
 from itertools import product, permutations
 from scipy.optimize import linprog
 import numpy as np
+import gurobipy as gp
+from gurobipy import GRB
+from scipy import sparse
+
+# set quiet environment for guro solver
+env = gp.Env(empty=True)
+env.setParam('OutputFlag', 0)
+env.start()
 
 
 def get_configs(inputs_a, inputs_b, outputs_a, outputs_b):
@@ -245,7 +253,7 @@ def find_bell_inequality(p, dets, method='interior-point'):
     return opt, s, sl
 
 
-def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000}, retry=True):
+def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter": 1000}, retry=True):
     """ Finds the local weight for a behavior p """
     # objective function and inequalities
     obj = p
@@ -259,6 +267,23 @@ def find_local_weight(p, dets, method='interior-point', options={"maxiter": 1000
         opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
 
+
+def find_local_weight(p, dets):
+    # create a model
+    m = gp.Model('local_weight', env=env)
+    # add variable
+    bell = m.addMVar(shape=p.shape[0], vtype=GRB.SEMICONT, name='bell')
+    # set objective
+    m.setObjective(bell @ p, GRB.MINIMIZE)
+    # setup variables for constraints
+    rhs = np.ones(dets.shape[0])
+    A = sparse.csr_matrix(dets)
+    # add constraint
+    m.addConstr(A @ bell >= rhs, name='c')
+    # optimize
+    m.optimize()
+    # return
+    return bell.X
 
 def extremal_ns_binary_vertices(inputs_a, inputs_b, outputs):
     """
