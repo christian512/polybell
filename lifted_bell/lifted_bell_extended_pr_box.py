@@ -4,11 +4,18 @@ Checking if there is a lifted PR box for the finite efficiency PR box with m inp
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
     reduce_extended_pr_box, find_local_weight
-from guro import find_local_weight_guro
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(dest='ma', help="number of inputs for ALICE")
+parser.add_argument(dest='mb', help='number of inputs for BOB')
+args = parser.parse_args()
+ma = int(args.ma)
+mb = int(args.mb)
 
 # set input parameters
-inputs_a = range(6)
-inputs_b = range(6)
+inputs_a = range(ma)
+inputs_b = range(mb)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
@@ -17,9 +24,11 @@ epsilon = 0.01
 eta = 4 / (len(inputs_a) + 4) + epsilon
 print('epsilon: {}'.format(epsilon))
 
-# options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
-options = {"disp": False, "maxiter": 10000, "bland": True}
-method = 'simplex'
+# tolerance for checking the bell expression
+tol = 1e-6
+
+# set file
+file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b), len(outputs_wo_failure), len(outputs_wo_failure))
 
 # get deterministics for the non output
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_wo_failure)
@@ -39,18 +48,22 @@ pr_ext = np.array(pr_ext)
 # iterate through all possible combinations of liftings for A and B
 niter = len(poss_lifts_a) * len(poss_lifts_b)
 counter = 0
+
+# list of bell expressions
+bells = []
 for lift_a in poss_lifts_a:
     for lift_b in poss_lifts_b:
-        #print("{} / {}".format(counter, niter))
+        print("{} / {}".format(counter, niter))
         counter += 1
         # get reduced pr box under this liftings
         pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
         # find the local weight of the reduced pr box
-        #opt, bell_exp = find_local_weight(pr_red, dets, method=method, options=options, retry=False)
-        bell_exp = find_local_weight_guro(pr_red, dets)
+        bell_exp = find_local_weight(pr_red, dets)
         # TODO: Should we rescale the bell expression that min(bell_exp @ dets) = 1
         # check if bell expression is correct
-        #if not opt.success:
-        #    print('optimizer failed')
-        if bell_exp @ pr_red < 1 - 1e-6:
+        if bell_exp @ pr_red < 1 - tol:
+            bells.append(bell_exp)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
+
+# store the bell expressions to file
+np.savetxt(file, np.array(bells))
