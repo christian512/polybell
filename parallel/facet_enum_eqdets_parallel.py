@@ -158,6 +158,7 @@ for i, line in enumerate(lines):
         # start and run workers
         jobs = []
         for e in behaviors:
+            # TODO: Move this into the loop above -> no need to store such large behaviors array
             job = pool.apply_async(get_facet, (e, facet_q, False))
             jobs.append(job)
         for l, job in enumerate(jobs):
