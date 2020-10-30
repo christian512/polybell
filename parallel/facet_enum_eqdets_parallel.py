@@ -9,11 +9,13 @@ parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='n', help='number of outputs')
 parser.add_argument(dest='num_cpu', help='number of cpu corse to be used')
+parser.add_argument(dest='num_eps', help='number of epsilons to test')
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
 n = int(args.n)
 num_cpu = int(args.num_cpu)
+num_eps = int(args.num_eps)
 
 # set inputs / outputs
 inputs_a = range(ma)
@@ -28,10 +30,7 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
 # set the epsilons that we want to use
-epsilons = np.linspace(1 / 3, 2 / 3, num=1)
-# options for local weight optimizer (bland is only needed for higher dimensions (m_a , m_b > 4)
-options = {"disp": False, "maxiter": 5000, "bland": True}
-method = 'simplex'
+epsilons = np.linspace(1 / 3, 2 / 3, num=num_eps)
 
 # eq_dets_file
 eq_dets_file = '../data/equalizing_deterministics/{}{}{}{}.txt'.format(ma, mb, n, n)
@@ -148,7 +147,8 @@ for i, line in enumerate(lines):
         behaviors = []
         eqdets = np.array(eqdets)
         for j in range(eqdets.shape[0]):
-            for k in range(j + 1, eqdets.shape[0]):
+            for k in range(eqdets.shape[0]):
+                if j == k: continue
                 for eps in epsilons:
                     b = (1 - 3 * eps / 2) * extremals[extremal_counter] + eps * eqdets[j] + eps / 2 * eqdets[k]
                     behaviors.append(b)
