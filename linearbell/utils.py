@@ -272,8 +272,9 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
 def find_local_weight(p, dets):
     # create a model
     m = gp.Model('local_weight', env=env)
+    m.setParam("Method", 0)
     # add variable
-    bell = m.addMVar(shape=p.shape[0], vtype=GRB.SEMICONT, name='bell')
+    bell = m.addMVar(shape=p.shape[0], name='bell')
     # set objective
     m.setObjective(bell @ p, GRB.MINIMIZE)
     # setup variables for constraints
