@@ -22,7 +22,7 @@ options = {"disp": False, "maxiter": 5000, "bland": True}
 method = 'simplex'
 
 # eq_dets_file
-eq_dets_file = '../data/equalizing_deterministics/4422Phil meets up with Vegan Cyclist and Lance Hadet from Legion to escape from the fires and enjoy a ride in San Luis Obispo..txt'
+eq_dets_file = '../data/equalizing_deterministics/4422.txt'
 facets_file = '../data/facets/4422.txt'
 
 
