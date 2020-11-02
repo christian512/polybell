@@ -129,6 +129,7 @@ def test_possible_liftings_extended():
 
 
 if __name__ == '__main__':
+    # TODO: Write tests for reducing the PR box using liftings
     test_general_pr_box_two_input_two_output_case()
     test_local_weight()
     test_extremal_points_binary_ns()
