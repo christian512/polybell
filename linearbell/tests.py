@@ -117,6 +117,15 @@ def test_possible_liftings():
     assert len(lifts_a) == len(outputs_a) ** len(inputs_a)
 
 
+def test_possible_liftings_extended():
+    """ Tests if the number of possible liftings for the extended case is correct """
+    inputs_a = range(5)
+    outputs_a = range(2)
+    inputs_b = range(3)
+    # get the liftings
+    lifts = get_possible_liftings_extended(inputs_a, outputs_a, inputs_b)
+    # check the number of liftings
+    assert len(lifts) == len(outputs_a) ** (len(inputs_a) * len(inputs_b))
 
 
 if __name__ == '__main__':
@@ -126,3 +135,4 @@ if __name__ == '__main__':
     test_allowed_relabellings_symmetric()
     test_allowed_relabellings_antisymmetric()
     test_possible_liftings()
+    test_possible_liftings_extended()

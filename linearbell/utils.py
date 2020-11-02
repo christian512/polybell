@@ -111,6 +111,19 @@ def get_possible_liftings(inputs, outputs):
     return list(product(outputs, repeat=len(inputs)))
 
 
+def get_possible_liftings_extended(inputs_a, outputs_a, inputs_b):
+    """
+    This gets the possible liftings, if the output that we duplicate for the new output is dependend on both inputs.
+    So if we lift the bell expression for Alice side (i.e. add one output to her measurement results) the origin location
+    for copying that value depends on Alice AND on BOBs input.
+    """
+    lifts = list(product(outputs_a, repeat=len(inputs_a) * len(inputs_b)))
+    # reshape each element in the list
+    for i in range(len(lifts)):
+        lifts[i] = np.array(lifts[i]).reshape((len(inputs_a), len(inputs_b)))
+    return lifts
+
+
 def general_pr_box(a, b, x, y):
     """
     Calculates the PR box probability for any input number and binary outcome
@@ -286,6 +299,7 @@ def find_local_weight(p, dets):
     m.optimize()
     # return
     return bell.X
+
 
 def extremal_ns_binary_vertices(inputs_a, inputs_b, outputs):
     """
