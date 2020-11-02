@@ -1,5 +1,6 @@
 from itertools import product
 import numpy as np
+from linearbell.utils import *
 
 
 def test_general_pr_box_two_input_two_output_case():
@@ -35,15 +36,15 @@ def test_local_weight():
     dets = get_deterministic_behaviors(inputs, inputs, outputs)
     # DETERMINISTIC
     p = np.copy(dets[0])
-    opt, bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight(p, dets)
     assert np.abs(bell_expression @ p - 1) < 1e-9
     # EXTREMAL
     p = np.array([general_pr_box(*c) for c in output_input_combs])
-    opt, bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight(p, dets)
     assert np.abs(bell_expression @ p) < 1e-9
     # MIXTURE
     p = 1 / 2 * p + 1 / 2 * dets[0]
-    opt, bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight(p, dets)
     assert np.abs(bell_expression @ p - 1 / 2) < 1e-9
 
 
@@ -56,7 +57,7 @@ def test_extremal_points_binary_ns():
     extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
     dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
     for e in extremals:
-        opt, bell_exp = find_local_weight(e, dets)
+        bell_exp = find_local_weight(e, dets)
         assert np.abs(bell_exp @ e) < 1e-8
 
 
@@ -106,9 +107,22 @@ def test_allowed_relabellings_symmetric():
                                                                                                      theoretical_num)
 
 
+def test_possible_liftings():
+    """ Tests if the number of possible liftings is correct """
+    inputs_a = range(5)
+    outputs_a = range(4)
+    # get the possible liftings for this case
+    lifts_a = get_possible_liftings(inputs_a, outputs_a)
+    # check the number of listings
+    assert len(lifts_a) == len(outputs_a) ** len(inputs_a)
+
+
+
+
 if __name__ == '__main__':
     test_general_pr_box_two_input_two_output_case()
     test_local_weight()
     test_extremal_points_binary_ns()
     test_allowed_relabellings_symmetric()
     test_allowed_relabellings_antisymmetric()
+    test_possible_liftings()
