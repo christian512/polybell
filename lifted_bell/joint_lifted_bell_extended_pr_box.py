@@ -78,9 +78,6 @@ for lift_a in poss_lifts_a:
             if not np.unique(lift_b, axis=1).shape == (mb, 1):
                 f.write('Could not find a bell inequality in a non simple lifted case. \n')
                 f.write('Lifting matrix for BOB: {}'.format(lift_a))
-            # quit in this case by assertion
-            assert np.unique(lift_a, axis=1).shape == (ma, 1)
-            assert np.unique(lift_b, axis=1).shape == (mb, 1)
         else:
             # assert that one of the liftings actually exploits the joint/extended definition of lifting
             # so it's not just the simple case of a lifting
