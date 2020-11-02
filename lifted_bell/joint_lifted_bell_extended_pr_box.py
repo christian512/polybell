@@ -81,7 +81,7 @@ for lift_a in poss_lifts_a:
         else:
             # assert that one of the liftings actually exploits the joint/extended definition of lifting
             # so it's not just the simple case of a lifting
-            if ma > 4 or mb > 4 or ( mb % 2 == 0 and ma % 2 == 0):
+            if ma > 4 or mb > 4 or (mb % 2 != 0 and ma % 2 != 0):
                 assert np.unique(lift_a, axis=1).shape != (ma, 1) or np.unique(lift_b, axis=1).shape != (mb, 1)
             print('Found a bell inequality')
             if not bell_found:
