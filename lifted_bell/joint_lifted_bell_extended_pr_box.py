@@ -34,7 +34,8 @@ file = '../data/pr_box_finite_efficiency_bell_lifted_joint/{}{}{}{}.txt'.format(
                                                                                 len(outputs_wo_failure))
 
 # get deterministics for the non output
-dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_wo_failure)
+dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_failure)
+
 
 # get all possible liftings for both parties
 poss_lifts_a = get_possible_liftings_extended(inputs_a, outputs_wo_failure, inputs_b)
@@ -52,9 +53,6 @@ pr_ext = np.array(pr_ext)
 niter = len(poss_lifts_a) * len(poss_lifts_b)
 counter = 0
 
-# TODO: open file
-f = open(file, 'w+')
-
 # identifier if a bell inequality was found
 bell_found = False
 
@@ -65,27 +63,18 @@ for lift_a in poss_lifts_a:
         counter += 1
         # get reduced pr box under this liftings
         pr_red = reduce_extended_pr_box_extended_lifts(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
+        # reduce the deterministic points under this lifting
+        dets_red = [reduce_extended_pr_box_extended_lifts(d, configs_failure, configs_wo_failure, lift_a, lift_b) for d in dets]
+        dets_red = np.array(dets_red)
         # find the local weight of the reduced pr box
-        bell_exp = find_local_weight(pr_red, dets)
-        assert np.abs(np.min(dets @ bell_exp) - 1) < tol, 'Bell * deterministic is not 1 at minimum'
+        bell_exp = find_local_weight(pr_red, dets_red)
+        assert np.abs(np.min(dets_red @ bell_exp) - 1) < tol, 'Bell * deterministic is not 1 at minimum'
         # check if bell expression is correct
-        if not bell_exp @ pr_red < 1 - tol:
-            # assert that the liftings is of the form, where it only depends on the input of the choosing party
-            # This means that there is only one unique entry per row in the lifting arrays
-            if not np.unique(lift_a, axis=1).shape == (ma, 1):
-                f.write('Could not find a bell inequality in a non simple lifted case. \n')
-                f.write('Lifting matrix for ALICE: {}'.format(lift_a))
-            if not np.unique(lift_b, axis=1).shape == (mb, 1):
-                f.write('Could not find a bell inequality in a non simple lifted case. \n')
-                f.write('Lifting matrix for BOB: {}'.format(lift_a))
-        else:
-            # assert that one of the liftings actually exploits the joint/extended definition of lifting
-            # so it's not just the simple case of a lifting
-            if ma > 4 or mb > 4 or (mb % 2 != 0 and ma % 2 != 0):
-                assert np.unique(lift_a, axis=1).shape != (ma, 1) or np.unique(lift_b, axis=1).shape != (mb, 1)
-            print('Found a bell inequality')
-            if not bell_found:
-                bell_found = True
-                f.write('Found a Bell inequality for this case \n')
-f.write('Finished iteration over all possible extended liftings')
-f.close()
+        if bell_exp @ pr_red < 1 - tol:
+            print('Found Bell inequality')
+            bell_found = True
+            break
+    if bell_found:
+        break
+
+
