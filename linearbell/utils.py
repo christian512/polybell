@@ -416,7 +416,7 @@ def check_diff_repr_same_ineq_vec(bell, perm_bells, dets, tol=1e-6):
         v2 = v2s[i]
         s2s[i] = np.min(v2[v2 > np.min(v2) + tol])
 
-    # get the second largest value
+    # reformat s2s to perform the scaling
     s2s = s2s[:, np.newaxis]
     # rescaling
     v1_new = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
@@ -426,7 +426,7 @@ def check_diff_repr_same_ineq_vec(bell, perm_bells, dets, tol=1e-6):
     return np.any(np.sum((v1_new - v2s_new) ** 2, axis=1) < tol ** 2)
 
 
-def check_equiv_bell(bell1, bell2, allowed_perms, dets, tol=1e-6):
+def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-9):
     """
     Checks if two bell inequalities are equivalent under relabelling and for each perm checks that if they are equiv
     :param bell1: first bell expression
@@ -439,13 +439,38 @@ def check_equiv_bell(bell1, bell2, allowed_perms, dets, tol=1e-6):
     # check if they are the same
     if np.sum((bell1 - bell2) ** 2) < tol ** 2:
         return True
+    # get the v vectors
+    v1 = dets @ bell1
+    v2 = dets @ bell2
+    # get the second smallest values bigger than 1
+    assert np.min(v1) >= 1, '{}'.format(v1)
+    assert np.min(v2) >= 1, '{}'.format(v2)
+    s1 = np.min(v1[v1 > 1 + tol])
+    s2 = np.min(v2[v2 > 1 + tol])
 
-    # iterate over all allowed permutations
-    # if np.any(np.sum((bell1 - bell2[allowed_perms]) ** 2, axis=1) < tol ** 2):
-    #    return True
+    # rescale
+    v1 = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
+    v2 = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
+    if np.sum((v1 - v2) ** 2) < tol: return True
+    # try to see if they have the same tally
+    u1 = np.unique(v1)
+    u2 = np.unique(v2)
+    if not u1.shape[0] == u2.shape[0]: return False
+    if np.any(np.sum((u1-u2)**2) > tol): return False
+    # check if any relabelling is the same
+    return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
-    # check if the two bell expressions are equivalent
-    if check_diff_repr_same_ineq_vec(bell1, bell2[allowed_perms], dets, tol=tol):
-        return True
 
-    return False
+def get_relabels_dets(dets, allowed_perms):
+    """ Gets a list of which deterministic transforms to which under each relabelling """
+    # list for relabels
+    relabels_dets = []
+    # iterate through possible relabels
+    for perm in allowed_perms:
+        tmp_relabel_d = np.zeros(dets.shape[0])
+        for i in range(dets.shape[0]):
+            d = dets[i]
+            idx = np.argmin(np.sum(np.abs(dets - d[perm]), axis=1))
+            tmp_relabel_d[i] = idx
+        relabels_dets.append(tmp_relabel_d)
+    return np.array(relabels_dets, dtype=int)

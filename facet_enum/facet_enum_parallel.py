@@ -1,6 +1,8 @@
+import multiprocessing as mp
 import numpy as np
 from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
-from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings
+from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings, \
+    get_relabels_dets
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -28,26 +30,32 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
+# get relabellings for deterministic points
+relabels_dets = get_relabels_dets(dets, allowed_relabellings)
 # set the epsilons that we want to use
-epsilons = np.linspace(1 / 3, 2 / 3, num=num_eps)
+epsilons = np.linspace(0.1, 1 / 3, num=num_eps)
 
 # tolerance
 tol = 1e-6
 
 # array of facets
-facets = []
-facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
+facets_folder = '../data/facets/{}{}{}{}/'.format(ma, mb, n, n)
+
 
 # enumerate extremals
-for i in range(len(extremals)):
-    bell_expression = find_local_weight(extremals[i], dets)
-    assert np.abs(bell_expression @ extremals[i]) < tol, 'local weight of extremal is not zero. Problem with solver'
+def find_facets_for_extremal(idx):
+    # array for facets
+    facets = []
+    # file for the facets corresponding to this extremal
+    facets_file = facets_folder + '{}.txt'.format(idx)
+    bell_expression = find_local_weight(extremals[idx], dets)
+    assert np.abs(bell_expression @ extremals[idx]) < tol, 'local weight of extremal is not zero. Problem with solver'
     # get the equalizing behaviors
     is_facet, bell_expression, eq_dets = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
     if is_facet:
         # check if it's equivalent to any other bell expression already found
         for j in range(len(facets) - 1, -1, -1):
-            if check_equiv_bell(bell_expression, facets[j], allowed_relabellings, dets):
+            if check_equiv_bell(bell_expression, facets[j], relabels_dets, dets):
                 is_facet = False
                 break
     # if it's a new facet, append it to the facet array
@@ -62,21 +70,35 @@ for i in range(len(extremals)):
         # define the new behavior
         for j in range(eq_dets.shape[0]):
             for k in range(eq_dets.shape[0]):
-                print(' {} / {}  eq_dets || {} / {} extremals'.format(count, num_eps * eq_dets.shape[0] ** 2, i,
+                print(' {} / {}  eq_dets || {} / {} extremals'.format(count, num_eps * eq_dets.shape[0] ** 2, idx,
                                                                       len(extremals)))
                 count += 1
                 # form new behavior
-                e_new = (1 - 3 * epsilon / 2) * extremals[i] + epsilon * eq_dets[j] + epsilon / 2 * eq_dets[k]
+                e_new = (1 - 3 * epsilon / 2) * extremals[idx] + epsilon * eq_dets[j] + epsilon / 2 * eq_dets[k]
                 # check again if we can find a facet
                 bell_expression = find_local_weight(e_new, dets)
                 is_facet, bell_expression, _ = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
                 if not is_facet: continue
                 for l in range(len(facets) - 1, -1, -1):
-                    if check_equiv_bell(bell_expression, facets[l], allowed_relabellings, dets):
+                    if check_equiv_bell(bell_expression, facets[l], relabels_dets, dets):
                         is_facet = False
                         break
                 if not is_facet: continue
                 facets.append(bell_expression)
                 print('num facets: {}'.format(len(facets)))
-facets = np.array(facets)
-np.savetxt(facets_file, facets)
+    facets = np.array(facets)
+    np.savetxt(facets_file, facets)
+
+
+# setup parallel environment
+manager = mp.Manager()
+pool = mp.Pool(num_cpu)
+jobs = []
+for i in range(len(extremals)):
+    job = pool.apply_async(find_facets_for_extremal, (i,))
+    jobs.append(job)
+
+print('Created all Jobs, start processing!')
+
+for job in jobs:
+    job.get()

@@ -1,4 +1,4 @@
-from linearbell.utils import get_deterministic_behaviors, get_allowed_relabellings, check_equiv_bell
+from linearbell.utils import get_deterministic_behaviors, get_allowed_relabellings, check_equiv_bell, get_relabels_dets
 import numpy as np
 import argparse
 
@@ -21,6 +21,8 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
+# get relabellings for deterministic points
+relabels_dets = get_relabels_dets(dets, allowed_relabellings)
 
 # load facets from file
 facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
@@ -36,7 +38,7 @@ for i in range(facets.shape[0]):
         # if this facet can already be deleted -> continue
         if j in del_facets: continue
         # check if the two facets are equivalent
-        if check_equiv_bell(facets[i], facets[j], allowed_relabellings, dets):
+        if check_equiv_bell(facets[i], facets[j], relabels_dets, dets):
             del_facets.append(j)
 # store new facets
 new_facets = np.delete(facets, del_facets, axis=0)
