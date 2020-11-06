@@ -32,7 +32,7 @@ allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, out
 # get relabellings for deterministic points
 relabels_dets = get_relabels_dets(dets, allowed_relabellings)
 # set the epsilons that we want to use
-epsilons = np.linspace(0.1, 2 / 3 - 1e-2, num=num_eps)
+epsilons = np.linspace(1e-2, 2 / 3 - 1e-2, num=num_eps)
 
 # tolerance
 tol = 1e-6
@@ -74,9 +74,6 @@ for i in range(len(extremals)):
                 e_new = (1 - 3 * epsilon / 2) * extremals[i] + epsilon * eq_dets[j] + epsilon / 2 * eq_dets[k]
                 # check again if we can find a facet
                 bell_expression = find_local_weight(e_new, dets)
-                # check if the new behavior has some non locality in it -> otherwise continue
-                if np.abs(bell_expression @ e_new - 1) > -1 * tol:
-                    continue
                 is_facet, bell_expression, _ = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
                 if not is_facet: continue
                 for l in range(len(facets) - 1, -1, -1):

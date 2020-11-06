@@ -77,9 +77,6 @@ def find_facets_for_extremal(idx):
                 e_new = (1 - 3 * epsilon / 2) * extremals[idx] + epsilon * eq_dets[j] + epsilon / 2 * eq_dets[k]
                 # check again if we can find a facet
                 bell_expression = find_local_weight(e_new, dets)
-                # check if the new behavior has some non locality in it -> otherwise continue
-                if np.abs(bell_expression @ e_new - 1) > -1 * tol:
-                    continue
                 is_facet, bell_expression, _ = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
                 if not is_facet: continue
                 for l in range(len(facets) - 1, -1, -1):
