@@ -443,20 +443,27 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-9):
     v1 = dets @ bell1
     v2 = dets @ bell2
     # get the second smallest values bigger than 1
-    assert np.min(v1) >= 1, '{}'.format(v1)
-    assert np.min(v2) >= 1, '{}'.format(v2)
-    s1 = np.min(v1[v1 > 1 + tol])
-    s2 = np.min(v2[v2 > 1 + tol])
+    if np.min(v1) <= 1.0 - tol:
+        print('error in v1, minimum is not 1')
+        print(v1)
+        return True
+    if np.min(v2) <= 1.0 - tol:
+        print('error in v2, minimum is not 1')
+        print(v2)
+        return True
+    s1 = np.min(v1[v1 > 1.0 + tol])
+    s2 = np.min(v2[v2 > 1.0 + tol])
 
     # rescale
     v1 = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
     v2 = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
     if np.sum((v1 - v2) ** 2) < tol: return True
     # try to see if they have the same tally
-    u1 = np.unique(v1)
-    u2 = np.unique(v2)
+    u1, c1 = np.unique(v1, return_counts=True)
+    u2, c2 = np.unique(v2, return_counts=True)
     if not u1.shape[0] == u2.shape[0]: return False
-    if np.any(np.sum((u1-u2)**2) > tol): return False
+    if not np.all(u1 == u2): return False
+    if not np.all(c1 == c2): return False
     # check if any relabelling is the same
     return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
