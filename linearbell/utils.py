@@ -326,10 +326,11 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
     return opt, opt.x
 
 
+
 def find_local_weight(p, dets):
     # create a model
     m = gp.Model('local_weight', env=env)
-    m.setParam("Method", 0)
+    m.setParam("Method", -1)
     # add variable
     bell = m.addMVar(shape=p.shape[0], name='bell')
     # set objective
