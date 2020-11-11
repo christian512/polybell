@@ -5,6 +5,15 @@
 The connection between Bell inequalities and linear programming interested me, so I though a short python demo would be
 good to learn about the topic by myself. This repo is just what I've done to understand it better. Maybe it helps someone.
 
+# Setup 
+Some of the codes use the commercial Gurobi solver. To install Gurobi follow this guide:
+
+https://www.gurobi.com/documentation/9.1/quickstart_linux/software_installation_guid.html
+
+To setup Gurobi for Python, please follow this guide:
+
+https://support.gurobi.com/hc/en-us/articles/360044290292-How-do-I-install-Gurobi-for-Python-
+
 # Notebooks
 Here I provide an overview over the *Jupyter notebooks* that are provided within this repository. 
 
@@ -24,3 +33,5 @@ Just some notes I don't want to forget about. Maybe I have time for that at some
 * Currently the local deterministic behaviors are created just from the list of inputs and outputs. However we have to 
 define the local deterministic behaviors in the same way as the probability distribution. I.e. the entries at the same
 indices must correspond to the same setting of inputs and outputs. Maybe you can find a nicer way to set this
+
+
