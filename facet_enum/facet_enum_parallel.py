@@ -89,7 +89,7 @@ def find_facets_for_extremal(idx):
                 is_facet, bell_expression, _ = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
                 if not is_facet: continue
                 for l in range(len(facets) - 1, -1, -1):
-                    if check_equiv_bell(bell_expression, facets[l], relabels_dets, dets):
+                    if check_equiv_bell(bell_expression, facets[l], relabels_dets, dets, tol=tol):
                         is_facet = False
                         break
                 if not is_facet: continue
