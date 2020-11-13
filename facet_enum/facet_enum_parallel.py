@@ -34,7 +34,7 @@ allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, out
 # get relabellings for deterministic points
 file_relabels = '../data/relabels_dets/{}{}{}{}.gz'.format(ma, mb, n, n)
 try:
-    relabels_dets = np.loadtxt(file_relabels)
+    relabels_dets = np.loadtxt(file_relabels, dtype=float).astype(int)
 except IOError:
     print('Have to calculate the possible relabels before actual start')
     relabels_dets = get_relabels_dets(dets, allowed_relabellings)
