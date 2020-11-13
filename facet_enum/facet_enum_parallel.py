@@ -30,8 +30,16 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
+
 # get relabellings for deterministic points
-relabels_dets = get_relabels_dets(dets, allowed_relabellings)
+file_relabels = '../data/relabels_dets/{}{}{}{}.gz'.format(ma, mb, n, n)
+try:
+    relabels_dets = np.loadtxt(file_relabels)
+except IOError:
+    print('Have to calculate the possible relabels before actual start')
+    relabels_dets = get_relabels_dets(dets, allowed_relabellings)
+    np.savetxt(file_relabels, relabels_dets)
+
 # set the epsilons that we want to use
 epsilons = np.linspace(0.1, 2 / 3 - 1e-2, num=num_eps)
 
