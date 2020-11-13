@@ -41,7 +41,7 @@ except IOError:
     np.savetxt(file_relabels, relabels_dets)
 
 # set the epsilons that we want to use
-epsilons = np.linspace(0.1, 2 / 3 - 1e-2, num=num_eps)
+epsilons = np.linspace(0.5, 2 / 3 - 1e-2, num=num_eps)
 
 # tolerance
 tol = 1e-6
@@ -74,7 +74,8 @@ def find_facets_for_extremal(idx):
     # iterate through epsilons
     for m in range(num_eps):
         epsilon = epsilons[m]
-
+        # TODO: This should be standard
+        eq_dets = np.copy(dets)
         # define the new behavior
         for j in range(eq_dets.shape[0]):
             for k in range(eq_dets.shape[0]):
