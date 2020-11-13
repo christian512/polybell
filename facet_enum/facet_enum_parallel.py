@@ -44,7 +44,7 @@ except IOError:
 epsilons = np.linspace(0.5, 2 / 3 - 1e-2, num=num_eps)
 
 # tolerance
-tol = 1e-6
+tol = 1e-4
 
 # array of facets
 facets_folder = '../data/facets/{}{}{}{}/'.format(ma, mb, n, n)
