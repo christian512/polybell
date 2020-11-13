@@ -258,7 +258,7 @@ def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift
     return pr_red
 
 
-def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-8):
+def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-4):
     """
     Checks if a given bell inequality is a facet. This is done by getting all deterministic local behaviors,
     that equalize the inequality (rescaling might be needed). Then checking the dimensions, that these behaviors span.
@@ -273,8 +273,10 @@ def facet_inequality_check(deterministics, bell_expression, m_a, m_b, n, tol=1e-
         # rescale
         bell_expression = bell_expression / fac
     # iterate over the deterministics
-    mask = deterministics @ bell_expression - 1 < tol
+    mask = np.abs(deterministics @ bell_expression - 1) < tol
     equalizing_dets = deterministics[mask]
+    assert np.max(np.abs(equalizing_dets @ bell_expression - 1)) < tol, 'The equalizing dets are not equalizing ?!'
+    # TODO: I wanted to do the assertion with .all() but this somehow did not work. Maybe try to make a minimal example and check out whats wrong
 
     # return if no equalizing dets
     if len(equalizing_dets) == 0:
@@ -326,17 +328,16 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
     return opt, opt.x
 
 
-
-def find_local_weight(p, dets):
+def find_local_weight(p, dets, method=-1, tol=1e-6):
     # create a model
     m = gp.Model('local_weight', env=env)
-    m.setParam("Method", 5)
+    m.setParam("Method", method)
     # add variable
     bell = m.addMVar(shape=p.shape[0], name='bell')
     # set objective
-    m.setObjective(bell @ p, GRB.MINIMIZE)
+    m.setObjective(p @ bell, GRB.MINIMIZE)
     # setup variables for constraints
-    rhs = np.ones(dets.shape[0])
+    rhs = np.ones(dets.shape[0]) - tol
     A = sparse.csr_matrix(dets)
     # add constraint
     m.addConstr(A @ bell >= rhs, name='c')
@@ -427,7 +428,7 @@ def check_diff_repr_same_ineq_vec(bell, perm_bells, dets, tol=1e-6):
     return np.any(np.sum((v1_new - v2s_new) ** 2, axis=1) < tol ** 2)
 
 
-def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-9):
+def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     """
     Checks if two bell inequalities are equivalent under relabelling and for each perm checks that if they are equiv
     :param bell1: first bell expression
