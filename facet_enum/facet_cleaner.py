@@ -40,6 +40,7 @@ print('start iteration through facets')
 # iterate through the facets
 for i in range(facets.shape[0]):
     # if this facet can already be deleted -> continue
+    print('facet: {} / {}'.format(i, facets.shape[0]))
     if i in del_facets: continue
     for j in range(i + 1, facets.shape[0]):
         # if this facet can already be deleted -> continue
