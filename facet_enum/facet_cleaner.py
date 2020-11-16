@@ -22,7 +22,13 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
 # get relabellings for deterministic points
-relabels_dets = get_relabels_dets(dets, allowed_relabellings)
+file_relabels = '../data/relabels_dets/{}{}{}{}.gz'.format(ma, mb, n, n)
+try:
+    relabels_dets = np.loadtxt(file_relabels, dtype=float).astype(int)
+except IOError:
+    print('Have to calculate the possible relabels before actual start')
+    relabels_dets = get_relabels_dets(dets, allowed_relabellings)
+    np.savetxt(file_relabels, relabels_dets)
 
 # load facets from file
 facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
