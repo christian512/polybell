@@ -29,13 +29,14 @@ except IOError:
     print('Have to calculate the possible relabels before actual start')
     relabels_dets = get_relabels_dets(dets, allowed_relabellings)
     np.savetxt(file_relabels, relabels_dets)
-
+print('Created all possible relabels')
 # load facets from file
 facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
 facets = np.loadtxt(facets_file)
 
 # indices of facets to delete
 del_facets = []
+print('start iteration through facets')
 # iterate through the facets
 for i in range(facets.shape[0]):
     # if this facet can already be deleted -> continue
@@ -44,8 +45,9 @@ for i in range(facets.shape[0]):
         # if this facet can already be deleted -> continue
         if j in del_facets: continue
         # check if the two facets are equivalent
-        if check_equiv_bell(facets[i], facets[j], relabels_dets, dets):
+        if check_equiv_bell(facets[i], facets[j], relabels_dets, dets, tol=1e-4):
             del_facets.append(j)
 # store new facets
 new_facets = np.delete(facets, del_facets, axis=0)
 np.savetxt(facets_file, new_facets)
+print('Number of different facets: {}'.format(new_facets.shape[0]))
