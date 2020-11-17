@@ -34,6 +34,9 @@ print('Created all possible relabels')
 facets_file = '../data/facets/{}{}{}{}.txt'.format(ma, mb, n, n)
 facets = np.loadtxt(facets_file)
 
+# Round the facets
+facets = np.round(facets, decimals=3)
+
 # indices of facets to delete
 del_facets = []
 print('start iteration through facets')
@@ -50,5 +53,6 @@ for i in range(facets.shape[0]):
             del_facets.append(j)
 # store new facets
 new_facets = np.delete(facets, del_facets, axis=0)
-np.savetxt(facets_file, new_facets)
+new_facets_file = '../data/facets/{}{}{}{}_filtered.txt'.format(ma, mb, n, n)
+# np.savetxt(facets_file, new_facets)
 print('Number of different facets: {}'.format(new_facets.shape[0]))
