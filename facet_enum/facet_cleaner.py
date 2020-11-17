@@ -54,5 +54,5 @@ for i in range(facets.shape[0]):
 # store new facets
 new_facets = np.delete(facets, del_facets, axis=0)
 new_facets_file = '../data/facets/{}{}{}{}_filtered.txt'.format(ma, mb, n, n)
-# np.savetxt(facets_file, new_facets)
+np.savetxt(new_facets_file, new_facets)
 print('Number of different facets: {}'.format(new_facets.shape[0]))
