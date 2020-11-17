@@ -4,6 +4,7 @@ from linearbell.utils import find_local_weight, facet_inequality_check, check_eq
 from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings, \
     get_relabels_dets
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
@@ -49,9 +50,15 @@ tol = 1e-4
 # array of facets
 facets_folder = '../data/facets/{}{}{}{}/'.format(ma, mb, n, n)
 
+# files that are aeady generated
+skip_files = os.listdir(os.getcwd() + '/' + facets_folder)
+
 
 # enumerate extremals
 def find_facets_for_extremal(idx):
+    # check if file was already processed
+    if '{}.txt'.format(idx) in skip_files:
+        return
     # array for facets
     facets = []
     # file for the facets corresponding to this extremal
