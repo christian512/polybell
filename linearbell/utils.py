@@ -461,11 +461,11 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     v2 = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
     if np.sum((v1 - v2) ** 2) < tol: return True
     # try to see if they have the same tally
-    #u1, c1 = np.unique(v1, return_counts=True)
-    #u2, c2 = np.unique(v2, return_counts=True)
-    #if not u1.shape[0] == u2.shape[0]: return False
-    #if not np.all(u1 == u2): return False
-    #if not np.all(c1 == c2): return False
+    u1, c1 = np.unique(np.round(v1, decimals=1), return_counts=True)
+    u2, c2 = np.unique(np.round(v2, decimals=1), return_counts=True)
+    if not u1.shape[0] == u2.shape[0]: return False
+    if not np.all(u1 == u2): return False
+    if not np.all(c1 == c2): return False
     # check if any relabelling is the same
     return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
