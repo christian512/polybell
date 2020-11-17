@@ -445,12 +445,12 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     v1 = dets @ bell1
     v2 = dets @ bell2
     # get the second smallest values bigger than 1
-    if np.min(v1) <= 1.0 - tol:
-        print('error in v1, minimum is not 1')
+    if np.min(np.abs(v1 - 1.0)) > tol:
+        print('error in v1, minimum is not 1, but {}'.format(np.min(np.abs(v1))))
         print(v1)
         return True
-    if np.min(v2) <= 1.0 - tol:
-        print('error in v2, minimum is not 1')
+    if np.min(np.abs(v2 - 1.0)) > tol:
+        print('error in v2, minimum is not 1, but {}'.format(np.min(np.abs(v2))))
         print(v2)
         return True
     s1 = np.min(v1[v1 > 1.0 + tol])
