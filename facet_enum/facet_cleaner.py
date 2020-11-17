@@ -36,7 +36,6 @@ facets = np.loadtxt(facets_file)
 
 # Round the facets
 facets = np.round(facets, decimals=3)
-facets = facets[0:20]
 
 # indices of facets to delete
 del_facets = []
