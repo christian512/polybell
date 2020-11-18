@@ -230,7 +230,7 @@ def reduce_extended_pr_box(pr_box, configs_ext, configs_red, lift_a, lift_b, fai
 
 def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
     """
-    # TODO: rename this function as we can reduce a general behavior with it (also deterministic points)
+    # TODO: rename this function as we can reduce a general behavior with it (also deterministic points) 
     This function does similar things to reduce_extended_pr_box(). However this takes liftings that are dependent on the
     input of both parties.
     """
@@ -485,3 +485,64 @@ def get_relabels_dets(dets, allowed_perms):
             tmp_relabel_d[i] = idx
         relabels_dets.append(tmp_relabel_d)
     return np.array(relabels_dets, dtype=int)
+
+
+def parametrise_behavior(p, configs, configs_param, inputs_a, inputs_b, outputs_a, outputs_b):
+    """
+    Parametrises a given behavior to the lower dimensional representation:
+        { p(a|x), p(b|y), p(ab|xy) } for all x,y and a,b = 1,...,n-1
+    """
+    assert len(inputs_a) == len(inputs_b), 'Can only parametrise for equal number of inputs'
+    assert len(outputs_a) == len(outputs_b), 'Can only parametrise for equal number of outputs'
+    m = len(inputs_a)
+    d = len(outputs_a)
+    # create parametrised array of lower dimensions
+    t = 2 * (d - 1) * m + (d - 1) * (d - 1) * m * m
+    param = np.zeros(t)
+    assert len(configs_param) == t
+
+    for i, (a, b, x, y) in enumerate(configs_param):
+        if b == -1:
+            # sum all probabilities together
+            s = 0
+            for b_tmp in outputs_b:
+                idx = configs.index((a, b_tmp, x, y))
+                s += p[idx]
+            # set parametrised probability to marginal probability
+            param[i] += s
+        elif a == -1:
+            # same as for b == -1
+            s = 0
+            for a_tmp in outputs_a:
+                idx = configs.index((a_tmp, b, x, y))
+                s += p[idx]
+            param[i] += s
+        else:
+            # copy the probability
+            idx = configs.index((a, b, x, y))
+            param[i] += p[idx]
+    return param
+
+
+def get_parametrisation_configs(inputs_a, inputs_b, outputs_a, outputs_b):
+    """
+    Gets the configurations for the parametrised representation of a behavior.
+    We use "-1" as an identifier that this configuration is not used.
+    Due to the no signalling constraint we can choose any y or x for the marginals. So we always choose the first
+    """
+    configs = []
+    # slice the last part of the outputs
+    outputs_a = np.copy(outputs_a[:-1])
+    outputs_b = np.copy(outputs_b[:-1])
+    # first part is Alice side
+    for a, x in product(outputs_a, inputs_a):
+        c = (a, -1, x, inputs_b[0])
+        configs.append(c)
+    # second part is Bobs side
+    for b, y in product(outputs_b, inputs_b):
+        c = (-1, b, inputs_a[0], y)
+        configs.append(c)
+    # third part is usual configs with one less output for each party
+    c = get_configs(inputs_a, inputs_b, outputs_a, outputs_b)
+    # return all configs
+    return configs + c

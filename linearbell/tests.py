@@ -128,6 +128,38 @@ def test_possible_liftings_extended():
     assert len(lifts) == len(outputs_a) ** (len(inputs_a) * len(inputs_b))
 
 
+def test_parametrisation_configurations():
+    """ Tests the configurations for a parametrisation """
+    m = 5
+    d = 9
+    t = 2 * (d - 1) * m + ((d - 1) ** 2) * m ** 2
+    inputs = range(m)
+    outputs = range(d)
+    # get the parametrisation
+    configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+    # check that the length is correct
+    assert len(configs_param) == t, 'Length of configs_param: {}'.format(len(configs_param))
+
+
+def test_parametrisation():
+    """ Tests the parametrisation of a behavior """
+    m = 10
+    d = 2
+    t = 2 * (d - 1) * m + ((d - 1) ** 2) * m ** 2
+    inputs = range(m)
+    outputs = range(d)
+    # get configs
+    configs = get_configs(inputs, inputs, outputs, outputs)
+    configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+    # get a behavior
+    pr_box = np.array([general_pr_box(a, b, x, y) for (a, b, x, y) in configs])
+    assert pr_box.shape[0] >= t
+    # get parametrisation
+    pr_box_param = parametrise_behavior(pr_box, configs, configs_param, inputs, inputs, outputs, outputs)
+    assert pr_box_param.shape[0] == t
+    assert len(np.unique(pr_box_param)) == 2
+
+
 if __name__ == '__main__':
     # TODO: Write tests for reducing the PR box using liftings
     test_general_pr_box_two_input_two_output_case()
@@ -137,3 +169,5 @@ if __name__ == '__main__':
     test_allowed_relabellings_antisymmetric()
     test_possible_liftings()
     test_possible_liftings_extended()
+    test_parametrisation_configurations()
+    test_parametrisation()
