@@ -1,6 +1,6 @@
 import argparse
 from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
-    get_parametrisation_configs, parametrise_behavior, get_allowed_relabellings
+    get_parametrisation_configs, parametrise_behavior, get_allowed_relabellings, check_equiv_bell
 import numpy as np
 from lrs_helper import polyhedra_h_representation, run_lrs_polytope
 
@@ -64,13 +64,44 @@ vertices = run_lrs_polytope('lrs.ine', 'out.ext')
 
 # check that vertices are facets
 vertices = np.array(vertices)
-# TODO: Check how many are facets
+# check if all points are facets
 facets = []
-
+# check facets
+facets = []
+for v in vertices:
+    eq_dets = []
+    for d in dets:
+        if np.abs(d @ v - 1) < 1e-2:
+            eq_dets.append(d)
+    eq_dets = np.array(eq_dets)
+    if eq_dets.shape[0] > 0:
+        eq_dets_new = eq_dets - eq_dets[0]
+        # calculate the rank of the matrix
+        rank = np.linalg.matrix_rank(eq_dets_new)
+        # check if it's a facet by rank check
+        if rank == (ma * (n - 1) + 1) * (mb * (n - 1) + 1) - 2:
+            facets.append(v)
+facets = np.array(facets)
 
 # store the vertices
 file = '../data/vertex_enum/{}{}{}{}.txt'.format(ma, mb, n, n)
 np.savetxt(file, vertices)
 print('done')
 print('number of vertices: {}'.format(vertices.shape[0]))
-print(vertices)
+print('number of facets: {}'.format(facets.shape[0]))
+
+del_facets = []
+# iterate through the facets
+for i in range(facets.shape[0]):
+    # if this facet can already be deleted -> continue
+    # print('facet: {} / {} || len deletion list: {}'.format(i, facets.shape[0], len(del_facets)))
+    if i in del_facets: continue
+    for j in range(i + 1, facets.shape[0]):
+        # if this facet can already be deleted -> continue
+        if j in del_facets: continue
+        # check if the two facets are equivalent
+        if check_equiv_bell(facets[i], facets[j], relabels_dets, dets, tol=1e-4):
+            del_facets.append(j)
+# store new facets
+new_facets = np.delete(facets, del_facets, axis=0)
+print('Number of unique facets: {}'.format(new_facets.shape[0]))
