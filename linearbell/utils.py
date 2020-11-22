@@ -459,12 +459,12 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
         s1 = np.min(v1[v1 > 1.0 + tol])
         v1 = v1 / (s1 - 1) + (s1 - 2) / (s1 - 1)
     except:
-        print('v1 has only one unique entry > 0')
+        pass
     try:
         s2 = np.min(v2[v2 > 1.0 + tol])
         v2 = v2 / (s2 - 1) + (s2 - 2) / (s2 - 1)
     except:
-        print('v2 has only one unique entry > 0')
+        pass
 
     if np.sum((v1 - v2) ** 2) < tol: return True
     # try to see if they have the same tally
