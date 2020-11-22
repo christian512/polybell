@@ -160,14 +160,38 @@ def test_parametrisation():
     assert len(np.unique(pr_box_param)) == 2
 
 
+def test_parametrisation_deterministic():
+    """ Tests the parametrisation of a behavior """
+    m = 4
+    d = 2
+    t = 2 * (d - 1) * m + ((d - 1) ** 2) * m ** 2
+    inputs = range(m)
+    outputs = range(d)
+    # get configs
+    configs = get_configs(inputs, inputs, outputs, outputs)
+    configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+    # get a behavior
+    dets = get_deterministic_behaviors(inputs, inputs, outputs)
+    dets_param = []
+    for d in dets:
+        assert d.shape[0] >= t
+        # get parametrisation
+        d_param = parametrise_behavior(d, configs, configs_param, inputs, inputs, outputs, outputs)
+        assert d_param.shape[0] == t
+        dets_param.append(d_param)
+    dets_param = np.array(dets_param)
+    assert dets_param.shape == np.unique(dets_param, axis=1).shape
+
+
 if __name__ == '__main__':
     # TODO: Write tests for reducing the PR box using liftings
-    test_general_pr_box_two_input_two_output_case()
-    test_local_weight()
-    test_extremal_points_binary_ns()
-    test_allowed_relabellings_symmetric()
-    test_allowed_relabellings_antisymmetric()
-    test_possible_liftings()
-    test_possible_liftings_extended()
+    # test_general_pr_box_two_input_two_output_case()
+    # test_local_weight()
+    # test_extremal_points_binary_ns()
+    # test_allowed_relabellings_symmetric()
+    # test_allowed_relabellings_antisymmetric()
+    # test_possible_liftings()
+    # test_possible_liftings_extended()
     test_parametrisation_configurations()
     test_parametrisation()
+    test_parametrisation_deterministic()
