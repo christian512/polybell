@@ -82,7 +82,9 @@ def run_lrs_polytope(input_file, output_file='out.ext'):
         for value in v.split()[1:]:
             # append the value to the vertex
             vertex.append(float(Fraction(value)))
-        # append the vertex to the vertices
-        vertices.append(vertex)
+        # check if it's a vertex or a ray
+        if v.split()[0] == '1':
+            # append the vertex to the vertices
+            vertices.append(vertex)
     # return the vertices as a numpy array
     return np.array(vertices)

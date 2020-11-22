@@ -1,6 +1,6 @@
 import argparse
 from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
-    get_parametrisation_configs, parametrise_behavior
+    get_parametrisation_configs, parametrise_behavior, get_allowed_relabellings
 import numpy as np
 from lrs_helper import polyhedra_h_representation, run_lrs_polytope
 
@@ -20,6 +20,17 @@ outputs = range(n)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+
+# get origin
+p_origin = np.sum(dets, axis=0) / (dets.shape[0])
+# rescale the deterministic points
+dets = dets - p_origin
+
+# get allowed relabellings
+allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
+# get relabellings for deterministic points
+file_relabels = '../data/relabels_dets/{}{}{}{}.gz'.format(ma, mb, n, n)
+relabels_dets = np.loadtxt(file_relabels, dtype=float).astype(int)
 
 # get the configurations
 configs = get_configs(inputs_a, inputs_b, outputs, outputs)
@@ -51,8 +62,13 @@ vertices = run_lrs_polytope('lrs.ine', 'out.ext')
 
 #vertices = compute_polytope_vertices(lhs_ineq, rhs_ineq)
 
-# store the vertices
+# check that vertices are facets
 vertices = np.array(vertices)
+# TODO: Check how many are facets
+facets = []
+
+
+# store the vertices
 file = '../data/vertex_enum/{}{}{}{}.txt'.format(ma, mb, n, n)
 np.savetxt(file, vertices)
 print('done')
