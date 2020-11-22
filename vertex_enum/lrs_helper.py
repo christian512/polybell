@@ -72,6 +72,7 @@ def run_lrs_polytope(input_file, output_file='out.ext'):
     vertices_string = string.split('\n')[1:-1]
     # array for the vertices
     vertices = []
+    rays = []
     # iterate over the strings of vertices
     for v in vertices_string:
         # array for teh vertex
@@ -86,5 +87,8 @@ def run_lrs_polytope(input_file, output_file='out.ext'):
         if v.split()[0] == '1':
             # append the vertex to the vertices
             vertices.append(vertex)
+        if v.split()[0] == '0':
+            # append vertex to the rays (as it is a ray)
+            rays.append(vertex)
     # return the vertices as a numpy array
-    return np.array(vertices)
+    return np.array(vertices), np.array(rays)
