@@ -43,13 +43,17 @@ for d in dets:
     d_param = parametrise_behavior(d, configs, configs_param, inputs_a, inputs_b, outputs, outputs)
     dets_param.append(d_param)
 dets_param = np.array(dets_param)
-#dets = np.copy(dets_param)
+# dets = np.copy(dets_param)
 
 # setup the constraints
 
 # dets @ b <= 1
 lhs_ineq = np.copy(dets)
 rhs_ineq = np.ones(dets.shape[0])
+
+# - dets[0] @ b <= -1, thus that dets[0] @ b == 1
+lhs_ineq = np.r_[lhs_ineq, [-1.0 * dets[0]]]
+rhs_ineq = np.r_[rhs_ineq, [-1.0]]
 
 # -1.0 * b <= 0 equiv to b >= 0
 lhs_ineq = np.r_[lhs_ineq, -1.0 * np.eye(dets.shape[1])]
@@ -59,8 +63,6 @@ rhs_ineq = np.r_[rhs_ineq, np.zeros(dets.shape[1])]
 print('Start computation of vertices')
 polyhedra_h_representation(lhs_ineq, rhs_ineq, file='lrs.ine')
 vertices = run_lrs_polytope('lrs.ine', 'out.ext')
-
-#vertices = compute_polytope_vertices(lhs_ineq, rhs_ineq)
 
 # check that vertices are facets
 vertices = np.array(vertices)
