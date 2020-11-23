@@ -46,6 +46,41 @@ def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
         print('wrote file: {}'.format(file))
     return string
 
+def polytope_v_representation(vertices, name='polytope', file=''):
+    """
+    writes out the polytopes V-representation to a file for use with lrs
+    Parameters
+    ----------
+    vertices
+    name
+    file
+
+    Returns
+    -------
+
+    """
+    # the output string
+    string = ''
+    string += name + '\n'
+    string += 'V-representation \n'
+    string += 'begin \n'
+    string += str(vertices.shape[0]) + ' ' + str(vertices.shape[1] + 1) + ' rational \n'
+    for v in vertices:
+        string += '1'
+        for x in v:
+            string += ' ' + str(Fraction(x))
+        string += '\n'
+    string += 'end \n'
+    # write string to file
+    if file:
+        f = open(file, 'w+')
+        f.write(string)
+        f.close()
+        print('wrote file: {}'.format(file))
+    return string
+
+
+
 def run_lrs_polytope(input_file, output_file='out.ext'):
     """
     Runs lrs with a given input file and stores the result and gives the vertices back.
