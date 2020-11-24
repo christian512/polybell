@@ -52,7 +52,7 @@ lhs_ineq = np.copy(dets)
 rhs_ineq = np.ones(dets.shape[0])
 
 # - dets[0] @ b <= -1, thus that dets[0] @ b == 1
-lhs_ineq = np.r_[lhs_ineq, [-1.0 * dets[0]]]
+lhs_ineq = np.r_[lhs_ineq, [-1.0 * dets[2]]]
 rhs_ineq = np.r_[rhs_ineq, [-1.0]]
 
 # -1.0 * b <= 0 equiv to b >= 0
@@ -62,10 +62,8 @@ rhs_ineq = np.r_[rhs_ineq, np.zeros(dets.shape[1])]
 # compute vertices of the polytope
 print('Start computation of vertices')
 polyhedra_h_representation(lhs_ineq, rhs_ineq, file='lrs.ine')
-vertices = run_lrs_polytope('lrs.ine', 'out.ext')
+vertices, rays = run_lrs_polytope('lrs.ine', 'out.ext')
 
-# check that vertices are facets
-vertices = np.array(vertices)
 # check if all points are facets
 facets = []
 # check facets
@@ -90,6 +88,7 @@ file = '../data/vertex_enum/{}{}{}{}.txt'.format(ma, mb, n, n)
 np.savetxt(file, vertices)
 print('done')
 print('number of vertices: {}'.format(vertices.shape[0]))
+print('number of rays: {}'.format(rays.shape[0]))
 print('number of facets: {}'.format(facets.shape[0]))
 
 del_facets = []
