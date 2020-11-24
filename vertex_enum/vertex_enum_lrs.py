@@ -1,15 +1,49 @@
-from lrs_helper import polyhedra_h_representation, run_lrs_polytope
+import argparse
+from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
+    get_parametrisation_configs, parametrise_behavior, check_equiv_bell
+from lrs_helper import polytope_v_representation, run_lrs_v_repr, polyhedra_h_representation, run_lrs_h_repr
 import numpy as np
+from itertools import product
 
-# setup the problem I want to solve
-lhs = np.eye(3)
-rhs = np.ones(3) / 2
-lhs = np.r_[lhs, -1.0 * np.eye(3)]
-rhs = np.r_[rhs, 1.0 * np.ones(3) / 3]
+parser = argparse.ArgumentParser()
+parser.add_argument(dest='ma', help="number of inputs for ALICE")
+parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argument(dest='n', help='number of outputs')
+args = parser.parse_args()
+ma = int(args.ma)
+mb = int(args.mb)
+n = int(args.n)
 
-# write out the string
-polyhedra_h_representation(lhs, rhs, file='lrs_test.ine')
+# set inputs / outputs
+inputs_a = range(ma)
+inputs_b = range(mb)
+outputs = range(n)
 
-# start the calculation with lrs
-vertices = run_lrs_polytope('lrs_test.ine', 'out.ext')
-print(vertices)
+# get deterministic points
+dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+
+# Define new origin, such that the 0 origin is inside of the polytope (for dual representation)
+p_origin = np.sum(dets, axis=0) / dets.shape[0]
+
+# shift the origin of the deterministic points
+dets = dets - p_origin
+
+# get configurations
+configs = get_configs(inputs_a, inputs_b, outputs, outputs)
+
+# setup the constraints
+
+# det @ bell <= 1
+lhs_ineq = np.copy(dets)
+rhs_ineq = np.ones(dets.shape[0])
+
+
+# get the h representation of the polyhedra
+hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq, file='input_h.ine')
+
+# run the h representation of the polyhedra
+vertices, rays = run_lrs_h_repr('input_h.ine')
+
+# print the numbers
+print('number of vertices: {}'.format(vertices.shape[0]))
+print('number of rays: {}'.format(rays.shape[0]))

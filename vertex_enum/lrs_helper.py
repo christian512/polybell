@@ -2,6 +2,7 @@ from fractions import Fraction
 import numpy as np
 import subprocess
 
+
 def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
     """
     This function creates a file to input into lrs. The input used here is lhs_ineq * x <= rhs_ineq
@@ -35,7 +36,7 @@ def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
         b = Fraction(rhs_ineq[i])
         string += str(b)
         for a in lhs_ineq[i]:
-           string += ' ' + str(Fraction(a))
+            string += ' ' + str(Fraction(a))
         string += '\n'
     string += 'end \n'
     # write string to file
@@ -45,6 +46,7 @@ def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
         f.close()
         print('wrote file: {}'.format(file))
     return string
+
 
 def polytope_v_representation(vertices, name='polytope', file=''):
     """
@@ -80,8 +82,7 @@ def polytope_v_representation(vertices, name='polytope', file=''):
     return string
 
 
-
-def run_lrs_polytope(input_file, output_file='out.ext'):
+def run_lrs_h_repr(input_file, output_file='out.ext'):
     """
     Runs lrs with a given input file and stores the result and gives the vertices back.
     This will additionally check the output if it's a polytope
@@ -90,10 +91,9 @@ def run_lrs_polytope(input_file, output_file='out.ext'):
     input_file : input file
     output_file : output file
 
-    Returns: vertices
+    Returns: vertices, rays
     -------
     """
-    # TODO: Read out number of rays and vertices to check if it's a polytope (polytope -> no rays)
     cmd = 'lrs ' + input_file + ' ' + output_file
     out = subprocess.run(cmd, shell=True)
     # read output file
@@ -127,3 +127,46 @@ def run_lrs_polytope(input_file, output_file='out.ext'):
             rays.append(vertex)
     # return the vertices as a numpy array
     return np.array(vertices), np.array(rays)
+
+
+def run_lrs_v_repr(input_file, output_file='out.ine'):
+    """
+    Runs lrs with a given input file input file for V representation and read out the facets and linearities
+    """
+    cmd = 'lrs ' + input_file + ' ' + output_file
+    out = subprocess.run(cmd, shell=True)
+    # read the output file
+    f = open(output_file, 'r')
+    string = f.read()
+    # Read list of linearities
+    lin_string = string.split('linearity')[1]
+    lin_string = lin_string.split('\n')[0]
+    linearities_strings = lin_string.split()[1:]
+    # array that contains rows that are linearities
+    linearity_rows = [int(x) - 1 for x in linearities_strings]
+    # get the part of the output file that contains the vertices
+    string = string.split('begin')[1]
+    string = string.split('end')[0]
+    string = string.split('rational')[1]
+    # get a string list of the facets/linearities
+    facets_lins_list_string = string.split('\n')[1:-1]
+    # arrays for facets and linearities
+    facets = []
+    linearities = []
+    linearity_values = []
+    # iterate over the strings in the list
+    for i, x in enumerate(facets_lins_list_string):
+        # array for the element
+        elem = []
+        # remove new line characters
+        x.replace('\n', '')
+        # iterate through the split and append to element
+        for value in x.split()[1:]:
+            elem.append(float(Fraction(value)))
+        # check if element is a facet or a linearity
+        if i in linearity_rows:
+            linearities.append(elem)
+            linearity_values.append(float(Fraction(x.split()[0])))
+        else:
+            facets.append(elem)
+    return np.array(facets), np.array(linearities)
