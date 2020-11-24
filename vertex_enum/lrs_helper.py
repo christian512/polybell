@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 
 
-def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
+def polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[],denom_limt=10000, name='polytope', file=''):
     """
     This function creates a file to input into lrs. The input used here is lhs_ineq * x <= rhs_ineq
     Parameters
@@ -22,6 +22,13 @@ def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
     # setup the header
     string += name + '\n'
     string += 'H-representation \n'
+    # write linearities
+    if linearities:
+        string += 'linearity ' + str(len(linearities))
+        for l in linearities:
+            string += ' ' + str(l + 1)
+        string += '\n'
+
     string += 'begin \n'
     # check that the inequalities have same shape
     assert lhs_ineq.shape[0] == rhs_ineq.shape[0]
@@ -33,10 +40,10 @@ def polyhedra_h_representation(lhs_ineq, rhs_ineq, name='polytope', file=''):
     # lhs * x <= rhs is equiv to rhs - lhs * x >= 0
     lhs_ineq = -1.0 * lhs_ineq
     for i in range(lhs_ineq.shape[0]):
-        b = Fraction(rhs_ineq[i])
+        b = Fraction(rhs_ineq[i]).limit_denominator((denom_limt))
         string += str(b)
         for a in lhs_ineq[i]:
-            string += ' ' + str(Fraction(a))
+            string += ' ' + str(Fraction(a).limit_denominator(denom_limt))
         string += '\n'
     string += 'end \n'
     # write string to file
