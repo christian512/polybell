@@ -139,6 +139,41 @@ def run_lrs_h_repr(input_file, output_file='out.ext', nproc=1):
     return np.array(vertices), np.array(rays)
 
 
+def read_v_file(file):
+    """ Reads the contents of a vertex file (i.e. containing vertices and rays) """
+    # read output file
+    f = open(file, 'r')
+    string = f.read()
+    # get the part of the output file that contains the vertices
+    string = string.split('begin')[1]
+    string = string.split('end')[0]
+    string = string.split('rational')[1]
+    # get a string list of the vertices
+    vertices_string = string.split('\n')[1:-1]
+    # array for the vertices
+    vertices = []
+    rays = []
+    # iterate over the strings of vertices
+    for v in vertices_string:
+        # array for teh vertex
+        vertex = []
+        # remove the newline characters
+        v.replace('\n', '')
+        # iterate through the split
+        for value in v.split()[1:]:
+            # append the value to the vertex
+            vertex.append(float(Fraction(value)))
+        # check if it's a vertex or a ray
+        if v.split()[0] == '1':
+            # append the vertex to the vertices
+            vertices.append(vertex)
+        if v.split()[0] == '0':
+            # append vertex to the rays (as it is a ray)
+            rays.append(vertex)
+    # return the vertices as a numpy array
+    return np.array(vertices), np.array(rays)
+
+
 def run_lrs_v_repr(input_file, output_file='out.ine'):
     """
     Runs lrs with a given input file input file for V representation and read out the facets and linearities
