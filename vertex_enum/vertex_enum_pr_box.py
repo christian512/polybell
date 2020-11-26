@@ -9,10 +9,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='n', help='number of outputs')
+parser.add_argument(dest='nproc', help='Number of processes')
+parser.add_argument(dest='outfile', help='Output file for lrs computation')
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
 n = int(args.n)
+nproc = int(args.nproc)
+outfile = str(args.outfile)
+
+# set outfile with path
+outifle = '../data/vertex_enum_pr_box/' + outfile
 
 # set inputs / outputs
 inputs_a = range(ma)
@@ -78,11 +85,16 @@ rhs_ineq = np.ones(dets.shape[0])
 lhs_ineq = np.r_[lhs_ineq, [pr_eff_exact]]
 rhs_ineq = np.r_[rhs_ineq, [1.0]]
 
+# set the inequalities that should be equalities
+linearities = [lhs_ineq.shape[0] - 1]
+
 # get the h representation of the polyhedra
-hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[lhs_ineq.shape[0] - 1], file='input_h.ine')
+hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq,
+                                   linearities=linearities,
+                                   file='input_h.ine')
 
 # run the h representation of the polyhedra
-vertices, rays = run_lrs_h_repr('input_h.ine')
+vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile)
 
 # print the numbers
 print('number of vertices: {}'.format(vertices.shape[0]))

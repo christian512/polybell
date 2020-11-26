@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 
 
-def polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[],denom_limt=10000, name='polytope', file=''):
+def polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[], denom_limt=10000, name='polytope', file=''):
     """
     This function creates a file to input into lrs. The input used here is lhs_ineq * x <= rhs_ineq
     Parameters
@@ -89,7 +89,7 @@ def polytope_v_representation(vertices, name='polytope', file=''):
     return string
 
 
-def run_lrs_h_repr(input_file, output_file='out.ext'):
+def run_lrs_h_repr(input_file, output_file='out.ext', nproc=1):
     """
     Runs lrs with a given input file and stores the result and gives the vertices back.
     This will additionally check the output if it's a polytope
@@ -101,7 +101,10 @@ def run_lrs_h_repr(input_file, output_file='out.ext'):
     Returns: vertices, rays
     -------
     """
-    cmd = 'lrs ' + input_file + ' ' + output_file
+    if nproc > 1:
+        cmd = 'mpirun -np ' + str(nproc) + ' --oversubscribe mplrs ' + input_file + ' ' + output_file
+    else:
+        cmd = 'lrs ' + input_file + ' ' + output_file
     out = subprocess.run(cmd, shell=True)
     # read output file
     f = open(output_file, 'r')
