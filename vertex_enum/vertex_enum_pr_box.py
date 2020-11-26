@@ -82,8 +82,8 @@ lhs_ineq = np.r_[lhs_ineq, [-1.0 * pr_eff_high]]
 rhs_ineq = np.r_[rhs_ineq, [-1.0]]
 
 # constraint for exact pr box
-lhs_ineq = np.r_[lhs_ineq, [pr_eff_exact]]
-rhs_ineq = np.r_[rhs_ineq, [1.0]]
+# lhs_ineq = np.r_[lhs_ineq, [pr_eff_exact]]
+# rhs_ineq = np.r_[rhs_ineq, [1.0]]
 
 # set the inequalities that should be equalities
 linearities = []
