@@ -94,7 +94,7 @@ hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq,
                                    file='input_h.ine')
 
 # run the h representation of the polyhedra
-vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile)
+vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile, nproc=nproc)
 
 # print the numbers
 print('number of vertices: {}'.format(vertices.shape[0]))
