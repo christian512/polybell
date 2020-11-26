@@ -19,7 +19,7 @@ nproc = int(args.nproc)
 outfile = str(args.outfile)
 
 # set outfile with path
-outifle = '../data/vertex_enum_pr_box/' + outfile
+outfile = '../data/vertex_enum_pr_box/' + outfile
 
 # set inputs / outputs
 inputs_a = range(ma)
