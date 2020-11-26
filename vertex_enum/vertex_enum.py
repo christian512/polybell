@@ -9,15 +9,20 @@ parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='n', help='number of outputs')
+parser.add_argument(dest='nproc', help='Number of processes')
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
 n = int(args.n)
+nproc = int(args.nproc)
 
 # set inputs / outputs
 inputs_a = range(ma)
 inputs_b = range(mb)
 outputs = range(n)
+
+# setup output file
+outfile = '../data/vertex_enum/{}{}{}{}.ext'.format(ma, mb, n, n)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
@@ -50,7 +55,7 @@ rhs_ineq = np.ones(dets.shape[0])
 hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[dets.shape[0] - 1], file='input_h.ine')
 
 # run the h representation of the polyhedra
-vertices, rays = run_lrs_h_repr('input_h.ine')
+vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile, nproc=nproc)
 
 # print the numbers
 print('number of vertices: {}'.format(vertices.shape[0]))
