@@ -183,6 +183,24 @@ def test_parametrisation_deterministic():
     assert dets_param.shape == np.unique(dets_param, axis=1).shape
 
 
+def test_deparametrise_deterministic():
+    """ Tests the deparametrisation of a deterministic behavior """
+    m = 4
+    d = 2
+    inputs = range(m)
+    outputs = range(d)
+    # get configs
+    configs = get_configs(inputs, inputs, outputs, outputs)
+    configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+    # get a behavior
+    dets = get_deterministic_behaviors(inputs, inputs, outputs)
+    for det in dets:
+        d_param = parametrise_behavior(det, configs, configs_param, inputs,inputs,outputs,outputs)
+        d_unpara = deperametrise_behavior(d_param, configs, configs_param, inputs,inputs,outputs,outputs)
+        # check that unparametrised behavior is equal to the one before parametrisation
+        assert np.all(d_unpara == det), 'After deparametrisation the deterministic is not the original'
+
+
 if __name__ == '__main__':
     # TODO: Write tests for reducing the PR box using liftings
     # test_general_pr_box_two_input_two_output_case()
@@ -192,6 +210,7 @@ if __name__ == '__main__':
     # test_allowed_relabellings_antisymmetric()
     # test_possible_liftings()
     # test_possible_liftings_extended()
-    test_parametrisation_configurations()
-    test_parametrisation()
-    test_parametrisation_deterministic()
+    #test_parametrisation_configurations()
+    #test_parametrisation()
+    #test_parametrisation_deterministic()
+    test_deparametrise_deterministic()

@@ -551,3 +551,60 @@ def get_parametrisation_configs(inputs_a, inputs_b, outputs_a, outputs_b):
     c = get_configs(inputs_a, inputs_b, outputs_a, outputs_b)
     # return all configs
     return configs + c
+
+
+def deperametrise_behavior(p_param, configs, configs_param, inputs_a, inputs_b, outputs_a, outputs_b):
+    """ Deparametrise a behavior, that was parametrised by parametrise behasvior """
+    assert len(inputs_a) == len(inputs_b), 'Can only parametrise for equal number of inputs'
+    assert len(outputs_a) == len(outputs_b), 'Can only Parametrise for equal number of outputs'
+    m = len(inputs_a)
+    d = len(outputs_a)
+    # define the value of the last output, which is dropped in the parametrisation
+    last_out = outputs_a[-1]
+    # create empty behahior
+    p = np.zeros((d ** 2) * (m ** 2))
+    # iterate through the configurations
+    for i, (a, b, x, y) in enumerate(configs):
+        # if this particular configuration is already in the parametrisation we just copy it
+        if (a, b, x, y) in configs_param:
+            idx = configs_param.index((a, b, x, y))
+            p[i] = p_param[idx]
+        # check the different cases and perform the sums
+        if a == last_out and b != last_out:
+            # TODO: chaage this setting of x = inputs_a[0] to just set it to -1 as it does not matter which x it is (must be done in parametrise)
+            idx = configs_param.index((-1, b, inputs_a[0], y))
+            p[i] += p_param[idx]
+            for a_tmp in outputs_a[:-1]:
+                idx = configs_param.index((a_tmp, b, x, y))
+                p[i] -= p_param[idx]
+
+        if a != last_out and b == last_out:
+            # TODO: Same as in if-clause before
+            idx = configs_param.index((a, -1, x, inputs_b[0]))
+            p[i] += p_param[idx]
+            for b_tmp in outputs_b[:-1]:
+                idx = configs_param.index((a, b_tmp, x, y))
+                p[i] -= p_param[idx]
+    # set the probabilities for p(dd|xy) as last, as we can already use the other ones directly
+    for i, (a, b, x, y) in enumerate(configs):
+        if a == last_out and b == last_out:
+            # value for p(dd|xy)
+            val = 1
+            # sum over all possible output combinations (the p(dd|xy) is still zero, so just include it)
+            for a_tmp in outputs_a:
+                for b_tmp in outputs_b:
+                    idx = configs.index((a_tmp, b_tmp, x, y))
+                    val -= p[idx]
+            # set p(dd|xy)
+            p[i] = val
+    return p
+
+def deparametrise_bell_expression(b_param, configs, configs_param, inputs_a, inputs_b, outputs_a, outputs_b):
+    """ Deparametrisation of a bell expression that was found using parametrised behaviors """
+    assert len(inputs_a) == len(inputs_b), 'Can only parametrise for equal number of inputs'
+    assert len(outputs_a) == len(outputs_b), 'Can only Parametrise for equal number of outputs'
+    m = len(inputs_a)
+    d = len(outputs_a)
+    # setup bell expression
+    b = np.zeros((m**2) * (d**2))
+
