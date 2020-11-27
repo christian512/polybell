@@ -599,12 +599,39 @@ def deperametrise_behavior(p_param, configs, configs_param, inputs_a, inputs_b, 
             p[i] = val
     return p
 
+
 def deparametrise_bell_expression(b_param, configs, configs_param, inputs_a, inputs_b, outputs_a, outputs_b):
     """ Deparametrisation of a bell expression that was found using parametrised behaviors """
     assert len(inputs_a) == len(inputs_b), 'Can only parametrise for equal number of inputs'
     assert len(outputs_a) == len(outputs_b), 'Can only Parametrise for equal number of outputs'
     m = len(inputs_a)
     d = len(outputs_a)
+    # define the last output
+    last_out = outputs_a[-1]
     # setup bell expression
-    b = np.zeros((m**2) * (d**2))
+    bell = np.zeros((m ** 2) * (d ** 2))
+    # iterate through the configurations
+    for i, (a, b, x, y) in enumerate(configs):
+        # check if the configuration is in the parametrised ones
+        if (a, b, x, y) in configs_param:
+            # add the corresponding values to this bell expression
+            idx = configs_param.index((a, b, x, y))
+            bell[i] += b_param[idx]
+            if x == inputs_a[0]:
+                idx = configs_param.index((-1, b, x, y))
+                bell[i] += b_param[idx]
+            if y == inputs_b[0]:
+                idx = configs_param.index((a, -1, x, y))
+                bell[i] += b_param[idx]
+        # if a == delta and b not
+        if a == last_out and b != last_out:
+            if x == inputs_a[0]:
+                idx = configs_param.index((-1, b, x, y))
+                bell[i] += b_param[idx]
+        if a != last_out and b == last_out:
+            if y == inputs_b[0]:
+                idx = configs_param.index((a, -1, x, y))
+                bell[i] += b_param[idx]
 
+    # return the bell expression
+    return bell

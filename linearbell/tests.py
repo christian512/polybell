@@ -1,6 +1,7 @@
 from itertools import product
 import numpy as np
 from linearbell.utils import *
+from linearbell.lrs_helper import *
 
 
 def test_general_pr_box_two_input_two_output_case():
@@ -186,7 +187,7 @@ def test_parametrisation_deterministic():
 def test_deparametrise_deterministic():
     """ Tests the deparametrisation of a deterministic behavior """
     m = 4
-    d = 2
+    d = 3
     inputs = range(m)
     outputs = range(d)
     # get configs
@@ -195,10 +196,35 @@ def test_deparametrise_deterministic():
     # get a behavior
     dets = get_deterministic_behaviors(inputs, inputs, outputs)
     for det in dets:
-        d_param = parametrise_behavior(det, configs, configs_param, inputs,inputs,outputs,outputs)
-        d_unpara = deperametrise_behavior(d_param, configs, configs_param, inputs,inputs,outputs,outputs)
+        d_param = parametrise_behavior(det, configs, configs_param, inputs, inputs, outputs, outputs)
+        d_unpara = deperametrise_behavior(d_param, configs, configs_param, inputs, inputs, outputs, outputs)
         # check that unparametrised behavior is equal to the one before parametrisation
         assert np.all(d_unpara == det), 'After deparametrisation the deterministic is not the original'
+
+
+def test_deparametrise_bell_expression():
+    """ Tests the deparametrisation of bell expression, that were found using parametrised deterministics """
+    m = 2
+    d = 3
+    inputs = range(m)
+    outputs = range(d)
+    # get configs
+    configs = get_configs(inputs, inputs, outputs, outputs)
+    configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+    # get deterministics
+    dets = get_deterministic_behaviors(inputs, inputs, outputs)
+    # read the bell expressions from the file
+    vertices, rays = read_v_file('test_files/2233.ext')
+    # iterate over deterministic behaviors
+    for d in dets:
+        # get parametrised version of d
+        d_param = parametrise_behavior(d, configs, configs_param, inputs, inputs, outputs, outputs)
+        for v_param in vertices:
+            value = d_param @ v_param
+            # deparametrise the vertex
+            v = deparametrise_bell_expression(v_param, configs, configs_param, inputs, inputs, outputs, outputs)
+            # check that the values are close to each other
+            assert np.abs(value - d @ v) < 1e-3, 'value: {} || d @ v : {}'.format(value, d @ v)
 
 
 if __name__ == '__main__':
@@ -210,7 +236,8 @@ if __name__ == '__main__':
     # test_allowed_relabellings_antisymmetric()
     # test_possible_liftings()
     # test_possible_liftings_extended()
-    #test_parametrisation_configurations()
-    #test_parametrisation()
-    #test_parametrisation_deterministic()
-    test_deparametrise_deterministic()
+    # test_parametrisation_configurations()
+    # test_parametrisation()
+    # test_parametrisation_deterministic()
+    # test_deparametrise_deterministic()
+    test_deparametrise_bell_expression()
