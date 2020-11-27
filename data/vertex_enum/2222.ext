@@ -1,0 +1,29 @@
+*mplrs:lrslib v.7.1 2020.10.17(hybrid arithmetic)28 processes
+*Input taken from input_h.ine
+*Starting depth of 2 maxcobases=50 maxdepth=0 lmin=3 lmax=3 scale=100
+polytope
+*Phase 1 time: 0 seconds.
+V-representation
+begin
+***** 9 rational
+ 1  0  0  0  0 -4  0  0  0 
+ 1  0  0  0  0  0 -4  0  0 
+ 1 -4  0  0  0  4  0  0  0 
+ 1  0  0  0 -4  0  0  0  4 
+ 1  0  0  0  0  0  0 -4  0 
+ 1  0  0 -4  0  4  0  0  0 
+ 1  0  0  0  0  0  0  0 -4 
+ 1  0  0  0 -4  0  4  0  0 
+ 1  0 -4  0  0  0  0  0  4 
+ 1  0 -4  0  0  0  0  4  0 
+ 1 -4  0  0  0  0  4  0  0 
+ 1  0  0 -4  0  0  0  4  0 
+ 1  0 -2  0 -2 -2  2  2  2 
+ 1 -2  0  0 -2  2  2 -2  2 
+ 1  0 -2 -2  0  2 -2  2  2 
+ 1 -2  0 -2  0  2  2  2 -2 
+end
+*Total number of jobs: 16, L became empty 1 times, tree depth 5
+*Finished with 26 64-bit, 0 GMP workers
+*Totals: vertices=16 rays=0 bases=108 integer-vertices=16
+*Elapsed time: 0 seconds.
