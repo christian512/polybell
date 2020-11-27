@@ -204,6 +204,7 @@ def test_deparametrise_deterministic():
 
 def test_deparametrise_bell_expression():
     """ Tests the deparametrisation of bell expression, that were found using parametrised deterministics """
+    # TODO: the behvaiors could be shifted by origin
     m = 2
     d = 3
     inputs = range(m)
