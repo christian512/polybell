@@ -86,7 +86,7 @@ rhs_ineq = np.r_[rhs_ineq, [-1.0]]
 # rhs_ineq = np.r_[rhs_ineq, [1.0]]
 
 # set the inequalities that should be equalities
-linearities = []
+linearities = [0]
 
 # get the h representation of the polyhedra
 hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq,
