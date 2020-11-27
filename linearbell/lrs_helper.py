@@ -167,9 +167,11 @@ def read_v_file(file):
         if v.split()[0] == '1':
             # append the vertex to the vertices
             vertices.append(vertex)
-        if v.split()[0] == '0':
+        elif v.split()[0] == '0':
             # append vertex to the rays (as it is a ray)
             rays.append(vertex)
+        else:
+            print('some unexpected start value')
     # return the vertices as a numpy array
     return np.array(vertices), np.array(rays)
 
