@@ -1,5 +1,6 @@
 from linearbell.utils import *
 from linearbell.lrs_helper import read_v_file
+
 # setup parameters
 ma = 2
 mb = 2
@@ -7,18 +8,21 @@ n = 3
 
 # file where all the facets stored
 file = '../data/vertex_enum/2233.ext'
-file = '../data/vertex_enum_pr_box/2233_exact_only.ext'
 
 # set inputs / outputs
 inputs_a = range(ma)
 inputs_b = range(mb)
 outputs = range(n)
+outputs_wo_failure = range(n - 1)
 
 # setup configurations and deterministic behaviors
 configs = get_configs(inputs_a, inputs_b, outputs, outputs)
 configs_param = get_parametrisation_configs(inputs_a, inputs_b, outputs, outputs)
 # get deterministics
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+# define the origin
+p_origin = np.sum(dets, axis=0) / dets.shape[0]
+
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
 # get relabellings for deterministic points
@@ -33,10 +37,26 @@ except IOError:
 # load bell expressions from file
 vertices, rays = read_v_file(file)
 
+# define PR box
+eta = 4 / (ma + 4) + 1e-6
+pr = np.array(
+    [general_pr_box_extended(a, b, x, y, eta, outputs_wo_failure) for a, b, x, y in configs])
+pr = pr - p_origin
+pr_param = parametrise_behavior(pr, configs, configs_param, inputs_a, inputs_b, outputs, outputs)
+
+# selected vertices
+sel_vertices = []
+# check which vertices fulfill the condition that PR_eta * B <= 1 for eta = 4 / (m+4)
+for v_param in vertices:
+    bell = deparametrise_bell_expression(v_param, configs, configs_param, inputs_a, inputs_b, outputs, outputs)
+    if bell @ pr > 1.0:
+        print(pr @ bell)
+        sel_vertices.append(v_param)
+
 # rescale the bell expressions
 bell_expressions = []
-sum_ones = np.sum(dets,axis=1)[0]
-for v_param in vertices:
+sum_ones = np.sum(dets, axis=1)[0]
+for v_param in sel_vertices:
     bell = deparametrise_bell_expression(v_param, configs, configs_param, inputs_a, inputs_b, outputs, outputs)
     v = np.array([bell @ d for d in dets])
     min_val = np.min(v)
@@ -66,6 +86,4 @@ new_facets = np.delete(facets, del_facets, axis=0)
 
 # print the results
 print('Number of classes: {}'.format(new_facets.shape[0]))
-
-
-
+print(new_facets)
