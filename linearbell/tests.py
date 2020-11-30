@@ -214,6 +214,9 @@ def test_deparametrise_bell_expression():
     configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
     # get deterministics
     dets = get_deterministic_behaviors(inputs, inputs, outputs)
+    # define the origin
+    p_origin = np.sum(dets, axis=0) / dets.shape[0]
+    dets = dets - p_origin
     # read the bell expressions from the file
     vertices, rays = read_v_file('test_files/2233.ext')
     # iterate over deterministic behaviors
