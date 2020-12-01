@@ -46,7 +46,7 @@ rhs = np.ones(lhs.shape[0])
 lins = list(np.arange(weights.shape[0])[weights > 1e-6])
 lins.append(lhs.shape[0] - 1)
 
-repr = polyhedra_h_representation(lhs, rhs, lins)
+repr = polyhedra_h_representation(lhs, rhs, lins, file='input.ine')
 print(repr)
 
 
