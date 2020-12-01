@@ -78,15 +78,15 @@ rhs_ineq = np.ones(dets.shape[0])
 # rhs_ineq = np.r_[rhs_ineq, [1.0]]
 
 # constraint for high efficiency pr box
-lhs_ineq = np.r_[lhs_ineq, [-1.0 * pr_eff_high]]
-rhs_ineq = np.r_[rhs_ineq, [-1.0-1e-6]]
+# lhs_ineq = np.r_[lhs_ineq, [-1.0 * pr_eff_high]]
+# rhs_ineq = np.r_[rhs_ineq, [-1.0-1e-6]]
 
 # constraint for exact pr box
 # lhs_ineq = np.r_[lhs_ineq, [pr_eff_exact]]
 # rhs_ineq = np.r_[rhs_ineq, [1.0]]
 
 # set the inequalities that should be equalities
-linearities = []
+linearities = [10]
 
 # get the h representation of the polyhedra
 hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq,
