@@ -4,7 +4,7 @@ Checking if there is a lifted PR box for the finite efficiency PR box with m inp
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, get_possible_liftings_extended, get_configs, \
     general_pr_box_extended, \
-    reduce_extended_pr_box_extended_lifts, find_local_weight
+    reduce_extended_pr_box_extended_lifts, find_local_weight_dual
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -67,7 +67,7 @@ for lift_a in poss_lifts_a:
         dets_red = [reduce_extended_pr_box_extended_lifts(d, configs_failure, configs_wo_failure, lift_a, lift_b) for d in dets]
         dets_red = np.array(dets_red)
         # find the local weight of the reduced pr box
-        bell_exp = find_local_weight(pr_red, dets_red)
+        bell_exp = find_local_weight_dual(pr_red, dets_red)
         assert np.abs(np.min(dets_red @ bell_exp) - 1) < tol, 'Bell * deterministic is not 1 at minimum'
         # check if bell expression is correct
         if bell_exp @ pr_red < 1 - tol:

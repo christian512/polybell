@@ -3,7 +3,7 @@ Checking if there is a lifted PR box for the finite efficiency PR box with m inp
 """
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
-    reduce_extended_pr_box, find_local_weight
+    reduce_extended_pr_box, find_local_weight_dual
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -58,7 +58,7 @@ for lift_a in poss_lifts_a:
         # get reduced pr box under this liftings
         pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
         # find the local weight of the reduced pr box
-        bell_exp = find_local_weight(pr_red, dets)
+        bell_exp = find_local_weight_dual(pr_red, dets)
         # TODO: Should we rescale the bell expression that min(bell_exp @ dets) = 1
         # check if bell expression is correct
         if bell_exp @ pr_red < 1 - tol:

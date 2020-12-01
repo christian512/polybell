@@ -37,15 +37,15 @@ def test_local_weight():
     dets = get_deterministic_behaviors(inputs, inputs, outputs)
     # DETERMINISTIC
     p = np.copy(dets[0])
-    bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight_dual(p, dets)
     assert np.abs(bell_expression @ p - 1) < 1e-9
     # EXTREMAL
     p = np.array([general_pr_box(*c) for c in output_input_combs])
-    bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight_dual(p, dets)
     assert np.abs(bell_expression @ p) < 1e-9
     # MIXTURE
     p = 1 / 2 * p + 1 / 2 * dets[0]
-    bell_expression = find_local_weight(p, dets)
+    bell_expression = find_local_weight_dual(p, dets)
     assert np.abs(bell_expression @ p - 1 / 2) < 1e-9
 
 
@@ -58,7 +58,7 @@ def test_extremal_points_binary_ns():
     extremals = extremal_ns_binary_vertices(inputs_a, inputs_b, outputs)
     dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
     for e in extremals:
-        bell_exp = find_local_weight(e, dets)
+        bell_exp = find_local_weight_dual(e, dets)
         assert np.abs(bell_exp @ e) < 1e-8
 
 

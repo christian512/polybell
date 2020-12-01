@@ -1,6 +1,6 @@
 import multiprocessing as mp
 import numpy as np
-from linearbell.utils import find_local_weight, facet_inequality_check, check_equiv_bell
+from linearbell.utils import find_local_weight_dual, facet_inequality_check, check_equiv_bell
 from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings, \
     get_relabels_dets
 import argparse
@@ -63,7 +63,7 @@ def find_facets_for_extremal(idx):
     facets = []
     # file for the facets corresponding to this extremal
     facets_file = facets_folder + '{}.txt'.format(idx)
-    bell_expression = find_local_weight(extremals[idx], dets)
+    bell_expression = find_local_weight_dual(extremals[idx], dets)
     assert np.abs(bell_expression @ extremals[idx]) < tol, 'local weight of extremal is not zero. Problem with solver'
     # get the equalizing behaviors
     is_facet, bell_expression, eq_dets = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
@@ -92,7 +92,7 @@ def find_facets_for_extremal(idx):
                 # form new behavior
                 e_new = (1 - 3 * epsilon / 2) * extremals[idx] + epsilon * eq_dets[j] + epsilon / 2 * eq_dets[k]
                 # check again if we can find a facet
-                bell_expression = find_local_weight(e_new, dets)
+                bell_expression = find_local_weight_dual(e_new, dets)
                 is_facet, bell_expression, _ = facet_inequality_check(dets, bell_expression, ma, mb, n, tol)
                 if not is_facet: continue
                 for l in range(len(facets) - 1, -1, -1):

@@ -330,9 +330,32 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
     return opt, opt.x
 
 
-def find_local_weight(p, dets, method=-1, tol=1e-6):
+def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
+    """ Finds the local weights for a behavior and given deterministic points """
     # create a model
-    m = gp.Model('local_weight', env=env)
+    m = gp.Model('local_weight_dual', env=env)
+    m.setParam("Method", method)
+    # add variable
+    weight = m.addMVar(shape=dets.shape[0], name='weight')
+    # set objective
+    ones = np.ones(dets.shape[0])
+    m.setObjective(weight @ ones, GRB.MAXIMIZE)
+    # setup variables for constraints
+    dets_t = np.transpose(dets)
+    lhs = dets_t @ weight
+    lhs = np.sum(np.transpose(lhs), axis=0)
+    # add constraint
+    m.addConstr(lhs <= p, name='c')
+    m.addConstr(weight >= np.zeros(dets.shape[0]), name='pos')
+    # optimize
+    m.optimize()
+    # return
+    return weight.X
+
+def find_local_weight_dual(p, dets, method=-1, tol=1e-6):
+    # TODO: This is the dual of the local weight problem right? -> Should rename
+    # create a model
+    m = gp.Model('local_weight_dual', env=env)
     m.setParam("Method", method)
     # add variable
     bell = m.addMVar(shape=p.shape[0], name='bell')
