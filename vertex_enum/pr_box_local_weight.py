@@ -1,5 +1,5 @@
 from linearbell.utils import get_deterministic_behaviors, find_local_weight_primal, get_configs, general_pr_box_extended
-from linearbell.lrs_helper import polyhedra_h_representation
+from linearbell.lrs_helper import polyhedra_h_representation, run_lrs_h_repr
 import numpy as np
 
 # set inputs / outputs
@@ -47,6 +47,8 @@ lins = list(np.arange(weights.shape[0])[weights > 1e-6])
 lins.append(lhs.shape[0] - 1)
 
 repr = polyhedra_h_representation(lhs, rhs, lins, file='input.ine')
-print(repr)
 
+# run the enumeration
+outfile = '../data/vertex_enum_pr_box/2233_local_weight_lins.ext'
+vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile, nproc=30)
 
