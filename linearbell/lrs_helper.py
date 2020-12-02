@@ -217,3 +217,9 @@ def run_lrs_v_repr(input_file, output_file='out.ine'):
         else:
             facets.append(elem)
     return np.array(facets), np.array(linearities)
+
+def run_redund(input_file, output_file):
+    """ Runs redund given an input file and puts the output into the output file """
+    cmd = 'redund ' + input_file + ' > ' + output_file
+    out = subprocess.run(cmd, shell=True)
+    return True
