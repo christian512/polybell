@@ -52,10 +52,10 @@ lhs_ineq = np.copy(dets)
 rhs_ineq = np.ones(dets.shape[0])
 
 # get the h representation of the polyhedra
-hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[], file='input_h.ine')
+hrepr = polyhedra_h_representation(lhs_ineq, rhs_ineq, linearities=[], file='input_vertex_enum.ine')
 
 # run the h representation of the polyhedra
-vertices, rays = run_lrs_h_repr('input_h.ine', output_file=outfile, nproc=nproc)
+vertices, rays = run_lrs_h_repr('input_vertex_enum.ine', output_file=outfile, nproc=nproc)
 
 # print the numbers
 print('number of vertices: {}'.format(vertices.shape[0]))
