@@ -3,8 +3,8 @@ from linearbell.lrs_helper import polyhedra_h_representation, run_lrs_h_repr, ru
 import numpy as np
 
 # set inputs / outputs
-inputs_a = range(2)
-inputs_b = range(2)
+inputs_a = range(3)
+inputs_b = range(3)
 outputs = range(3)
 outputs_wo_failure = range(2)
 
@@ -53,5 +53,7 @@ run_redund('input.ine','input_redund.ine')
 
 # run the enumeration
 outfile = '../data/vertex_enum_pr_box/2233_local_weight_lins.ext'
-vertices, rays = run_lrs_h_repr('input_redund.ine', output_file=outfile, nproc=30)
+vertices, rays = run_lrs_h_repr('input_redund.ine', output_file=outfile, nproc=1)
+
+
 
