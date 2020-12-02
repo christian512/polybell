@@ -7,7 +7,7 @@ mb = 2
 n = 3
 
 # file where all the facets stored
-file = '../data/vertex_enum/2233.ext'
+file = '../data/vertex_enum_pr_box/2233_local_weight_lins.ext'
 
 # set inputs / outputs
 inputs_a = range(ma)
@@ -38,7 +38,7 @@ except IOError:
 vertices, rays = read_v_file(file)
 
 # define PR box
-eta = 4 / (ma + 4) + 1e-6
+eta = 4 / (ma + 4)
 pr = np.array(
     [general_pr_box_extended(a, b, x, y, eta, outputs_wo_failure) for a, b, x, y in configs])
 pr = pr - p_origin
@@ -46,12 +46,12 @@ pr_param = parametrise_behavior(pr, configs, configs_param, inputs_a, inputs_b, 
 
 # selected vertices
 sel_vertices = []
-# check which vertices fulfill the condition that PR_eta * B <= 1 for eta = 4 / (m+4)
+# check which vertices fulfill the condition that PR_eta * B == 1 for eta = 4 / (m+4)
 for v_param in vertices:
     bell = deparametrise_bell_expression(v_param, configs, configs_param, inputs_a, inputs_b, outputs, outputs)
-    if bell @ pr > 1.0:
-        print(pr @ bell)
+    if bell @ pr == 1.0:
         sel_vertices.append(v_param)
+print('number of vertices v with v @ pr_box == 1: {}'.format(len(sel_vertices)))
 
 # rescale the bell expressions
 bell_expressions = []
@@ -73,7 +73,6 @@ facets = np.array(bell_expressions)
 del_facets = []
 for i in range(facets.shape[0]):
     # if this facet can already be deleted -> continue
-    print('facet: {} / {} || len deletion list: {}'.format(i, facets.shape[0], len(del_facets)))
     if i in del_facets: continue
     for j in range(i + 1, facets.shape[0]):
         # if this facet can already be deleted -> continue
