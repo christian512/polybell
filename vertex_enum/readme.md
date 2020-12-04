@@ -22,3 +22,6 @@ enumerates vertices for determnistic constraint and additional constraints using
 Test the vertices found by LRS if the equalize the PR box condition PR * B == 1 and counts the number of vertices as well
 as calculating the number of different classes that equalize these.
 
+## pr_box_contrib_det.py
+This file checks which deterministic points can actually contribute to a PR box.
+
