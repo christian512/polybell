@@ -1,11 +1,16 @@
 from linearbell.utils import *
 from linearbell.lrs_helper import polyhedra_h_representation, run_redund, run_lrs_h_repr
 
+# number of inputs and outputs
+ma = 3
+mb = 3
+n = 3
+
 # set inputs / outputs
-inputs_a = range(3)
-inputs_b = range(3)
-outputs = range(3)
-outputs_wo_failure = range(2)
+inputs_a = range(ma)
+inputs_b = range(mb)
+outputs = range(n)
+outputs_wo_failure = range(n-1)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
@@ -65,6 +70,10 @@ rhs = np.r_[rhs, np.zeros(lhs.shape[1])]
 polyhedra_h_representation(lhs, rhs, linearities=lins, file='input.ine')
 run_redund('input.ine', 'input_redund.ine')
 vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext')
+
+# store the vertices
+file = '../data/pr_box_contrib_det/{}{}{}{}.gz'.format(ma,mb,n,n)
+np.savetxt(file, vertices)
 
 
 
