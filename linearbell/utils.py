@@ -124,7 +124,7 @@ def get_possible_liftings_extended(inputs, outputs, inputs_other):
         lifts[i] = np.array(lifts[i]).reshape((len(inputs), len(inputs_other)))
     return lifts
 
-
+# TODO Write function as getting determnisistic behaviors, so just input, inputs and outputs
 def general_pr_box(a, b, x, y):
     """
     Calculates the PR box probability for any input number and binary outcome
