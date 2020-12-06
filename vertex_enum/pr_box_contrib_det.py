@@ -61,7 +61,7 @@ rhs = np.r_[rhs, np.zeros(lhs.shape[1])]
 # setup the polyhedra file
 polyhedra_h_representation(lhs, rhs, linearities=lins, file='input.ine')
 run_redund('input.ine', 'input_redund.ine')
-vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext')
+vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext', nproc=30)
 
 # store the factors of contribution for every deterministic point
 factors = np.zeros((dets.shape[0], vertices.shape[1]))
