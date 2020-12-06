@@ -64,7 +64,7 @@ run_redund('input.ine', 'input_redund.ine')
 vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext', nproc=30)
 
 # store the factors of contribution for every deterministic point
-factors = np.zeros((vertices.shape[1], dets.shape[0]))
+factors = np.zeros((vertices.shape[0], dets.shape[0]))
 for j in range(vertices.shape[0]):
     v = vertices[j]
     for i in range(dets.shape[0]):
