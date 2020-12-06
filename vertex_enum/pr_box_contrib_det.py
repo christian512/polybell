@@ -10,7 +10,7 @@ n = 3
 inputs_a = range(ma)
 inputs_b = range(mb)
 outputs = range(n)
-outputs_wo_failure = range(n-1)
+outputs_wo_failure = range(n - 1)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
@@ -21,31 +21,23 @@ eta = 4 / (4 + len(inputs_a))
 pr_box = [general_pr_box_extended(a, b, x, y, eta, outputs_wo_failure) for (a, b, x, y) in configs]
 pr_box = np.array(pr_box)
 
-# check how many deterministic points we have in the decomposition to local points
-lws = find_local_weight_primal(pr_box, dets)
-decomp_counter = len(lws[lws > 0.0])
-print('dets in decomp: {}'.format(decomp_counter))
-
 # check which dets can actually contribute
 epsilon = 0.01
-no_solution_counter = 0
-locals_counter = 0
-non_local_counter = 0
 dets_contrib = []
-for d in dets:
+dets_contrib_idx = []
+for i in range(dets.shape[0]):
+    d = dets[i]
     pr_tmp = pr_box - epsilon * d
     try:
         lws = find_local_weight_primal(pr_tmp, dets)
         lw = np.sum(lws)
         if lw <= 1.0:
-            locals_counter += 1
+            dets_contrib_idx.append(i)
             dets_contrib.append(d)
-        else:
-            non_local_counter += 1
     except:
-        no_solution_counter += 1
+        pass
 
-print('dets that can contribute: {}'.format(locals_counter))
+print('dets that can contribute: {}'.format(len(dets_contrib_idx)))
 
 # find out how many are acutally linear independent
 dets_contrib = np.array(dets_contrib)
@@ -71,11 +63,15 @@ polyhedra_h_representation(lhs, rhs, linearities=lins, file='input.ine')
 run_redund('input.ine', 'input_redund.ine')
 vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext')
 
-# store the vertices
-file = '../data/pr_box_contrib_det/{}{}{}{}.gz'.format(ma,mb,n,n)
-np.savetxt(file, vertices)
+# store the factors of contribution for every deterministic point
+factors = np.zeros((dets.shape[0], vertices.shape[1]))
+for j in range(vertices.shape[0]):
+    v = vertices[j]
+    for i in range(dets.shape[0]):
+        if i in dets_contrib_idx:
+            idx = dets_contrib_idx.index(i)
+            factors[j, i] = v[idx]
 
-
-
-
-
+# store the factors of the deterministic points
+file = '../data/pr_box_contrib_det/{}{}{}{}.gz'.format(ma, mb, n, n)
+np.savetxt(file, factors)
