@@ -2,8 +2,8 @@ from linearbell.utils import *
 from linearbell.lrs_helper import polyhedra_h_representation, run_redund, run_lrs_h_repr
 
 # number of inputs and outputs
-ma = 3
-mb = 3
+ma = 2
+mb = 2
 n = 3
 
 # set inputs / outputs
@@ -34,7 +34,7 @@ for i in range(dets.shape[0]):
         if lw <= 1.0:
             dets_contrib_idx.append(i)
             dets_contrib.append(d)
-    except:
+    except Exception as e:
         pass
 
 print('dets that can contribute: {}'.format(len(dets_contrib_idx)))
@@ -61,7 +61,7 @@ rhs = np.r_[rhs, np.zeros(lhs.shape[1])]
 # setup the polyhedra file
 polyhedra_h_representation(lhs, rhs, linearities=lins, file='input.ine')
 run_redund('input.ine', 'input_redund.ine')
-vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext', nproc=30)
+vertices, rays = run_lrs_h_repr('input_redund.ine', 'output.ext', nproc=1)
 
 # store the factors of contribution for every deterministic point
 factors = np.zeros((vertices.shape[0], dets.shape[0]))

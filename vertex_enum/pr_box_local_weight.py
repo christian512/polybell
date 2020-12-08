@@ -70,7 +70,7 @@ for i in range(combinations.shape[0]):
 
     # run the enumeration
     outfile = 'out.ext'
-    vertices, rays = run_lrs_h_repr('input.ine', output_file=outfile, nproc=1)
+    vertices, rays = run_lrs_h_repr('input_redund.ine', output_file=outfile, nproc=30)
     for v in vertices:
         all_vertices.append(v)
 
