@@ -658,3 +658,21 @@ def deparametrise_bell_expression(b_param, configs, configs_param, inputs_a, inp
 
     # return the bell expression
     return bell
+
+def affine_transform_bell(bell_expressions, dets):
+    """ Shifts the bell expressions such that min(b @ det) = 0 and second_min(b @ det) = 1 """
+    shifted_bell = []
+    sum_ones = np.sum(dets[0])
+    for b in bell_expressions:
+        v = np.array([b @ d for d in dets])
+        min_val = np.min(v)
+        # shift v that lowest value is 0
+        v = v - min_val
+        # get second lowest value
+        sec_min_pos_val = np.min(v[v > 1e-4])
+        # shift the bell expression
+        bell = (b - min_val / sum_ones) / sec_min_pos_val
+        shifted_bell.append(bell)
+    return np.array(shifted_bell)
+
+
