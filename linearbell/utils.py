@@ -507,7 +507,7 @@ def get_relabels_dets(dets, allowed_perms,show_progress=0):
     # iterate through possible relabels
     for j, perm in enumerate(allowed_perms):
         if show_progress:
-            print('perm: {} / {}'.format(j, allowed_perms.shape[0]))
+            print('perm: {} / {}'.format(j, len(allowed_perms)))
         tmp_relabel_d = np.zeros(dets.shape[0])
         for i in range(dets.shape[0]):
             d = dets[i]
