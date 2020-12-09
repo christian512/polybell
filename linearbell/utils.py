@@ -500,12 +500,14 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
 
-def get_relabels_dets(dets, allowed_perms):
+def get_relabels_dets(dets, allowed_perms,show_progress=0):
     """ Gets a list of which deterministic transforms to which under each relabelling """
     # list for relabels
     relabels_dets = []
     # iterate through possible relabels
-    for perm in allowed_perms:
+    for j, perm in enumerate(allowed_perms):
+        if show_progress:
+            print('perm: {} / {}'.format(j, allowed_perms.shape[0]))
         tmp_relabel_d = np.zeros(dets.shape[0])
         for i in range(dets.shape[0]):
             d = dets[i]
