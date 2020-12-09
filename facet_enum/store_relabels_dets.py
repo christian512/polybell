@@ -23,7 +23,7 @@ dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 # get allowed relabellings
 allowed_relabellings = get_allowed_relabellings(inputs_a, inputs_b, outputs, outputs)
 # get relabellings for deterministic points
-relabels_dets = get_relabels_dets(dets, allowed_relabellings)
+relabels_dets = get_relabels_dets(dets, allowed_relabellings, show_progress=1)
 # store the relabels
 file = '../data/relabels_dets/{}{}{}{}.gz'.format(ma, mb, n, n)
 np.savetxt(file, relabels_dets)
