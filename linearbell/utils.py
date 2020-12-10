@@ -499,6 +499,49 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     # check if any relabelling is the same
     return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
+def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
+    """
+    Checks if two bell inequalities are equivalent under relabelling and for each perm checks that if they are equiv
+    This function uses the relabels of the bell expressions and therefore needs less memory, but has to calculate the
+    v vectors multiple times.
+    We assume that the bell expressions are already rescaled by the function affine_transform_bell
+    :param bell1: first bell expression
+    :param bell2: second bell expression
+    :param relabels: permutations of the bell expression that are allowed -> from get_allowed_relabellings
+    :param dets: deterministic behaviors
+    :param tol: tolerance
+    :return:
+    """
+    # check if they are the same
+    if np.sum((bell1 - bell2) ** 2) < tol ** 2:
+        return True
+    # get the v vectors
+    v1 = dets @ bell1
+    v2 = dets @ bell2
+    # check that smallest value is zero, due to affine_transformation
+    assert np.min(v1) == 0
+    assert np.min(v1[v1 > 0.0]) == 1.0
+    assert np.min(v2) == 0
+    assert np.min(v2[v2 > 0.0]) == 1.0
+    # TODO: Is this rescaling enough?
+
+    if np.sum((v1 - v2) ** 2) < tol: return True
+    # try to see if they have the same tally
+    u1, c1 = np.unique(np.round(v1, decimals=1), return_counts=True)
+    u2, c2 = np.unique(np.round(v2, decimals=1), return_counts=True)
+    if not u1.shape[0] == u2.shape[0]: return False
+    if not np.all(u1 == u2): return False
+    if not np.all(c1 == c2): return False
+
+
+    # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
+    for relabel in relabels:
+        bell_tmp = bell2[relabel]
+        v2 = dets @ bell2
+        if np.sum((v1 - v2) ** 2) < tol: return True
+    # the two expressions were not equivalent -> so they are from different classes
+    return False
+
 
 def get_relabels_dets(dets, allowed_perms,show_progress=0):
     """ Gets a list of which deterministic transforms to which under each relabelling """
