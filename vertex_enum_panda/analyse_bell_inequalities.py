@@ -72,7 +72,7 @@ print('Number of bell inequalities: {}'.format(correct_inequalities.shape[0]))
 
 
 from linearbell.utils import affine_transform_bell, get_allowed_relabellings
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma,mb,n,n))
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma,mb,n,n)).astype(int)
 print('Got all the relabellings')
 # shift the inequalities
 correct_inequalities = affine_transform_bell(correct_inequalities, dets)
