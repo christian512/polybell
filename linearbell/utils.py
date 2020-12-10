@@ -520,9 +520,9 @@ def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
     v2 = dets @ bell2
     # check that smallest value is zero, due to affine_transformation
     assert np.abs(np.min(v1)) < tol, 'min(v1): {}'.format(np.min(v1))
-    assert np.abs(np.min(v1[v1 > 0.0]) - 1.0) < tol, 'min(v1[v1 > 0]): {}'.format(np.min(v1[v1 > 0]))
+    assert np.abs(np.min(v1[v1 > tol]) - 1.0) < tol, 'min(v1[v1 > 0]): {}'.format(np.min(v1[v1 > 0]))
     assert np.abs(np.min(v2)) < tol, 'min(v2): {}'.format(np.min(v2))
-    assert np.abs(np.min(v2[v2 > 0.0]) - 1.0) < tol, 'min(v1[v2 > 0]): {}'.format(np.min(v2[v2 > 0]))
+    assert np.abs(np.min(v2[v2 > tol]) - 1.0) < tol, 'min(v1[v2 > 0]): {}'.format(np.min(v2[v2 > 0]))
     # TODO: Is this rescaling enough?
 
     if np.sum((v1 - v2) ** 2) < tol: return True
