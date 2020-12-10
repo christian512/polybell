@@ -537,8 +537,8 @@ def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
     # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
     for relabel in relabels:
         bell_tmp = bell2[relabel]
-        v2 = dets @ bell2
-        if np.sum((v1 - v2) ** 2) < tol: return True
+        v2 = dets @ bell_tmp
+        if np.sum((v1 - v2) ** 2) < tol**2: return True
     # the two expressions were not equivalent -> so they are from different classes
     return False
 
