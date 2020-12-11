@@ -15,11 +15,12 @@
 import numpy as np
 from linearbell.utils import get_configs, get_deterministic_behaviors, check_equiv_bell_vertex_enum
 
-ma = 3
-mb = 3
+ma = 2
+mb = 2
 n = 3
+num_cpu = 2
 
-file = '../data/vertex_enum_pr_box_det_decomp/{}{}{}{}.gz'.format(ma,mb,n,n)
+file = '../data/vertex_enum_pr_box_det_decomp/{}{}{}{}.gz'.format(ma, mb, n, n)
 all_inequalities = np.loadtxt(file)
 
 configs = get_configs(range(ma), range(mb), range(n), range(n))
@@ -27,24 +28,23 @@ configs = get_configs(range(ma), range(mb), range(n), range(n))
 dets = get_deterministic_behaviors(range(ma), range(mb), range(n))
 p_origin = np.sum(dets, axis=0) / dets.shape[0]
 
-
 # For later testing define the pr boxes and shift their origins.
 
 # In[25]:
 
 
 from linearbell.utils import general_pr_box_extended
+
 eta = 4 / (4 + ma)
-pr_box= [general_pr_box_extended(a, b, x, y, eta, range(2)) for (a, b, x, y) in configs]
+pr_box = [general_pr_box_extended(a, b, x, y, eta, range(2)) for (a, b, x, y) in configs]
 pr_box = np.array(pr_box) - p_origin
 
 epsilon = 0.01
 pr_box_high = [general_pr_box_extended(a, b, x, y, eta + epsilon, range(2)) for (a, b, x, y) in configs]
 pr_box_high = np.array(pr_box_high) - p_origin
 
-pr_box_low= [general_pr_box_extended(a, b, x, y, eta - epsilon, range(2)) for (a, b, x, y) in configs]
+pr_box_low = [general_pr_box_extended(a, b, x, y, eta - epsilon, range(2)) for (a, b, x, y) in configs]
 pr_box_low = np.array(pr_box_low) - p_origin
-
 
 # As we have loaded all bell inequalities, we have to check how many bell inequalities are of the same class and if actually
 # all bell inequalities fulfill the conditions we have.
@@ -65,34 +65,61 @@ for b in all_inequalities:
 correct_inequalities = np.array(correct_inequalities)
 print('Number of bell inequalities: {}'.format(correct_inequalities.shape[0]))
 
-
 # Check how many classes of bell inequalities there are.
 
 # In[ ]:
 
 
 from linearbell.utils import affine_transform_bell, get_allowed_relabellings
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma,mb,n,n)).astype(int)
+
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma, mb, n, n)).astype(int)
 print('Got all the relabellings')
 # shift the inequalities
 correct_inequalities = affine_transform_bell(correct_inequalities, dets)
 
-# find the number of classes
-del_ineq = []
-for i in range(correct_inequalities.shape[0]):
-    print('facet: {} / {} || len deletion list: {}'.format(i, correct_inequalities.shape[0], len(del_ineq)))
-    # if this facet can already be deleted -> continue
-    if i in del_ineq: continue
-    for j in range(i + 1, correct_inequalities.shape[0]):
-        # if this facet can already be deleted -> continue
-        if j in del_ineq: continue
-        # check if the two facets are equivalent
-        if check_equiv_bell_vertex_enum(correct_inequalities[i], correct_inequalities[j], relabels, dets, tol=1e-4):
-            del_ineq.append(j)
-# store new facets
-classes_inequalities = np.delete(correct_inequalities, del_ineq, axis=0)
-print('Classes of inequalities: {}'.format(classes_inequalities.shape[0]))
 
+# find the number of classes
+def clean_inequalities(inequalities, relabels, dets):
+    del_ineq = []
+    for i in range(inequalities.shape[0]):
+        print('facet: {} / {} || len deletion list: {}'.format(i, inequalities.shape[0], len(del_ineq)))
+        # if this facet can already be deleted -> continue
+        if i in del_ineq: continue
+        for j in range(i + 1, inequalities.shape[0]):
+            # if this facet can already be deleted -> continue
+            if j in del_ineq: continue
+            # check if the two facets are equivalent
+            if check_equiv_bell_vertex_enum(inequalities[i], inequalities[j], relabels, dets, tol=1e-4):
+                del_ineq.append(j)
+    # return the new facets
+    out = np.delete(inequalities, del_ineq, axis=0)
+    if out.shape[0] == 1:
+        out = out[0]
+    return out
+
+
+# setup parallel environment
+import multiprocessing as mp
+
+manager = mp.Manager()
+pool = mp.Pool(num_cpu)
+jobs = []
+indices = np.linspace(0, correct_inequalities.shape[0], num=num_cpu + 1, dtype=int)
+for i in range(num_cpu):
+    ineq = correct_inequalities[indices[i]:indices[i + 1]]
+    job = pool.apply_async(clean_inequalities, (ineq, relabels, dets,))
+    jobs.append(job)
+# run the jobs
+output = [job.get() for job in jobs]
+classes_inequalities = np.array(output)
+
+# run cleaning once again on the reduced size
+classes_inequalities = clean_inequalities(classes_inequalities, relabels, dets)
+if len(classes_inequalities.shape) == 1:
+    classes_inequalities = np.array([classes_inequalities])
+
+# save the classes
+np.savetxt('../data/vertex_enum_pr_box_det_decomp/{}{}{}{}_classes.gz'.format(ma, mb, n, n), classes_inequalities)
 
 # As we can see not all of the bell inequalities we find are actually bell inequalities. Maybe we also have
 # to do a check for facets.
@@ -106,25 +133,28 @@ print('Classes of inequalities: {}'.format(classes_inequalities.shape[0]))
 
 
 from itertools import product
+
+
 def get_configs_mat(inputs_a, inputs_b, outputs_a, outputs_b):
     """ Returns the configurations in a matrix form """
     configs = []
-    for y,b in product(inputs_b, outputs_b):
+    for y, b in product(inputs_b, outputs_b):
         c = []
         for x, a in product(inputs_a, outputs_a):
-            c.append((a,b,x,y))
+            c.append((a, b, x, y))
         configs.append(c)
     return configs
+
 
 def transform_vec_to_mat(configs_vec, configs_mat, vec):
     """ Transforms a vector to matrix representation """
     mat = np.zeros((len(configs_mat), len(configs_mat[0])))
-    for l,c in enumerate(configs_vec):
+    for l, c in enumerate(configs_vec):
         for i in range(len(configs_mat)):
             try:
                 j = configs_mat[i].index(c)
                 # if not fails -> set the entry in matrix
-                mat[i,j] = vec[l]
+                mat[i, j] = vec[l]
             except ValueError as e:
                 pass
     return mat
@@ -139,10 +169,10 @@ configs_mat = get_configs_mat(range(ma), range(mb), range(n), range(n))
 
 mat_inequalities = []
 for b in classes_inequalities:
+    print(b)
     m = transform_vec_to_mat(configs, configs_mat, b)
     mat_inequalities.append(m)
 mat_inequalities = np.array(mat_inequalities)
-
 
 # No we can display the matrix with matplotlib.
 
@@ -152,13 +182,9 @@ mat_inequalities = np.array(mat_inequalities)
 mat = mat_inequalities[0]
 
 import matplotlib.pyplot as plt
+
 hm = plt.imshow(mat)
 plt.colorbar(hm)
 plt.show()
 
-
 # In[ ]:
-
-
-
-
