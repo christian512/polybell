@@ -79,8 +79,9 @@ correct_inequalities = affine_transform_bell(correct_inequalities, dets)
 
 
 # find the number of classes
-def clean_inequalities(inequalities, relabels, dets):
+def clean_inequalities(start_idx, end_idx):
     del_ineq = []
+    inequalities = correct_inequalities[start_idx:end_idx]
     for i in range(inequalities.shape[0]):
         print('facet: {} / {} || len deletion list: {}'.format(i, inequalities.shape[0], len(del_ineq)))
         # if this facet can already be deleted -> continue
@@ -106,15 +107,14 @@ pool = mp.Pool(num_cpu)
 jobs = []
 indices = np.linspace(0, correct_inequalities.shape[0], num=num_cpu + 1, dtype=int)
 for i in range(num_cpu):
-    ineq = correct_inequalities[indices[i]:indices[i + 1]]
-    job = pool.apply_async(clean_inequalities, (ineq, relabels, dets,))
+    job = pool.apply_async(clean_inequalities, (indices[i], indices[i+1],))
     jobs.append(job)
 # run the jobs
 output = [job.get() for job in jobs]
-classes_inequalities = np.array(output)
+correct_inequalities = np.array(output)
 
 # run cleaning once again on the reduced size
-classes_inequalities = clean_inequalities(classes_inequalities, relabels, dets)
+classes_inequalities = clean_inequalities(0, correct_inequalities.shape[0])
 if len(classes_inequalities.shape) == 1:
     classes_inequalities = np.array([classes_inequalities])
 
