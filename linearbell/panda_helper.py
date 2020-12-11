@@ -4,7 +4,7 @@ from fractions import Fraction
 import subprocess
 
 
-def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]], file='', denom_limit=10000):
+def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=None, file='', denom_limit=10000):
     """
     the inequality is interpreted as lhs * x <= rhs
     lhs: left hand side of inequalities
@@ -13,7 +13,7 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]],
                 each list tells us how the variables are interchanged.
     """
     # check dimensions
-    if type(symmetries) == list:
+    if type(symmetries) != type(None):
         symmetries = np.array(symmetries)
     assert lhs.shape[0] == rhs.shape[0]
     # string to write out
@@ -24,7 +24,7 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]],
         string += 'a' + str(i) + ' '
     string += '\n'
     # add symmetries
-    if len(symmetries) > 0:
+    if type(symmetries) != type(None):
         string += 'Maps:\n'
         for symm in symmetries:
             for i in range(symm.shape[0]):
@@ -34,10 +34,13 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]],
     if idx_equalities:
         string += 'Equations:\n'
         for i in idx_equalities:
-            for x in lhs[i]:
-                string += str(Fraction(x).limit_denominator(denom_limit)) + ' '
+            arr = [Fraction(x).limit_denominator(denom_limit).denominator for x in lhs[i]]
+            arr.append(Fraction(rhs[i]).limit_denominator(denom_limit).denominator)
+            factor = np.product(np.unique(arr))
+            for j, x in enumerate(lhs[i]):
+                string += str(Fraction(factor * x).limit_denominator(denom_limit)) + 'a' + str(j) + ' '
             # TODO: check if this = is correct or can I just drop it?
-            string += '= ' + str(Fraction(rhs[i]).limit_denominator(denom_limit)) + '\n'
+            string += '= ' + str(Fraction(factor * rhs[i]).limit_denominator(denom_limit)) + '\n'
     # inequalities -> as we can not give fractions we multiply the inequality by the product of unique denominators
     string += 'Inequalities:\n'
     for i in range(lhs.shape[0]):
@@ -45,7 +48,7 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]],
             continue
         # find factor to multiply inequality with, such that we have a only integers inequality
         arr = [Fraction(x).limit_denominator(denom_limit).denominator for x in lhs[i]]
-        arr.append(Fraction(rhs[i]).denominator)
+        arr.append(Fraction(rhs[i]).limit_denominator(denom_limit).denominator)
         factor = np.product(np.unique(arr))
         # write the inequalitiy
         for j in range(lhs.shape[1]):
@@ -60,9 +63,9 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=[[]],
     return string
 
 
-def run_panda(file, outfile=''):
+def run_panda(file, threads=4,outfile=''):
     """ Runs panda on a file"""
-    cmd = 'panda ' + file
+    cmd = 'panda -t ' + str(threads) + ' ' + file
     if outfile:
         cmd += ' > ' + outfile
     out = subprocess.run(cmd, shell=True)
