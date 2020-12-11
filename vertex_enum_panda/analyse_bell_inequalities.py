@@ -18,7 +18,7 @@ from linearbell.utils import get_configs, get_deterministic_behaviors, check_equ
 ma = 2
 mb = 2
 n = 3
-num_cpu = 2
+num_cpu = 3
 
 file = '../data/vertex_enum_pr_box_det_decomp/{}{}{}{}.gz'.format(ma, mb, n, n)
 all_inequalities = np.loadtxt(file)
@@ -94,8 +94,8 @@ def clean_inequalities(start_idx, end_idx):
                 del_ineq.append(j)
     # return the new facets
     out = np.delete(inequalities, del_ineq, axis=0)
-    if out.shape[0] == 1:
-        out = out[0]
+    #if out.shape[0] == 1:
+    #   out = out[0]
     return out
 
 
@@ -112,6 +112,8 @@ for i in range(num_cpu):
 # run the jobs
 output = [job.get() for job in jobs]
 correct_inequalities = np.array(output)
+if len(correct_inequalities.shape) == 3:
+    correct_inequalities = correct_inequalities[0]
 
 # run cleaning once again on the reduced size
 classes_inequalities = clean_inequalities(0, correct_inequalities.shape[0])
