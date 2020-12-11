@@ -13,7 +13,7 @@
 
 
 import numpy as np
-from linearbell.utils import get_configs, get_deterministic_behaviors, check_equiv_bell_vertex_enum
+from linearbell.utils import get_configs, get_deterministic_behaviors, check_equiv_bell_vertex_enum_fast, check_equiv_bell_vertex_enum
 
 ma = 2
 mb = 2
@@ -79,6 +79,25 @@ correct_inequalities = affine_transform_bell(correct_inequalities, dets)
 
 
 # find the number of classes
+def clean_inequalities_fast(start_idx, end_idx):
+    del_ineq = []
+    inequalities = correct_inequalities[start_idx:end_idx]
+    for i in range(inequalities.shape[0]):
+        print('facet: {} / {} || len deletion list: {}'.format(i, inequalities.shape[0], len(del_ineq)))
+        # if this facet can already be deleted -> continue
+        if i in del_ineq: continue
+        for j in range(i + 1, inequalities.shape[0]):
+            # if this facet can already be deleted -> continue
+            if j in del_ineq: continue
+            # check if the two facets are equivalent
+            if check_equiv_bell_vertex_enum_fast(inequalities[i], inequalities[j], relabels, dets, tol=1e-4):
+                del_ineq.append(j)
+    # return the new facets
+    out = np.delete(inequalities, del_ineq, axis=0)
+
+    return out
+
+# find the number of classes
 def clean_inequalities(start_idx, end_idx):
     del_ineq = []
     inequalities = correct_inequalities[start_idx:end_idx]
@@ -107,7 +126,7 @@ pool = mp.Pool(num_cpu)
 jobs = []
 indices = np.linspace(0, correct_inequalities.shape[0], num=num_cpu + 1, dtype=int)
 for i in range(num_cpu):
-    job = pool.apply_async(clean_inequalities, (indices[i], indices[i+1],))
+    job = pool.apply_async(clean_inequalities_fast, (indices[i], indices[i+1],))
     jobs.append(job)
 # run the jobs
 output = [job.get() for job in jobs]
@@ -181,12 +200,13 @@ mat_inequalities = np.array(mat_inequalities)
 # In[23]:
 
 
-mat = mat_inequalities[0]
+
 
 import matplotlib.pyplot as plt
+for mat in mat_inequalities:
 
-hm = plt.imshow(mat)
-plt.colorbar(hm)
-plt.show()
+    hm = plt.imshow(mat)
+    plt.colorbar(hm)
+    plt.show()
 
 # In[ ]:
