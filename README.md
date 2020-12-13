@@ -32,11 +32,15 @@ The external software I use in this repository:
 Some of the codes use the commercial Gurobi solver. You need a license to run the solver, but you can get a free academic
 at their website.
 
-To install Gurobi follow this guide:
+To install Gurobi follow this guide to install the software and set the environment variables:
 
 https://www.gurobi.com/documentation/9.1/quickstart_linux/software_installation_guid.html
 
-To setup Gurobi for Python, please follow this guide:
+For installing *gurobipy*, the python library for Gurobi, you can simply run:
+
+*python -m pip install -i https://pypi.gurobi.com gurobipy*
+
+More information for the pyhton installation here:
 
 https://support.gurobi.com/hc/en-us/articles/360044290292-How-do-I-install-Gurobi-for-Python-
 
@@ -50,7 +54,6 @@ This might be worth it's own repository...
 The documentation and installation notes are maintained here:
 
 http://cgm.cs.mcgill.ca/~avis/C/lrs.html
-
 # Sources
 
 * [*Bell nonlocality*, *Brunner et. al. (2014)*](https://arxiv.org/abs/1303.2849)
