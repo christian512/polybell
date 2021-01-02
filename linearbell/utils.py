@@ -106,7 +106,8 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
 
 def get_possible_liftings(inputs, outputs):
     """
-    Gets all possible liftings for given inputs and outputs
+    Gets all possible liftings for given inputs and outputs.
+    The return list contains for each input, which output was used to create the new output.
     """
     return list(product(outputs, repeat=len(inputs)))
 

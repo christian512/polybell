@@ -59,7 +59,6 @@ for lift_a in poss_lifts_a:
         pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
         # find the local weight of the reduced pr box
         bell_exp = find_local_weight_dual(pr_red, dets)
-        # TODO: Should we rescale the bell expression that min(bell_exp @ dets) = 1
         # check if bell expression is correct
         if bell_exp @ pr_red < 1 - tol:
             bells.append(bell_exp)
