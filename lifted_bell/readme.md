@@ -15,3 +15,7 @@ we check if there exists any bell inequality of lifted form
    was an idea that we had during discussions about liftings.
    There was a counter example, that concluded that these joint liftings
    are not realizable or are preserving bell inequality properties.
+   
+* **partial_lifted_bell_extended_pr_box.py** - Checks whether there exist 
+partially lifted forms of bell inequalities for arbitrary input and 3 outputs.
+  Results have to be found..
