@@ -3,7 +3,7 @@ Checking if there is a lifted PR box for the finite efficiency PR box with m inp
 """
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
-    reduce_extended_pr_box, find_local_weight_dual
+    partially_reduce_extended_pr_box, find_local_weight_dual
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -19,6 +19,10 @@ inputs_b = range(mb)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
+# for which inputs should the output NOT be a lifting
+no_lift_a = [2]
+no_lift_b = [2]
+
 # set efficiency
 epsilon = 0.01
 eta = 4 / (len(inputs_a) + 4) + epsilon
@@ -28,17 +32,18 @@ print('epsilon: {}'.format(epsilon))
 tol = 1e-6
 
 # set file
-file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b), len(outputs_wo_failure), len(outputs_wo_failure))
+file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
+                                                                          len(outputs_wo_failure),
+                                                                          len(outputs_wo_failure))
 
 # get deterministics for the non output
-dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_wo_failure)
+dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_failure)
 
 # get all possible liftings for both parties
 poss_lifts_a = get_possible_liftings(inputs_a, outputs_wo_failure)
 poss_lifts_b = get_possible_liftings(inputs_b, outputs_wo_failure)
 
 # get configs with and without failure
-configs_wo_failure = get_configs(inputs_a, inputs_b, outputs_wo_failure, outputs_wo_failure)
 configs_failure = get_configs(inputs_a, inputs_b, outputs_failure, outputs_failure)
 
 # create extended pr_box
@@ -52,11 +57,19 @@ counter = 0
 # list of bell expressions
 bells = []
 for lift_a in poss_lifts_a:
+    # set the no lift variable for party A
+    lift_a = list(lift_a)
+    for na in no_lift_a:
+        lift_a[na] = -1
     for lift_b in poss_lifts_b:
-        print("{} / {}".format(counter, niter))
+        # print("{} / {}".format(counter, niter))
         counter += 1
+        # set the no lift variable for party B
+        lift_b = list(lift_b)
+        for nb in no_lift_b:
+            lift_b[nb] = -1
         # get reduced pr box under this liftings
-        pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
+        pr_red = partially_reduce_extended_pr_box(pr_ext, configs_failure, lift_a, lift_b)
         # find the local weight of the reduced pr box
         bell_exp = find_local_weight_dual(pr_red, dets)
         # check if bell expression is correct
@@ -65,4 +78,4 @@ for lift_a in poss_lifts_a:
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 
 # store the bell expressions to file
-np.savetxt(file, np.array(bells))
+# np.savetxt(file, np.array(bells))

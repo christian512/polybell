@@ -257,9 +257,7 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
     # check length
     assert len(configs_ext) == len(pr_box)
     # create empty reduced pr box
-    pr_red = []
-    # configurations of reduced pr box
-    configs_red = []
+    pr_red = np.zeros(len(configs_ext))
     # iterate through the configs
     for i, c in enumerate(configs_ext):
         # get explicit configuration
@@ -272,16 +270,11 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
         if b == failure_indicator:
             if not lift_b[y] == -1:
                 b = lift_b[y]
-
         # get the index where this new configuration is located or append it if not yet in the list
-        try:
-            idx = configs_red.index((a, b, x, y))
-        except ValueError:
-            configs_red.append((a, b, x, y))
-            idx = configs_red.index((a, b, x, y))
+        idx = configs_ext.index((a, b, x, y))
         # add the probability of the extended PR box to this example
         pr_red[idx] += pr_box[i]
-    return pr_red, configs_red
+    return pr_red
 
 
 def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
