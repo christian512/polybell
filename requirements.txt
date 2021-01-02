@@ -1,4 +1,2 @@
-gurobipy==9.1.0
--e git+https://github.com/christian512/linearbell.git@ad567a5e5cf2d67e7c6907ff789dd0f5d9f21944#egg=linearbell
 numpy==1.19.4
 scipy==1.5.4

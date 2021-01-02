@@ -22,6 +22,21 @@ is a Readme in each directory.
 * **notebooks** : some explanatory notebooks
 * **vertex_enum** : vertex enumeration to find bell inequalities (using MPLRS)
 
+## Virtual environment setup
+We provide a *requirements.txt* file for the needed pip-packages in the virtual environment. 
+**Make sure you activated your new virtual environment (based on python 3)**.
+You can install these by:
+```bash
+pip install -r requirements.txt
+```
+As we are providing the functionalities of this repository as a package itself, we have to install this package 
+directly from the local repository. To do so, run the following command from the main directory, where the *setup.py* is 
+located:
+```bash
+python -m pip install -e .
+```
+For setup of the external software check the next section.
+
 ## Software setup 
 The external software I use in this repository:
 * Gurobi as a fast solver for linear programs
