@@ -125,6 +125,7 @@ def get_possible_liftings_extended(inputs, outputs, inputs_other):
         lifts[i] = np.array(lifts[i]).reshape((len(inputs), len(inputs_other)))
     return lifts
 
+
 # TODO Write function as getting determnisistic behaviors, so just input, inputs and outputs
 def general_pr_box(a, b, x, y):
     """
@@ -227,6 +228,60 @@ def reduce_extended_pr_box(pr_box, configs_ext, configs_red, lift_a, lift_b, fai
         # add the probability of the extended PR box to this example
         pr_red[idx] += pr_box[i]
     return pr_red
+
+
+def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failure_indicator=2):
+    """
+    Reduces a PR box under liftings. However here some entries of lift_a / lift_b might be "-1", which implies that this
+    output should not be a lifting, but stay an independent variable. This way we get a weirdly shaped reduced probability
+    distribution. The configs are also returned with this function
+    Parameters
+    ----------
+    pr_box: np.array - PR box prob dist
+    configs_ext: list - gives config for each entry in pr_box
+    lift_a: liftings array generated with get_possible_liftings
+    lift_b: liftings array generated with get_possible_liftings
+    failure_indicator: indicator for failure (default 2)
+
+    Returns
+    -------
+    pr_red : np.array - reduced PR box under given liftings (some may excluded)
+    configs_red: list - configurations of the new PR box, might be a weird ordering.
+    """
+    # check dimensions of the liftings
+    assert np.ndim(
+        lift_a) == 1, 'The lifting you gave is not 1D. Do you want to use the extended version of this function?'
+    assert np.ndim(
+        lift_b) == 1, 'The lifting you gave is not 1D. Do you want to use the extended version of this function?'
+
+    # check length
+    assert len(configs_ext) == len(pr_box)
+    # create empty reduced pr box
+    pr_red = []
+    # configurations of reduced pr box
+    configs_red = []
+    # iterate through the configs
+    for i, c in enumerate(configs_ext):
+        # get explicit configuration
+        a, b, x, y = c
+        # check if a or b is a failure
+        if a == failure_indicator:
+            # check that the output for this input x should be a lifting
+            if not lift_a[x] == -1:
+                a = lift_a[x]
+        if b == failure_indicator:
+            if not lift_b[y] == -1:
+                b = lift_b[y]
+
+        # get the index where this new configuration is located or append it if not yet in the list
+        try:
+            idx = configs_red.index((a, b, x, y))
+        except ValueError:
+            configs_red.append((a, b, x, y))
+            idx = configs_red.index((a, b, x, y))
+        # add the probability of the extended PR box to this example
+        pr_red[idx] += pr_box[i]
+    return pr_red, configs_red
 
 
 def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
@@ -352,6 +407,7 @@ def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
     m.optimize()
     # return
     return weight.X
+
 
 def find_local_weight_dual(p, dets, method=-1, tol=1e-6):
     # TODO: This is the dual of the local weight problem right? -> Should rename
@@ -500,6 +556,7 @@ def check_equiv_bell(bell1, bell2, relabels_dets, dets, tol=1e-6):
     # check if any relabelling is the same
     return np.any(np.sum((v1 - v2[relabels_dets]) ** 2, axis=1) < tol ** 2)
 
+
 def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
     """
     Checks if two bell inequalities are equivalent under relabelling and for each perm checks that if they are equiv
@@ -534,17 +591,16 @@ def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
     if not np.all(u1 == u2): return False
     if not np.all(c1 == c2): return False
 
-
     # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
     for relabel in relabels:
         bell_tmp = bell2[relabel]
         v2 = dets @ bell_tmp
-        if np.sum((v1 - v2) ** 2) < tol**2: return True
+        if np.sum((v1 - v2) ** 2) < tol ** 2: return True
     # the two expressions were not equivalent -> so they are from different classes
     return False
 
 
-def get_relabels_dets(dets, allowed_perms,show_progress=0):
+def get_relabels_dets(dets, allowed_perms, show_progress=0):
     """ Gets a list of which deterministic transforms to which under each relabelling """
     # list for relabels
     relabels_dets = []
@@ -705,6 +761,7 @@ def deparametrise_bell_expression(b_param, configs, configs_param, inputs_a, inp
     # return the bell expression
     return bell
 
+
 def affine_transform_bell(bell_expressions, dets):
     """ Shifts the bell expressions such that min(b @ det) = 0 and second_min(b @ det) = 1 """
     shifted_bell = []
@@ -720,6 +777,7 @@ def affine_transform_bell(bell_expressions, dets):
         bell = (b - min_val / sum_ones) / sec_min_pos_val
         shifted_bell.append(bell)
     return np.array(shifted_bell)
+
 
 def check_equiv_bell_vertex_enum_fast(bell1, bell2, relabels, dets, tol=1e-6):
     """
@@ -752,5 +810,3 @@ def check_equiv_bell_vertex_enum_fast(bell1, bell2, relabels, dets, tol=1e-6):
     # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
     bell2_relabels = bell2[relabels]
     return np.any(np.sum((bell1 - bell2[relabels]) ** 2, axis=1) < tol ** 2)
-
-
