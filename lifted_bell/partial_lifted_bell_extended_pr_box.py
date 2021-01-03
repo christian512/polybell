@@ -20,16 +20,16 @@ outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
 # for which inputs should the output NOT be a lifting
-no_lift_a = [2]
-no_lift_b = [2]
+no_lift_a = [0]
+no_lift_b = [1]
 
 # set efficiency
-epsilon = 0.01
-eta = 4 / (len(inputs_a) + 4) + epsilon
-print('epsilon: {}'.format(epsilon))
+epsilon = 0.05
+eta = 4 / (len(inputs_a) + 4)
+print('epsilon[ % of eta]: {} %'.format(epsilon / eta * 100))
 
 # tolerance for checking the bell expression
-tol = 1e-6
+tol = 1e-3
 
 # set file
 file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
@@ -47,8 +47,10 @@ poss_lifts_b = get_possible_liftings(inputs_b, outputs_wo_failure)
 configs_failure = get_configs(inputs_a, inputs_b, outputs_failure, outputs_failure)
 
 # create extended pr_box
-pr_ext = [general_pr_box_extended(a, b, x, y, eta, outputs_wo_failure) for (a, b, x, y) in configs_failure]
+pr_ext = [general_pr_box_extended(a, b, x, y, eta + epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
+pr_low_eff = [general_pr_box_extended(a, b, x, y, eta - epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
 pr_ext = np.array(pr_ext)
+pr_low_eff = np.array(pr_low_eff)
 
 # iterate through all possible combinations of liftings for A and B
 niter = len(poss_lifts_a) * len(poss_lifts_b)
@@ -62,7 +64,7 @@ for lift_a in poss_lifts_a:
     for na in no_lift_a:
         lift_a[na] = -1
     for lift_b in poss_lifts_b:
-        # print("{} / {}".format(counter, niter))
+        print("{} / {}".format(counter, niter))
         counter += 1
         # set the no lift variable for party B
         lift_b = list(lift_b)
@@ -73,9 +75,10 @@ for lift_a in poss_lifts_a:
         # find the local weight of the reduced pr box
         bell_exp = find_local_weight_dual(pr_red, dets)
         # check if bell expression is correct
-        if bell_exp @ pr_red < 1 - tol:
+        if bell_exp @ pr_red < 1 - tol and bell_exp @ pr_low_eff > 1:
             bells.append(bell_exp)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
-
+print('num bell expressions: {}'.format(len(bells)))
 # store the bell expressions to file
 # np.savetxt(file, np.array(bells))
+

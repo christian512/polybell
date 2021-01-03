@@ -21,7 +21,7 @@ outputs_wo_failure = range(2)
 
 # set efficiency
 epsilon = 0.01
-eta = 4 / (len(inputs_a) + 4) + epsilon
+eta = 4 / (len(inputs_a) + 4)
 print('epsilon: {}'.format(epsilon))
 
 # tolerance for checking the bell expression
@@ -42,8 +42,11 @@ configs_wo_failure = get_configs(inputs_a, inputs_b, outputs_wo_failure, outputs
 configs_failure = get_configs(inputs_a, inputs_b, outputs_failure, outputs_failure)
 
 # create extended pr_box
-pr_ext = [general_pr_box_extended(a, b, x, y, eta, outputs_wo_failure) for (a, b, x, y) in configs_failure]
+pr_ext = [general_pr_box_extended(a, b, x, y, eta + epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
 pr_ext = np.array(pr_ext)
+
+pr_low_eff = [general_pr_box_extended(a, b, x, y, eta - epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
+pr_low_eff = np.array(pr_low_eff)
 
 # iterate through all possible combinations of liftings for A and B
 niter = len(poss_lifts_a) * len(poss_lifts_b)
@@ -57,10 +60,12 @@ for lift_a in poss_lifts_a:
         counter += 1
         # get reduced pr box under this liftings
         pr_red = reduce_extended_pr_box(pr_ext, configs_failure, configs_wo_failure, lift_a, lift_b)
+        pr_red_low_eff = reduce_extended_pr_box(pr_low_eff, configs_failure, configs_wo_failure, lift_a, lift_b)
+
         # find the local weight of the reduced pr box
         bell_exp = find_local_weight_dual(pr_red, dets)
         # check if bell expression is correct
-        if bell_exp @ pr_red < 1 - tol:
+        if bell_exp @ pr_red < 1 - tol and bell_exp @ pr_red_low_eff > 1:
             bells.append(bell_exp)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 
