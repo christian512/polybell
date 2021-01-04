@@ -32,7 +32,7 @@ print('epsilon[ % of eta]: {} %'.format(epsilon / eta * 100))
 tol = 1e-3
 
 # set file
-file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
+file = '../data/pr_box_finite_efficiency_bell_lifted_partial/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
                                                                           len(outputs_wo_failure),
                                                                           len(outputs_wo_failure))
 
@@ -80,5 +80,5 @@ for lift_a in poss_lifts_a:
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 print('num bell expressions: {}'.format(len(bells)))
 # store the bell expressions to file
-# np.savetxt(file, np.array(bells))
+np.savetxt(file, np.array(bells))
 
