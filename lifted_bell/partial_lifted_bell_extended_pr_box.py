@@ -20,8 +20,8 @@ outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
 # for which inputs should the output NOT be a lifting
-no_lift_a = [1]
-no_lift_b = [0]
+no_lift_a = [2]
+no_lift_b = [2]
 
 # set efficiency
 epsilon = 0.01
