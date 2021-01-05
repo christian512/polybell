@@ -258,6 +258,8 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
     assert len(configs_ext) == len(pr_box)
     # create empty reduced pr box
     pr_red = np.zeros(len(configs_ext))
+    # indices that are copied to another value -> they have to be deleted as there is no dof anymore
+    del_idx = []
     # iterate through the configs
     for i, c in enumerate(configs_ext):
         # get explicit configuration
@@ -274,7 +276,54 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
         idx = configs_ext.index((a, b, x, y))
         # add the probability of the extended PR box to this example
         pr_red[idx] += pr_box[i]
-    return pr_red
+        # append index to delete indices
+        if not idx == i:
+            del_idx.append(i)
+    return pr_red, del_idx
+
+def update_partial_lifted_bell_expression(bell_red, configs, lift_a, lift_b, failure_indicator=2):
+    """
+    This function updates a Bell expression that was found for a partially reduced PR box by the function
+    partially_reduce_extended_pr_box(). If the PR box is reduced under a lifting, we add probabilities from the new output
+    to the old output, where it was generated from. With adding these probabilities we put the assumption that the values
+    in the bell expressions are generated from a lifting. So we have to copy the value from the old output to the new output.
+    Parameters
+    ----------
+    failure_indicator
+    bell_red
+    configs
+    lift_a
+    lift_b
+
+    Returns
+    -------
+    bell_expression
+    """
+    assert np.ndim(lift_a) == 1
+    assert np.ndim(lift_b) == 1
+    assert len(configs) == len(bell_red)
+    # iterate through configurations
+    for i, c in enumerate(configs):
+        # get the explicit configuration
+        a, b, x, y = c
+        # check if it's a failure indicator
+        if a == failure_indicator:
+            # check that the output for this input x should be a lifting
+            if not lift_a[x] == -1:
+                a = lift_a[x]
+        # do the same for b
+        if b == failure_indicator:
+            if not lift_b[y] == -1:
+                b = lift_b[y]
+        # get the index of the new config
+        idx = configs.index((a,b,x,y))
+        # if the new idx is different from the old index -> it's a lifting
+        # then we have to move the value in the bell expression also to the
+        # lifted output
+        # TODO: Do we have to do i == idx
+        bell_red[i] = bell_red[idx]
+    return bell_red
+
 
 
 def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
