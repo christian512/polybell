@@ -277,6 +277,7 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
         # add the probability of the extended PR box to this example
         pr_red[idx] += pr_box[i]
         # append index to delete indices
+        # TODO: Deleted indices are not anymore used
         if not idx == i:
             del_idx.append(i)
     return pr_red, del_idx
