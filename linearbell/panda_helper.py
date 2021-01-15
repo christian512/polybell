@@ -60,7 +60,7 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symm
 
     # deterministics given to file
     if type(dets) != type(None):
-        string += 'Deterministic: \n'
+        string += 'Deterministics: \n'
         for d in dets:
             for val in d:
                 string += str(int(val)) + ' '
