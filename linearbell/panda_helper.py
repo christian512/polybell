@@ -4,11 +4,13 @@ from fractions import Fraction
 import subprocess
 
 
-def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=None, file='', denom_limit=10000):
+def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symmetries=None, file='', denom_limit=10000):
     """
     the inequality is interpreted as lhs * x <= rhs
     lhs: left hand side of inequalities
     rhs: righ hand side of inequalities
+    idx_equalities: which entries of the inequality system should be equalities
+    dets: deterministic points for equivalence checking in panda
     symmetries: the symmetries that we want to consider given in a list of lists
                 each list tells us how the variables are interchanged.
     """
@@ -55,6 +57,16 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], symmetries=None,
             val = int(lhs[i, j] * factor)
             string += str(val) + 'a' + str(j) + ' '
         string += '<= ' + str(int(rhs[i] * factor)) + '\n'
+
+    # deterministics given to file
+    if type(dets) != type(None):
+        string += 'Deterministic: \n'
+        for d in dets:
+            for val in d:
+                string += str(int(val)) + ' '
+            string += '\n'
+
+
     # write file
     if file:
         f = open(file, 'w+')
