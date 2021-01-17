@@ -74,10 +74,23 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symm
         f.close()
     return string
 
+def write_known_vertices(vertices, file='knownvertices.ext'):
+    """ Writes known vertices to a file """
+    s = "Vertices: \n"
+    for v in vertices:
+        for val in v:
+            s += str(int(round(val))) + ' '
+        s += '\n'
+    f = open(file, 'w+')
+    f.write(s)
+    f.close()
+    return s
 
-def run_panda(file, threads=4,outfile=''):
+def run_panda(file, threads=4,outfile='', known_vertices=''):
     """ Runs panda on a file"""
     cmd = 'panda -t ' + str(threads) + ' ' + file
+    if known_vertices:
+        cmd += ' -k ' + known_vertices
     if outfile:
         cmd += ' > ' + outfile
     out = subprocess.run(cmd, shell=True)
