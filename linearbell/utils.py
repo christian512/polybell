@@ -428,6 +428,19 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
         opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
 
+def solve_linear_program_maximize(lhs, rhs, method=-1):
+    """ Solves a linear program with goal of maximization """
+    m = gp.Model('lin_prg', env=env)
+    m.setParam("Method", method)
+    var = m.addMVar(shape=lhs.shape[0], name='var')
+    ones = np.ones(lhs.shape[0])
+    lhs = np.transpose(lhs)
+    lhs = lhs @ var
+    lhs = np.sum(np.transpose(lhs), axis=0)
+    m.setObjective(var @ ones, GRB.MAXIMIZE)
+    m.addConstr(lhs <= rhs, name="constraints")
+    m.optimize()
+    return var.X
 
 def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
     """ Finds the local weights for a behavior and given deterministic points """
@@ -639,6 +652,54 @@ def check_equiv_bell_vertex_enum(bell1, bell2, relabels, dets, tol=1e-6):
         bell_tmp = bell2[relabel]
         v2 = dets @ bell_tmp
         if np.sum((v1 - v2) ** 2) < tol ** 2: return True
+    # the two expressions were not equivalent -> so they are from different classes
+    return False
+
+
+def check_equiv_bell_vertex_enum_non_rescale(bell1, bell2, relabels, dets, tol=1e-6):
+    """
+    Checks if two bell inequalities are equivalent under relabelling and for each perm checks that if they are equiv
+    This function uses the relabels of the bell expressions and therefore needs less memory, but has to calculate the
+    v vectors multiple times.
+    :param bell1: first bell expression
+    :param bell2: second bell expression
+    :param relabels: permutations of the bell expression that are allowed -> from get_allowed_relabellings
+    :param dets: deterministic behaviors
+    :param tol: tolerance
+    :return:
+    """
+    # check if they are the same
+    if np.sum((bell1 - bell2) ** 2) < tol ** 2:
+        return True
+    # get the v vectors
+    v1 = dets @ bell1
+    v2 = dets @ bell2
+    # shift to min of v_i = 0
+    v1 = v1 - np.min(v1)
+    v2 = v2 - np.min(v2)
+    # rescale that second min is = 1
+    v1 = v1 / np.min(v1[v1 > tol])
+    v2 = v2 / np.min(v2[v2 > tol])
+    # check that smallest value is zero, due to affine_transformation
+    assert np.abs(np.min(v1)) < tol, 'min(v1): {}'.format(np.min(v1))
+    assert np.abs(np.min(v1[v1 > tol]) - 1.0) < tol, 'min(v1[v1 > 0]): {}'.format(np.min(v1[v1 > 0]))
+    assert np.abs(np.min(v2)) < tol, 'min(v2): {}'.format(np.min(v2))
+    assert np.abs(np.min(v2[v2 > tol]) - 1.0) < tol, 'min(v1[v2 > 0]): {}'.format(np.min(v2[v2 > 0]))
+
+
+    if np.sum((v1 - v2) ** 2) < tol: return True
+    # try to see if they have the same tally
+    u1, c1 = np.unique(np.round(v1, decimals=3), return_counts=True)
+    u2, c2 = np.unique(np.round(v2, decimals=3), return_counts=True)
+    if not u1.shape[0] == u2.shape[0]: return False
+    if not np.all(u1 == u2): return False
+    if not np.all(c1 == c2): return False
+
+    # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
+    for relabel in relabels:
+        bell_tmp = bell2[relabel]
+        if check_equiv_bell_vertex_enum_non_rescale(bell1, bell_tmp, [], dets):
+            return True
     # the two expressions were not equivalent -> so they are from different classes
     return False
 
