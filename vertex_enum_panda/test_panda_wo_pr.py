@@ -8,10 +8,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='n', help='number of outputs')
+parser.add_argument(dest='threads', help='number of threads to use')
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
 n = int(args.n)
+threads = int(args.threads)
 
 # set inputs / outputs
 inputs_a = range(ma)
@@ -44,7 +46,7 @@ rhs = np.ones(dets.shape[0])
 hrepr = write_panda_input_inequalities(lhs, rhs, symmetries=relabels, dets=dets_unshifted, file='input.ine')
 
 # run the file
-run_panda('input.ine', outfile='out.ext', threads=1)
+run_panda('input.ine', outfile='out.ext', threads=threads)
 
 vertices, rays = read_vertices_rays('out.ext')
 
