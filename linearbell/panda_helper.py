@@ -86,6 +86,25 @@ def write_known_vertices(vertices, file='knownvertices.ext'):
     f.close()
     return s
 
+def read_vertices_rays(file):
+    """ Reads vertices and rays from a PANDA output file """
+    f = open(file, 'r')
+    string = f.read()
+    f.close()
+    vertices_string = string.split('\n')[1:-1]
+    vertices = []
+    rays = []
+    for v_string in vertices_string:
+        arr = np.fromstring(v_string[1:], sep=' ', dtype=float)
+        if arr[-1] == 0:
+            rays.append(arr[:-1])
+        else:
+            v = arr[:-1] / arr[-1]
+            vertices.append(v)
+    return np.array(vertices), np.array(rays)
+
+
+
 def run_panda(file, threads=4,outfile='', known_vertices=''):
     """ Runs panda on a file"""
     cmd = 'panda -t ' + str(threads) + ' ' + file
