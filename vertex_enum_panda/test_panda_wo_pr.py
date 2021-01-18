@@ -63,3 +63,4 @@ for b in vertices:
 
 classes = np.array(classes)
 np.savetxt(outfile, classes)
+print('stored {} classes'.format(classes.shape[0]))
