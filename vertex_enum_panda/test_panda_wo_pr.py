@@ -40,13 +40,11 @@ configs = get_configs(inputs_a, inputs_b, outputs, outputs)
 lhs = dets
 rhs = np.ones(dets.shape[0])
 
-
-
 # write the file
 hrepr = write_panda_input_inequalities(lhs, rhs, symmetries=relabels, dets=dets_unshifted, file='input.ine')
 
 # run the file
-run_panda('input.ine', outfile='out.ext',threads=1)
+run_panda('input.ine', outfile='out.ext', threads=1)
 
 vertices, rays = read_vertices_rays('out.ext')
 
@@ -61,4 +59,5 @@ for b in vertices:
     if not equiv:
         classes.append(b)
 
-print(len(classes))
+classes = np.array(classes)
+np.savetxt(outfile, classes)
