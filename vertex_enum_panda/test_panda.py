@@ -26,7 +26,7 @@ outputs_wo_failure = range(n - 1)
 assert n == 3, 'Need 3 outputs for this script'
 
 # setup output file
-outfile = '../data/vertex_enum/{}{}{}{}.ext'.format(ma, mb, n, n)
+outfile = '../data/vertex_enum_pr_box/{}{}{}{}_all.ext'.format(ma, mb, n, n)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
@@ -90,5 +90,6 @@ for b in vertices:
     if not equiv:
         classes.append(b)
 classes = np.array(classes)
+np.savetxt(outfile, classes)
 print('Found {} classes.'.format(classes.shape[0]))
 
