@@ -18,4 +18,15 @@ we check if there exists any bell inequality of lifted form
    
 * **partial_lifted_bell_extended_pr_box.py** - Checks whether there exist 
 partially lifted forms of bell inequalities for arbitrary input and 3 outputs.
-  Results have to be found..
+  This is the case for 3 inputs, where both parties can have partial liftings.
+  For the 6 inputs case only one party can have a partial lifting.
+  This might indicate that for higher number of inputs there are no such symmetries.
+  But we could check this on a machine with more computing power.
+  
+* **partial_lifted_bell_symmetric.py** - Checks whether there exist symmetric
+bell inequalities for arbitrary number of inputs and 3 outputs. We did not find such Bell inequalities.
+  Could check if the code is correct, but I don't think so.
+  
+* **analyse_bell_inequalities.ipynb** - Analyses the bell inequalities output by 
+one of these scripts above.
+  
