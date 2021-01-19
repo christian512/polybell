@@ -23,6 +23,7 @@ inputs_a = range(ma)
 inputs_b = range(mb)
 outputs = range(n)
 outputs_wo_failure = range(n - 1)
+assert n == 3, 'Need 3 outputs for this script'
 
 # setup output file
 outfile = '../data/vertex_enum/{}{}{}{}.ext'.format(ma, mb, n, n)
