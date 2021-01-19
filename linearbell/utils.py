@@ -428,19 +428,6 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
         opt = linprog(c=obj, A_ub=lhs_ineq, b_ub=rhs_ineq)
     return opt, opt.x
 
-def solve_linear_program_maximize(lhs, rhs, method=-1):
-    """ Solves a linear program with goal of maximization """
-    m = gp.Model('lin_prg', env=env)
-    m.setParam("Method", method)
-    var = m.addMVar(shape=lhs.shape[0], name='var')
-    ones = np.ones(lhs.shape[0])
-    lhs = np.transpose(lhs)
-    lhs = lhs @ var
-    lhs = np.sum(np.transpose(lhs), axis=0)
-    m.setObjective(var @ ones, GRB.MAXIMIZE)
-    m.addConstr(lhs <= rhs, name="constraints")
-    m.optimize()
-    return var.X
 
 def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
     """ Finds the local weights for a behavior and given deterministic points """

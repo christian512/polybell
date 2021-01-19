@@ -107,7 +107,7 @@ def read_vertices_rays(file):
 
 def run_panda(file, threads=4,outfile='', known_vertices=''):
     """ Runs panda on a file"""
-    cmd = 'panda -t ' + str(threads) + ' ' + file
+    cmd = 'panda ' + file + ' -t ' + str(threads)
     if known_vertices:
         cmd += ' -k ' + known_vertices
     if outfile:
