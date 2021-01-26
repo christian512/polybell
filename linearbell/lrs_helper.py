@@ -176,11 +176,13 @@ def read_v_file(file):
     return np.array(vertices), np.array(rays)
 
 
-def run_lrs_v_repr(input_file, output_file='out.ine'):
+def run_lrs_v_repr(input_file, output_file='out.ine',nproc=1):
     """
     Runs lrs with a given input file input file for V representation and read out the facets and linearities
     """
     cmd = 'lrs ' + input_file + ' ' + output_file
+    if nproc > 1:
+        cmd = 'mpirun -np ' + str(nproc) + ' mplrs ' + input_file + ' ' + output_file
     out = subprocess.run(cmd, shell=True)
     # read the output file
     f = open(output_file, 'r')
