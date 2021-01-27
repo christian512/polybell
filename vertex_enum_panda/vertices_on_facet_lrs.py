@@ -25,6 +25,6 @@ polytope_v_representation(vertices, file=vertex_file)
 # run redund
 
 # run lrs (with timing)
-run_lrs_v_repr(vertex_file, 'ridges.ine', nproc=6)
+run_lrs_v_repr(vertex_file, 'ridges.ine', nproc=16)
 
 # read the resulting ridges
