@@ -182,7 +182,7 @@ def run_lrs_v_repr(input_file, output_file='out.ine',nproc=1):
     """
     cmd = 'lrs ' + input_file + ' ' + output_file
     if nproc > 1:
-        cmd = 'mpirun -np ' + str(nproc) + '--oversubscribe mplrs ' + input_file + ' ' + output_file
+        cmd = 'mpirun -np ' + str(nproc) + ' --oversubscribe mplrs ' + input_file + ' ' + output_file
     out = subprocess.run(cmd, shell=True)
     # read the output file
     f = open(output_file, 'r')
