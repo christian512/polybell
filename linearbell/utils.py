@@ -453,7 +453,6 @@ def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
 
 
 def find_local_weight_dual(p, dets, method=-1, tol=1e-6):
-    # TODO: This is the dual of the local weight problem right? -> Should rename
     # create a model
     m = gp.Model('local_weight_dual', env=env)
     m.setParam("Method", method)
@@ -672,8 +671,6 @@ def check_equiv_bell_vertex_enum_non_rescale(bell1, bell2, relabels, dets, tol=1
     assert np.abs(np.min(v1[v1 > tol]) - 1.0) < tol, 'min(v1[v1 > 0]): {}'.format(np.min(v1[v1 > 0]))
     assert np.abs(np.min(v2)) < tol, 'min(v2): {}'.format(np.min(v2))
     assert np.abs(np.min(v2[v2 > tol]) - 1.0) < tol, 'min(v1[v2 > 0]): {}'.format(np.min(v2[v2 > 0]))
-
-
     if np.sum((v1 - v2) ** 2) < tol: return True
     # try to see if they have the same tally
     u1, c1 = np.unique(np.round(v1, decimals=3), return_counts=True)
@@ -901,3 +898,43 @@ def check_equiv_bell_vertex_enum_fast(bell1, bell2, relabels, dets, tol=1e-6):
     # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
     bell2_relabels = bell2[relabels]
     return np.any(np.sum((bell1 - bell2[relabels]) ** 2, axis=1) < tol ** 2)
+
+def relabellings_parametrised(configs_param, inputs_a, inputs_b,outputs_a, outputs_b):
+    """ Calculates the relabellings for parametrised setup """
+    relabels = get_allowed_relabellings(inputs_a, inputs_b, outputs_a[:-1], outputs_b[:-1])
+    configs = get_configs(inputs_a, inputs_b, outputs_a, outputs_b)
+    param_relabels = []
+    for relabel in relabels:
+        # current parametrised relabelling
+        p_relabel = []
+        # indicator for valid relabel
+        validRelabel = True
+        for c in configs_param:
+
+            a, b, x, y = c
+            # check if current config is a marginal
+            if a == -1:
+                idx = configs.index((0, b, x, y))
+                ridx = relabel[idx]
+                _, b_new, x_new, y_new = configs[ridx]
+                a_new = a
+            elif b == -1:
+                idx = configs.index((a, 0, x, y))
+                ridx = relabel[idx]
+                a_new, _, x_new, y_new = configs[ridx]
+                b_new = b
+            else:
+                idx = configs.index((a, b, x, y))
+                ridx = relabel[idx]
+                a_new, b_new, x_new, y_new = configs[ridx]
+            # Try to find the index (continue if not found as some relabellings do not matter, e.g. party swap)
+            try:
+                idx = configs_param.index((a_new, b_new, x_new, y_new))
+                p_relabel.append(idx)
+            except ValueError:
+                validRelabel = False
+        if validRelabel:
+            assert len(p_relabel) == len(configs_param)
+            param_relabels.append(p_relabel)
+    param_relabels = np.array(param_relabels)
+    return np.unique(param_relabels, axis=1)

@@ -4,7 +4,7 @@ from fractions import Fraction
 import subprocess
 
 
-def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symmetries=None, file='', denom_limit=10000):
+def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], dets=None, symmetries=None, file='', denom_limit=10000):
     """
     the inequality is interpreted as lhs * x <= rhs
     lhs: left hand side of inequalities
@@ -66,8 +66,6 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symm
             for val in d:
                 string += str(int(val)) + ' '
 
-
-
     # write file
     if file:
         f = open(file, 'w+')
@@ -75,19 +73,23 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[] , dets=None, symm
         f.close()
     return string
 
-def write_known_vertices(vertices, file='knownvertices.ext'):
+
+def write_known_vertices(vertices, file='knownvertices.ext', denom_limit=9999999):
     """ Writes known vertices to a file """
     s = "Vertices: \n"
-    for v in vertices:
-        for val in v:
-            s += str(int(round(val))) + ' '
+    for i in range(vertices.shape[0]):
+        # TODO: Change to setting it to fractions
+        arr = [Fraction(x).limit_denominator(denom_limit) for x in vertices[i]]
+        for val in arr:
+            s += str(val) + ' '
         s += '\n'
     f = open(file, 'w+')
     f.write(s)
     f.close()
     return s
 
-def write_known_inequalities(lhs, rhs, file='knowninequalities.ine',denom_limit=100000):
+
+def write_known_inequalities(lhs, rhs, file='knowninequalities.ine', denom_limit=100000):
     """ Writes known inequalities to a file """
     s = "Inequalities: \n"
     assert lhs.shape[0] == rhs.shape[0]
@@ -99,7 +101,7 @@ def write_known_inequalities(lhs, rhs, file='knowninequalities.ine',denom_limit=
         # write the inequalitiy
         for j in range(lhs.shape[1]):
             val = int(lhs[i, j] * factor)
-            s += str(val) + 'a' + str(j) + ' '
+            s += str(val) + ' '
         s += str(int(-1 * rhs[i] * factor)) + '\n'
     f = open(file, 'w+')
     f.write(s)
@@ -125,13 +127,53 @@ def read_vertices_rays(file):
     return np.array(vertices), np.array(rays)
 
 
-
-def run_panda(file, threads=4,outfile='', known_vertices=''):
+def run_panda(file, threads=4, outfile='', known_data=''):
     """ Runs panda on a file"""
     cmd = 'panda ' + file + ' -t ' + str(threads)
-    if known_vertices:
-        cmd += ' -k ' + known_vertices
+    if known_data:
+        cmd += ' -k ' + known_data
     if outfile:
         cmd += ' > ' + outfile
     out = subprocess.run(cmd, shell=True)
-    return True
+    return out
+
+
+def run_panda_vertices_on_facet(file, outfile='', known_data=''):
+    """ Catches the output given about the vertices on facet """
+    cmd = 'panda ' + file + ' -t 1'
+    if known_data:
+        cmd += ' -k ' + known_data
+    if outfile:
+        cmd += ' > ' + outfile
+    out = subprocess.run(cmd, shell=True, capture_output=True)
+    lines = out.stderr.decode('utf-8').split('\n')
+    counter = 0
+    while not "Vertices on facet" in lines[counter]:
+        counter += 1
+    vertices = []
+    counter += 1
+    while not "Stopping" in lines[counter]:
+        line = lines[counter].strip()
+        arr = arr = np.fromstring(line, sep=' ', dtype=float)
+        vertex = arr[:-1] / arr[-1]
+        vertices.append(vertex)
+        counter += 1
+    vertices = np.array(vertices)
+    return vertices
+
+def read_inequalities(file):
+    """ READS INEQUALITIES FROM A FILE """
+    f = open(file, 'r')
+    lines = f.readlines()
+    f.close()
+    # run until inequalities section
+    counter = 0
+    while not 'Inequalities' in lines[counter]:
+        counter += 1
+    counter += 1
+    facets = []
+    for line in lines[counter:]:
+        arr = np.fromstring(line[1:], sep=' ', dtype=float)
+        facets.append(arr[:-1])
+    return np.array(facets)
+
