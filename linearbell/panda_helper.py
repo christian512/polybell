@@ -87,6 +87,26 @@ def write_known_vertices(vertices, file='knownvertices.ext'):
     f.close()
     return s
 
+def write_known_inequalities(lhs, rhs, file='knowninequalities.ine',denom_limit=100000):
+    """ Writes known inequalities to a file """
+    s = "Inequalities: \n"
+    assert lhs.shape[0] == rhs.shape[0]
+    for i in range(lhs.shape[0]):
+        # find factor to multiply inequality with, such that we have a only integers inequality
+        arr = [Fraction(x).limit_denominator(denom_limit).denominator for x in lhs[i]]
+        arr.append(Fraction(rhs[i]).limit_denominator(denom_limit).denominator)
+        factor = np.product(np.unique(arr))
+        # write the inequalitiy
+        for j in range(lhs.shape[1]):
+            val = int(lhs[i, j] * factor)
+            s += str(val) + 'a' + str(j) + ' '
+        s += '<= ' + str(int(rhs[i] * factor)) + '\n'
+    f = open(file, 'w+')
+    f.write(s)
+    f.close()
+    return s
+
+
 def read_vertices_rays(file):
     """ Reads vertices and rays from a PANDA output file """
     f = open(file, 'r')
