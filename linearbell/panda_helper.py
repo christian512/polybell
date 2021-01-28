@@ -100,7 +100,7 @@ def write_known_inequalities(lhs, rhs, file='knowninequalities.ine',denom_limit=
         for j in range(lhs.shape[1]):
             val = int(lhs[i, j] * factor)
             s += str(val) + 'a' + str(j) + ' '
-        s += '<= ' + str(int(rhs[i] * factor)) + '\n'
+        s += str(int(-1 * rhs[i] * factor)) + '\n'
     f = open(file, 'w+')
     f.write(s)
     f.close()
