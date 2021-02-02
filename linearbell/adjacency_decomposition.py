@@ -3,12 +3,13 @@ This file defines functions for adjacency decomposition
 """
 import numpy as np
 from fractions import Fraction
+from typing import Optional
 
-def distance(vertex, facet):
+def distance(vertex: np.ndarray, facet: np.ndarray) -> np.ndarray:
     assert vertex.shape[0] == facet.shape[0]
     return -1.0 * (vertex @ facet)
 
-def furthest_vertex(vertices, facet):
+def furthest_vertex(vertices: np.ndarray, facet: np.ndarray) -> np.ndarray:
     """ Returns furthest vertex """
     assert vertices.shape[1] == facet.shape[0]
     best_vertex = vertices[0]
@@ -19,7 +20,7 @@ def furthest_vertex(vertices, facet):
             best_vertex = v
     return best_vertex
 
-def nearest_vertex(vertices, facet):
+def nearest_vertex(vertices: np.ndarray, facet: np.ndarray) -> np.ndarray:
     """ Returns nearest vertex """
     assert vertices.shape[1] == facet.shape[0]
     best_vertex = vertices[0]
@@ -31,37 +32,28 @@ def nearest_vertex(vertices, facet):
     return best_vertex
 
 
-def rotate(vertices, vertex, facet, ridge):
-    # TODO: Try to Implement rotation not as in PANDA, but as you researched it.
+def rotate(vertices: np.ndarray, vertex: np.ndarray, facet: np.ndarray, ridge: np.ndarray) -> np.ndarray:
     """ Rotates a facet around a ridge """
-    counter = 0
-    d_r = 1
-    while not d_r == 0:
-        d_f = distance(vertex, facet)
-        d_r = distance(vertex, ridge)
+    d_f = distance(vertex, facet)
+    d_r = distance(vertex, ridge)
+    first_round = True
+    while d_r != 0 or first_round:
+        first_round = False
         assert d_f % 1 == 0
         assert d_r % 1 == 0
         d_f = int(d_f)
         d_r = int(d_r)
-        if counter > 1000:
-            print('Ran over 1000 iterations in rotation')
-            print('input facet:', facet)
-            return False
         gcd_ds = np.gcd(d_f, d_r)
         if gcd_ds > 1:
             d_f /= gcd_ds
             d_r /= gcd_ds
         ridge = d_f * ridge - d_r * facet
-        for val in ridge:
-            assert val % 1.0 == 0, val
         gcd_value = np.abs(np.gcd.reduce(ridge.astype(int)))
         if gcd_value > 1:
             ridge /= gcd_value
         vertex = nearest_vertex(vertices, ridge)
-        #print('d_f: ', d_f)
-        #print('d_r: ', d_r)
-        counter += 1
-
+        d_f = distance(vertex, facet)
+        d_r = distance(vertex, ridge)
     return ridge
 
 

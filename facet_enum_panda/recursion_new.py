@@ -1,6 +1,5 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, find_local_weight_dual, get_configs, general_pr_box, \
-    check_equiv_bell_vertex_enum_non_rescale
+from linearbell.utils import get_deterministic_behaviors,get_all_inequiv_bell_non_rescale
 from linearbell.panda_helper import write_known_vertices, read_inequalities, run_panda_vertices_on_facet
 from linearbell.adjacency_decomposition import rotate, furthest_vertex, distance
 import numpy as np
@@ -38,34 +37,27 @@ recursion_depth = -1
 
 # define the recursive function
 def get_all_ineq_facets(vertices, facet):
+    """
+    Gets all inequivalent facets by adjacency decomposition
+    Parameters
+    ----------
+    vertices: vertices of the polytope
+    facet: one facet of the polytope
+    Returns
+    -------
+    """
     global recursion_depth
     recursion_depth += 1
-    print('recursion_depth ', recursion_depth)
     print('len vertices ', len(vertices))
-    # TODO: IS the rotation algorithm correct?
-    # TODO: IF the number here is to small it does not work -> Why?
-    if vertices.shape[0] <= 2:
-        if vertices.shape[0] == 2:
-            return np.array([facet])
-        write_known_vertices(vertices[:, :-1], file='../vertex_enum_panda/knownvertices.ext')
+    # if number of vertices is small enough -> enumerate with double description
+    if vertices.shape[0] <= 4:
+        write_known_vertices(vertices[:, :-1], file='knownvertices.ext')
         # run original panda to get all facets
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
-        all_facets = read_inequalities('../vertex_enum_panda/out.ine')
+        all_facets = read_inequalities('out.ine')
         assert facet in all_facets
-        ineq_facets = [facet]
-        for f in all_facets:
-            equiv = False
-            for c in ineq_facets:
-                if recursion_depth <= 0:
-                    if check_equiv_bell_vertex_enum_non_rescale(f[:-1], c[:-1], relabels, dets):
-                        equiv = True
-                else:
-                    if np.all(c == f):
-                        equiv = True
-            if not equiv:
-                ineq_facets.append(f)
-        return np.array(ineq_facets)
+        return all_facets
 
     # list of inequivalent facets
     ineq_facets = [facet]
@@ -75,32 +67,25 @@ def get_all_ineq_facets(vertices, facet):
     while check_facets:
         curr_facet = check_facets.pop()
         furthestVertex = furthest_vertex(vertices, curr_facet)
+        assert distance(furthestVertex, curr_facet) != 0
         # get vertices on that face
         subvertices = np.array([v for v in vertices if distance(v, curr_facet) == 0])
-        write_known_vertices(subvertices[:, :-1], file='../vertex_enum_panda/input.ext')
+        assert subvertices.shape[0] < vertices.shape[0]
+        write_known_vertices(subvertices[:, :-1], file='input.ext')
         # run panda to get one facet
-        run_panda_vertices_on_facet('../vertex_enum_panda/input.ext', outfile='out.ine')
-        subfacet = read_inequalities('../vertex_enum_panda/out.ine')[0]
+        run_panda_vertices_on_facet('input.ext', outfile='out.ine')
+        subfacet = read_inequalities('out.ine')[0]
         # get the ridges
         ridges = get_all_ineq_facets(subvertices, subfacet)
         # iterate over ridges
         for ridge in ridges:
-            # TODO: I guess the rotation algorithm is not correct! If we would get only valid faces, we would always get 2
+            # apply rotation algorithm
             new_facet = rotate(vertices, furthestVertex, curr_facet, ridge)
+            # check that new face is not 0
             if np.all(new_facet == 0):
                 continue
-            equiv = False
-            for c in ineq_facets:
-                assert c.shape[0] == new_facet.shape[0]
-                assert relabels.shape[1] == c.shape[0] - 1
-                # Only do equivalence check above some recursion level.
-                if recursion_depth <= 2:
-                    if check_equiv_bell_vertex_enum_non_rescale(new_facet[:-1], c[:-1], relabels, dets):
-                        equiv = True
-                else:
-                    if np.all(c == new_facet):
-                        equiv = True
-            if not equiv:
+            # if the new facet is not yet there, we also check that one
+            if np.sum((np.array(ineq_facets) - new_facet)**2, axis=1).all() > 0:
                 ineq_facets.append(new_facet)
                 check_facets.append(new_facet)
 
@@ -108,11 +93,10 @@ def get_all_ineq_facets(vertices, facet):
     return np.array(ineq_facets)
 
 # Write the current vertices
-write_known_vertices(dets, file='../vertex_enum_panda/input.ext')
+write_known_vertices(test_vertices, file='input.ext')
 # run panda to get one facet
-run_panda_vertices_on_facet('../vertex_enum_panda/input.ext', outfile='out.ine')
-initial_facet = read_inequalities('../vertex_enum_panda/out.ine')[0]
+run_panda_vertices_on_facet('input.ext', outfile='out.ine')
+initial_facet = read_inequalities('out.ine')[0]
 
-facets = get_all_ineq_facets(dets_extended, initial_facet)
-# TODO: HERE YOU HAVE TO START AGAIN, WITH EACH FACET THAT WAS NOT USED
+facets = get_all_ineq_facets(test_vertices_extended, initial_facet)
 print('Number of facets: ', facets.shape[0])
