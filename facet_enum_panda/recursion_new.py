@@ -1,5 +1,5 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors,get_all_inequiv_bell_non_rescale
+from linearbell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale
 from linearbell.panda_helper import write_known_vertices, read_inequalities, run_panda_vertices_on_facet
 from linearbell.adjacency_decomposition import rotate, furthest_vertex, distance
 import numpy as np
@@ -35,6 +35,32 @@ test_vertices_extended = np.c_[test_vertices, np.ones(test_vertices.shape[0])]
 # recursion depth counter
 recursion_depth = -1
 
+
+def get_all_inequiv(bells, relabels, dets, tol=1e-6):
+    """
+    Returns an array of inequivalent Bell expressions
+    Parameters
+    ----------
+    bells
+    relabels
+    dets
+    tol
+
+    Returns
+    -------
+    """
+    ineq_bells = [bells[0]]
+    for b in bells:
+        equiv = False
+        for c in ineq_bells:
+            if check_equiv_bell_vertex_enum_non_rescale(b[:-1], c[:-1], relabels, dets, tol=tol):
+                equiv = True
+                break
+        if not equiv:
+            ineq_bells.append(b)
+    return np.array(ineq_bells)
+
+
 # define the recursive function
 def get_all_ineq_facets(vertices, facet):
     """
@@ -46,11 +72,9 @@ def get_all_ineq_facets(vertices, facet):
     Returns
     -------
     """
-    global recursion_depth
-    recursion_depth += 1
     print('len vertices ', len(vertices))
     # if number of vertices is small enough -> enumerate with double description
-    if vertices.shape[0] <= 4:
+    if vertices.shape[0] <= 12:
         write_known_vertices(vertices[:, :-1], file='knownvertices.ext')
         # run original panda to get all facets
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
@@ -85,18 +109,19 @@ def get_all_ineq_facets(vertices, facet):
             if np.all(new_facet == 0):
                 continue
             # if the new facet is not yet there, we also check that one
-            if np.sum((np.array(ineq_facets) - new_facet)**2, axis=1).all() > 0:
+            if np.sum((np.array(ineq_facets) - new_facet) ** 2, axis=1).all() > 0:
                 ineq_facets.append(new_facet)
                 check_facets.append(new_facet)
-
-    recursion_depth -= 1
     return np.array(ineq_facets)
 
+
 # Write the current vertices
-write_known_vertices(test_vertices, file='input.ext')
+write_known_vertices(dets, file='input.ext')
 # run panda to get one facet
 run_panda_vertices_on_facet('input.ext', outfile='out.ine')
 initial_facet = read_inequalities('out.ine')[0]
 
-facets = get_all_ineq_facets(test_vertices_extended, initial_facet)
+facets = get_all_ineq_facets(dets_extended, initial_facet)
 print('Number of facets: ', facets.shape[0])
+classes = get_all_inequiv(facets, relabels, dets)
+print('Number of classes: ', classes.shape[0])

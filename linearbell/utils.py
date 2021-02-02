@@ -689,31 +689,6 @@ def check_equiv_bell_vertex_enum_non_rescale(bell1, bell2, relabels, dets, tol=1
     # the two expressions were not equivalent -> so they are from different classes
     return False
 
-def get_all_inequiv_bell_non_rescale(bells, relabels, dets, tol=1e-6):
-    """
-    Returns an array of inequivalent Bell expressions
-    Parameters
-    ----------
-    bells
-    relabels
-    dets
-    tol
-
-    Returns
-    -------
-    """
-    ineq_bells = [bells[0]]
-    for b in bells:
-        equiv = False
-        for c in ineq_bells:
-            if check_equiv_bell_vertex_enum_non_rescale(b, c, relabels, dets, tol=tol):
-                equiv = True
-                break
-        if not equiv:
-            ineq_bells.append(b)
-    return np.array(ineq_bells)
-
-
 def get_relabels_dets(dets, allowed_perms, show_progress=0):
     """ Gets a list of which deterministic transforms to which under each relabelling """
     # list for relabels
