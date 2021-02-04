@@ -679,12 +679,15 @@ def check_equiv_bell_vertex_enum_non_rescale(bell1, bell2, relabels, dets, tol=1
     if not np.all(u1 == u2): return False
     if not np.all(c1 == c2): return False
 
+    # rescale bell expressions if relabels are given
+    bell1, bell2 = affine_transform_bell([bell1, bell2], dets)
+
     # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
     for relabel in relabels:
         bell_tmp = bell2[relabel]
         if np.all(bell_tmp == bell2):
             continue
-        if check_equiv_bell_vertex_enum_non_rescale(bell1, bell_tmp, [], dets):
+        if check_equiv_bell_vertex_enum(bell1, bell_tmp, [], dets):
             return True
     # the two expressions were not equivalent -> so they are from different classes
     return False
