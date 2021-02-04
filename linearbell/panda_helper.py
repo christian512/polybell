@@ -154,8 +154,7 @@ def run_panda_vertices_on_facet(file, outfile='', known_data=''):
     counter += 1
     while not "Stopping" in lines[counter]:
         line = lines[counter].strip()
-        arr = arr = np.fromstring(line, sep=' ', dtype=float)
-        vertex = arr[:-1] / arr[-1]
+        vertex = np.fromstring(line, sep=' ', dtype=float)
         vertices.append(vertex)
         counter += 1
     vertices = np.array(vertices)
@@ -174,6 +173,6 @@ def read_inequalities(file):
     facets = []
     for line in lines[counter:]:
         arr = np.fromstring(line[1:], sep=' ', dtype=float)
-        facets.append(arr[:-1])
+        facets.append(arr)
     return np.array(facets)
 
