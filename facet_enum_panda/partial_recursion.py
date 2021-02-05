@@ -101,7 +101,7 @@ def get_all_ineq_facets(vertices, facet):
     """
     # print('len vertices ', len(vertices))
     # if number of vertices is small enough -> enumerate with double description
-    if vertices.shape[0] <= 24:
+    if vertices.shape[0] <= 16:
         write_known_vertices(vertices[:, :-1], file='knownvertices.ext')
         # run original panda to get all facets
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'

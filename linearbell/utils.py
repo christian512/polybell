@@ -971,7 +971,16 @@ def equiv_check_adjacency_testing(bell1, bell2, relabels, dets, tol=1e-6):
     for i in range(relabels.shape[0]):
         bell_tmp = bell2[relabels[i]]
         if np.any(bell_tmp != bell2):
-            if equiv_check_adjacency_testing(bell1, bell_tmp, np.array([]), dets, tol=tol):
+            if equiv_check_adjacency_testing_v(v1, bell_tmp, dets, tol=tol):
                 return True
     # the two expressions were not equivalent -> so they are from different classes
+    return False
+
+def equiv_check_adjacency_testing_v(v1, bell2, dets, tol=1e-6):
+    """ Performs equivalence checking, but already has the first part calculated """
+    v2 = dets @ bell2
+    v2 = v2 - np.min(v2)
+    v2 = v2 / np.min(v2[v2 > tol])
+
+    if np.all(v1 == v2): return True
     return False
