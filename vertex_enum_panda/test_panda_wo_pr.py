@@ -26,6 +26,9 @@ outfile = '../data/vertex_enum/{}{}{}{}.ext'.format(ma, mb, n, n)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+# sort deterministics
+dets = dets[np.lexsort(np.rot90(dets))]
+
 dets_unshifted = np.copy(dets)
 
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma, mb, n, n)).astype(int)

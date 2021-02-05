@@ -3,6 +3,7 @@ from linearbell.utils import get_deterministic_behaviors, get_configs, find_loca
     check_equiv_bell_vertex_enum_non_rescale
 from linearbell.panda_helper import write_panda_input_inequalities, run_panda, write_known_vertices, read_vertices_rays
 import numpy as np
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
@@ -26,6 +27,9 @@ outfile = '../data/vertex_enum/{}{}{}{}.ext'.format(ma, mb, n, n)
 
 # get deterministic points
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+# sort deterministics
+dets = dets[np.lexsort(np.rot90(dets))]
+
 dets_unshifted = np.copy(dets)
 
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(ma, mb, n, n)).astype(int)
@@ -53,8 +57,10 @@ write_known_vertices([bell])
 hrepr = write_panda_input_inequalities(lhs, rhs, symmetries=relabels, dets=dets_unshifted, file='input.ine')
 
 # run the file
-run_panda('input.ine', outfile='out.ext', known_vertices='knownvertices.ext', threads=threads)
-
+start_time = time.time()
+run_panda('input.ine', outfile='out.ext', known_data='knownvertices.ext', threads=threads)
+calculation_time = time.time() - start_time
+print('PANDA calculation time: {}s'.format(calculation_time))
 vertices, rays = read_vertices_rays('out.ext')
 
 # check how many classes
@@ -71,3 +77,4 @@ for b in vertices:
 classes = np.array(classes)
 np.savetxt(outfile, classes)
 print('stored {} classes'.format(classes.shape[0]))
+
