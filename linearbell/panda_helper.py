@@ -174,5 +174,5 @@ def read_inequalities(file):
     for line in lines[counter:]:
         arr = np.fromstring(line[1:], sep=' ', dtype=float)
         facets.append(arr)
-    return np.array(facets)
+    return np.array(facets, dtype=int)
 

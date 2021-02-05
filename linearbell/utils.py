@@ -282,6 +282,7 @@ def partially_reduce_extended_pr_box(pr_box, configs_ext, lift_a, lift_b, failur
             del_idx.append(i)
     return pr_red, del_idx
 
+
 def update_partial_lifted_bell_expression(bell_red, configs, lift_a, lift_b, failure_indicator=2):
     """
     This function updates a Bell expression that was found for a partially reduced PR box by the function
@@ -317,14 +318,13 @@ def update_partial_lifted_bell_expression(bell_red, configs, lift_a, lift_b, fai
             if not lift_b[y] == -1:
                 b = lift_b[y]
         # get the index of the new config
-        idx = configs.index((a,b,x,y))
+        idx = configs.index((a, b, x, y))
         # if the new idx is different from the old index -> it's a lifting
         # then we have to move the value in the bell expression also to the
         # lifted output
         # TODO: Do we have to do i == idx
         bell_red[i] = bell_red[idx]
     return bell_red
-
 
 
 def reduce_extended_pr_box_extended_lifts(pr_box, configs_ext, configs_red, lift_a, lift_b, failure_indicator=2):
@@ -692,6 +692,7 @@ def check_equiv_bell_vertex_enum_non_rescale(bell1, bell2, relabels, dets, tol=1
     # the two expressions were not equivalent -> so they are from different classes
     return False
 
+
 def get_relabels_dets(dets, allowed_perms, show_progress=0):
     """ Gets a list of which deterministic transforms to which under each relabelling """
     # list for relabels
@@ -903,7 +904,8 @@ def check_equiv_bell_vertex_enum_fast(bell1, bell2, relabels, dets, tol=1e-6):
     bell2_relabels = bell2[relabels]
     return np.any(np.sum((bell1 - bell2[relabels]) ** 2, axis=1) < tol ** 2)
 
-def relabellings_parametrised(configs_param, inputs_a, inputs_b,outputs_a, outputs_b):
+
+def relabellings_parametrised(configs_param, inputs_a, inputs_b, outputs_a, outputs_b):
     """ Calculates the relabellings for parametrised setup """
     relabels = get_allowed_relabellings(inputs_a, inputs_b, outputs_a[:-1], outputs_b[:-1])
     configs = get_configs(inputs_a, inputs_b, outputs_a, outputs_b)
@@ -942,3 +944,34 @@ def relabellings_parametrised(configs_param, inputs_a, inputs_b,outputs_a, outpu
             param_relabels.append(p_relabel)
     param_relabels = np.array(param_relabels)
     return np.unique(param_relabels, axis=1)
+
+
+def equiv_check_adjacency_testing(bell1, bell2, relabels, dets, tol=1e-6):
+    """ Equivalence check testing for the partial adjacency """
+    # get the v vectors
+    v1 = dets @ bell1
+    v2 = dets @ bell2
+
+    # shift to min of v_i = 0
+    v1 = v1 - np.min(v1)
+    v2 = v2 - np.min(v2)
+
+    # rescale that second min is = 1
+    v1 = v1 / np.min(v1[v1 > tol])
+    v2 = v2 / np.min(v2[v2 > tol])
+
+    if np.all(v1 == v2): return True
+    # try to see if they have the same tally
+    t1 = np.bincount(v1.astype(int))
+    t2 = np.bincount(v2.astype(int))
+    if not np.all(t1 == t2):
+        return False
+
+    # check if any relabelling is the same -> we have to recalculate v2 but not do the tally check again as its just relabelled
+    for i in range(relabels.shape[0]):
+        bell_tmp = bell2[relabels[i]]
+        if np.any(bell_tmp != bell2):
+            if equiv_check_adjacency_testing(bell1, bell_tmp, np.array([]), dets, tol=tol):
+                return True
+    # the two expressions were not equivalent -> so they are from different classes
+    return False

@@ -50,7 +50,7 @@ def rotate(vertices: np.ndarray, vertex: np.ndarray, facet: np.ndarray, ridge: n
         ridge = d_f * ridge - d_r * facet
         gcd_value = np.abs(np.gcd.reduce(ridge.astype(int)))
         if gcd_value > 1:
-            ridge /= gcd_value
+            ridge = ridge / gcd_value
         vertex = nearest_vertex(vertices, ridge)
         d_f = distance(vertex, facet)
         d_r = distance(vertex, ridge)

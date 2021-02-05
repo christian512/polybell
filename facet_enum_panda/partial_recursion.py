@@ -1,5 +1,6 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale
+from linearbell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale, \
+    equiv_check_adjacency_testing
 from linearbell.panda_helper import write_known_vertices, read_inequalities, run_panda_vertices_on_facet
 from linearbell.adjacency_decomposition import rotate, furthest_vertex, distance
 import numpy as np
@@ -23,6 +24,7 @@ outputs = range(n)
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 # dets = dets - p_origin
 dets = dets[np.lexsort(np.rot90(dets))]
+
 # add a one column to vertices to match panda format
 dets_extended = np.c_[dets, np.ones(dets.shape[0])]
 
@@ -55,7 +57,7 @@ def reduce_to_inequiv(bells, relabels, dets, tol=1e-6):
         # print('equiv check progress : {} / {}'.format(i, bells.shape[0]))
         equiv = False
         for c in ineq_bells:
-            if check_equiv_bell_vertex_enum_non_rescale(b[:-1], c[:-1], relabels, dets, tol=tol):
+            if equiv_check_adjacency_testing(b[:-1], c[:-1], relabels, dets, tol=tol):
                 equiv = True
                 break
         if not equiv:
@@ -65,9 +67,11 @@ def reduce_to_inequiv(bells, relabels, dets, tol=1e-6):
 
 def facet_equiv_to_any(bell, bells_arr, relabels, dets, tol=1e-6):
     """ Checks if a bell expression is equivalent to any bell expression in a list. """
-    for b in bells_arr:
-        if check_equiv_bell_vertex_enum_non_rescale(bell[:-1], b[:-1], relabels, dets, tol=tol):
+    for i in range(bells_arr.shape[0]):
+        if equiv_check_adjacency_testing(bell[:-1], bells_arr[i, :-1], relabels, dets):
             return True
+        # if check_equiv_bell_vertex_enum_non_rescale(bell[:-1], b[:-1], relabels, dets, tol=tol):
+        #    return True
     return False
 
 
@@ -106,10 +110,6 @@ def get_all_ineq_facets(vertices, facet):
         print('Finished PANDA and found {} facets on the subpolytope'.format(all_facets.shape[0]))
         assert facet in all_facets
         return all_facets
-        # get the relabellings that are allowed at this point. -> might not be useful as number does not decrease to much.
-        # curr_relabels = get_poss_relabels(vertices, relabels)
-        # print('Number of possible relabels {} / {}'.format(curr_relabels.shape[0], relabels.shape[0]))
-        # return reduce_to_inequiv(all_facets, curr_relabels, dets)
 
     # list of inequivalent facets
     ineq_facets = [facet]
@@ -121,7 +121,7 @@ def get_all_ineq_facets(vertices, facet):
         furthestVertex = furthest_vertex(vertices, curr_facet)
         assert distance(furthestVertex, curr_facet) != 0
         # get vertices on that face
-        subvertices = np.array([v for v in vertices if distance(v, curr_facet) == 0])
+        subvertices = np.array([v for v in vertices if distance(v, curr_facet) == 0], dtype=int)
         assert subvertices.shape[0] < vertices.shape[0]
         write_known_vertices(subvertices[:, :-1], file='input.ext')
         # run panda to get one facet
@@ -133,14 +133,15 @@ def get_all_ineq_facets(vertices, facet):
             print('TOP LEVEL: Num ineq facets: {}'.format(len(ineq_facets)))
             print('TOP LEVEL: Num facets to check: {}'.format(len(check_facets)))
         # iterate over ridges
-        for ridge in ridges:
+        for i in range(ridges.shape[0]):
             # apply rotation algorithm
-            new_facet = rotate(vertices, furthestVertex, curr_facet, ridge)
+            new_facet = rotate(vertices, furthestVertex, curr_facet, ridges[i])
             # check if we're at the top level and check for neighbouring
             if vertices.shape[0] == dets.shape[0]:
-                if not facet_equiv_to_any(new_facet, ineq_facets, relabels, dets):
+                if not facet_equiv_to_any(new_facet, np.array(ineq_facets), relabels, dets):
                     ineq_facets.append(new_facet)
                     check_facets.append(new_facet)
+                    np.savetxt('../data/facets_panda/{}{}{}{}.txt'.format(ma, mb, n, n), np.array(ineq_facets))
             else:
                 # if not at top level only rotate and add as facets
                 ineq_facets.append(new_facet)
@@ -156,5 +157,3 @@ start = time.time()
 facets = get_all_ineq_facets(dets_extended, initial_facet)
 print('Calculation time: ', time.time() - start)
 print('Number of facets: ', facets.shape[0])
-classes = reduce_to_inequiv(facets, relabels, dets)
-print('Number of classes: ', classes.shape[0])
