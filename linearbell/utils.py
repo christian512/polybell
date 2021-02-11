@@ -960,6 +960,10 @@ def equiv_check_adjacency_testing(bell1, bell2, relabels, dets, tol=1e-6):
     v1 = v1 / np.min(v1[v1 > tol])
     v2 = v2 / np.min(v2[v2 > tol])
 
+    # round the vectors for better equality checks
+    v1 = np.round(v1, 5)
+    v2 = np.round(v2, 5)
+
     if np.all(v1 == v2): return True
     # try to see if they have the same tally
     t1 = np.bincount(v1.astype(int))
@@ -981,6 +985,7 @@ def equiv_check_adjacency_testing_v(v1, bell2, dets, tol=1e-6):
     v2 = dets @ bell2
     v2 = v2 - np.min(v2)
     v2 = v2 / np.min(v2[v2 > tol])
+    v2 = np.round(v2, 5)
 
     if np.all(v1 == v2): return True
     return False

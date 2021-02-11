@@ -67,11 +67,24 @@ def reduce_to_inequiv(bells, relabels, dets, tol=1e-6):
 
 def facet_equiv_to_any(bell, bells_arr, relabels, dets, tol=1e-6):
     """ Checks if a bell expression is equivalent to any bell expression in a list. """
+    # rescale bell
+    divisor = bell[-1]
+    if divisor < 0:
+        bell = bell[:-1] / np.abs(divisor)
+    else:
+        assert divisor == 0
+        bell = bell[:-1] + 1 / (len(outputs) ** 2)
+
+
     for i in range(bells_arr.shape[0]):
-        if equiv_check_adjacency_testing(bell[:-1], bells_arr[i, :-1], relabels, dets):
+        divisor = bells_arr[i, -1]
+        if divisor < 0:
+            other_bell = bells_arr[i, :-1] / np.abs(divisor)
+        else:
+            assert divisor == 0
+            other_bell = bells_arr[i, :-1] + 1 / (len(outputs) ** 2)
+        if equiv_check_adjacency_testing(bell, other_bell, relabels, dets):
             return True
-        # if check_equiv_bell_vertex_enum_non_rescale(bell[:-1], b[:-1], relabels, dets, tol=tol):
-        #    return True
     return False
 
 
@@ -101,7 +114,7 @@ def get_all_ineq_facets(vertices, facet):
     """
     # print('len vertices ', len(vertices))
     # if number of vertices is small enough -> enumerate with double description
-    if vertices.shape[0] <= 16:
+    if vertices.shape[0] <= 24:
         write_known_vertices(vertices[:, :-1], file='knownvertices.ext')
         # run original panda to get all facets
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
