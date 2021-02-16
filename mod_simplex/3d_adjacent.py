@@ -1,7 +1,7 @@
 import numpy as np
 
 lhs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0], [0, -1, 0], [0, 0, -1]])
-rhs = np.array([1, 1, 1, 1, 1, 1])
+rhs = np.array([1, 1, 1, 0, 0, 0])
 
 # build the tableau
 tableau = np.c_[lhs, rhs]
@@ -42,8 +42,9 @@ def pivot(ctab, row, col, nonbasic_x, basic_x):
     assert tab[row, col] != 0.0, 'Pivot element is zero! Can not pivot.'
     # get pivot element and transform row
     pivot_elem = tab[row, col]
+    # set pivot element to one
+    tab[row, col] = 1.0
     tab[row, :] = tab[row, :] / pivot_elem
-    assert tab[row, col] == 1.0
     # now every row has to be transformed
     for i in range(tab.shape[0]):
         if i == row:
@@ -130,4 +131,3 @@ for p in pivots:
     if acceptable:
         v = read_vertex(new_tab, new_basic)
         print('vertex: ', v)
-        break
