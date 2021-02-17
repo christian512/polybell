@@ -1,10 +1,14 @@
 import numpy as np
 from linearbell.utils import get_deterministic_behaviors, parametrise_behavior, get_configs, \
     get_parametrisation_configs, deparametrise_bell_expression, equiv_check_adjacency_testing
+from itertools import combinations
+from scipy.special import binom
 
 # get deterministic behaviors
-inputs = list(range(2))
-outputs = list(range(2))
+m = 2
+n = 2
+inputs = list(range(m))
+outputs = list(range(n))
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
 configs = get_configs(inputs, inputs, outputs, outputs)
 configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
@@ -36,7 +40,7 @@ dets_param = [parametrise_behavior(d, configs, configs_param, inputs, inputs, ou
 dets_param = np.array(dets_param)
 
 # load relabeling
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(m, m, n, n)).astype(int)
 
 # set inequality system
 lhs = np.copy(dets_param)
@@ -141,6 +145,15 @@ def pivots_non_equalities(tab, nonbasic, basic, eq_idx):
                 pivots.append([row, col])
     return pivots
 
+def find_possible_pivot_in_row(tab, nonbasic, basic, row):
+    for j in range(tab.shape[1] - 1):
+        # we only want to make x_i's basic
+        if 'y' in nonbasic[j]:
+            continue
+        if tab[row, j] != 0.0:
+            return [row, j]
+    return None
+
 
 # TODO: The initial vertex is not parametrised for now
 
@@ -148,36 +161,50 @@ def pivots_non_equalities(tab, nonbasic, basic, eq_idx):
 eq_indices = equal_inequalities_indices(init_vertex, dets, rhs)
 assert len(eq_indices) >= lhs.shape[1]
 
-# pivot the tableau around the equalising inequalities
-pivots = pivots_make_x_basic(tableau, nonbasic_vars, basic_vars, eq_indices)
-while pivots:
-    row, col = pivots[-1]
-    tableau, nonbasic_vars, basic_vars = pivot(tableau, row, col, nonbasic_vars, basic_vars)
-    pivots = pivots_make_x_basic(tableau, nonbasic_vars, basic_vars, eq_indices)
-# read the current vertex from tableau, it should be the initial vertex
-vertex = read_vertex(tableau, basic_vars)
-print('initial vertex in tableau: ', vertex)
-# assert np.all(init_vertex == vertex)
+print('number of possible combinations of subspaces: ', binom(len(eq_indices), lhs.shape[1]))
+# Create a list of which subspaces could be equalized at the same time
+subspace_permutations = combinations(eq_indices, lhs.shape[1])
+print('generated the permutations')
+classes = []
 
-# TODO: Add an additional iteration over all possible starting tableaus
+for perm in subspace_permutations:
+    tab = np.copy(tableau)
+    nonbasic = np.copy(nonbasic_vars)
+    basic = np.copy(basic_vars)
+    # generate starting tableau
+    for row in perm:
+        valid_tab = True
+        try:
+            row, col = find_possible_pivot_in_row(tab, nonbasic, basic, row)
+            tab, nonbasic, basic = pivot(tab, row, col, nonbasic, basic)
+        except Exception as e:
+            valid_tab = False
+            break
+    if not valid_tab:
+        continue
+    # read vertex from tableau
+    vertex = read_vertex(tab, basic)
+    # print('initial vertex in tableau: ', vertex)
+    if len(classes) == 0:
+        vertex = deparametrise_bell_expression(vertex, configs, configs_param, inputs, inputs, outputs, outputs)
+        classes.append(vertex)
 
-# Find all pivots that change an equalized with a non equalized row
-pivots = pivots_non_equalities(tableau, nonbasic_vars, basic_vars, eq_indices)
-classes = [deparametrise_bell_expression(vertex, configs, configs_param, inputs, inputs, outputs, outputs)]
-for p in pivots:
-    row, col = p
-    new_tab, new_nonbasic, new_basic = pivot(tableau, row, col, nonbasic_vars, basic_vars)
-    acceptable = check_acceptable(new_tab, new_basic)
-    print('acceptable: ', acceptable)
-    if acceptable:
-        v_param = read_vertex(new_tab, new_basic)
-        v = deparametrise_bell_expression(v_param, configs, configs_param, inputs, inputs, outputs, outputs)
-        print('vertex: ', v)
-        equiv = False
-        for c in classes:
-            if equiv_check_adjacency_testing(c, v, relabels, dets_unshifted):
-                equiv = True
-                break
-        if not equiv:
-            classes.append(v)
-
+    # Find all pivots that change an equalized with a non equalized row
+    pivots = pivots_non_equalities(tab, nonbasic, basic, eq_indices)
+    for p in pivots:
+        row, col = p
+        new_tab, new_nonbasic, new_basic = pivot(tab, row, col, nonbasic, basic)
+        acceptable = check_acceptable(new_tab, new_basic)
+        if acceptable:
+            v_param = read_vertex(new_tab, new_basic)
+            v = deparametrise_bell_expression(v_param, configs, configs_param, inputs, inputs, outputs, outputs)
+            equiv = False
+            for c in classes:
+                if equiv_check_adjacency_testing(c, v, relabels, dets_unshifted):
+                    equiv = True
+                    break
+            if not equiv:
+                classes.append(v)
+                print('nonbasic: ', nonbasic)
+                print('basic: ', basic)
+                print('found new class: ', v)
