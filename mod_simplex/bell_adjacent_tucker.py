@@ -99,10 +99,13 @@ def pivot(ctab, row, col, nonbasic_x, basic_x):
             else:
                 tab[i, j] = tab[i, j] - row_piv_elem * tab[row, j]
     # Update basic and nonbasic variables
-    basic = np.copy(basic_x)
-    nonbasic = np.copy(nonbasic_x)
-    basic[row], nonbasic[col] = nonbasic_x[col], basic_x[row]
-    return tab, nonbasic, basic
+    basic_tmp = basic_x.copy()
+    nonbasic_tmp = nonbasic_x.copy()
+    new_basic_var = nonbasic_x[col]
+    new_nonbasic_var = basic_x[row]
+    basic_tmp[row] = new_basic_var
+    nonbasic_tmp[col] = new_nonbasic_var
+    return tab, nonbasic_tmp, basic_tmp
 
 
 def equal_inequalities_indices(vertex, lhs, rhs):
@@ -146,12 +149,12 @@ def pivots_non_equalities(tab, nonbasic, basic, eq_idx):
     return pivots
 
 def find_possible_pivot_in_row(tab, nonbasic, basic, row):
-    for j in range(tab.shape[1] - 1):
+    for col in range(tab.shape[1] - 1):
         # we only want to make x_i's basic
-        if 'y' in nonbasic[j]:
+        if 'y' in nonbasic[col]:
             continue
-        if tab[row, j] != 0.0:
-            return [row, j]
+        if tab[row, col] != 0.0:
+            return [row, col]
     return None
 
 
@@ -169,17 +172,17 @@ classes = []
 
 for perm in subspace_permutations:
     tab = np.copy(tableau)
-    nonbasic = np.copy(nonbasic_vars)
-    basic = np.copy(basic_vars)
+    nonbasic = nonbasic_vars.copy()
+    basic = basic_vars.copy()
     # generate starting tableau
     for row in perm:
         valid_tab = True
         try:
             row, col = find_possible_pivot_in_row(tab, nonbasic, basic, row)
-            tab, nonbasic, basic = pivot(tab, row, col, nonbasic, basic)
         except Exception as e:
             valid_tab = False
             break
+        tab, nonbasic, basic = pivot(tab, row, col, nonbasic, basic)
     if not valid_tab:
         continue
     # read vertex from tableau
@@ -205,6 +208,6 @@ for perm in subspace_permutations:
                     break
             if not equiv:
                 classes.append(v)
-                print('nonbasic: ', nonbasic)
-                print('basic: ', basic)
+                print('nonbasic: ', new_nonbasic)
+                print('basic: ', new_basic)
                 print('found new class: ', v)
