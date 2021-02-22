@@ -984,7 +984,10 @@ def equiv_check_adjacency_testing_v(v1, bell2, dets, tol=1e-6):
     """ Performs equivalence checking, but already has the first part calculated """
     v2 = dets @ bell2
     v2 = v2 - np.min(v2)
-    v2 = v2 / np.min(v2[v2 > tol])
+    try:
+        v2 = v2 / np.min(v2[v2 > tol])
+    except ValueError as e:
+        pass
     v2 = np.round(v2, 5)
 
     if np.all(v1 == v2): return True
