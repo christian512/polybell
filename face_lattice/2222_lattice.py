@@ -4,7 +4,7 @@ from linearbell.utils import get_deterministic_behaviors
 import numpy as np
 from face import Polytope
 import matplotlib.pyplot as plt
-from bokeh.io import show
+from bokeh.io import show, save
 from bokeh.models import Circle, MultiLine, Range1d
 from bokeh.plotting import figure, from_networkx
 import networkx as nx
@@ -46,7 +46,7 @@ def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
-    if len(p.deterministics) <= 1:
+    if len(p.deterministics) <= 0:
         return all_polys
 
     # get the subpolytopes
@@ -70,4 +70,4 @@ HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"),("Number relabels", "@nrel
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
-show(plot)
+save(plot, 'face_classes_lattice_2222.html')

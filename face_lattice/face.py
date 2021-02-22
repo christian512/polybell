@@ -40,7 +40,7 @@ class Polytope():
         subpolytopes = []
         for f in self.faces:
             # find the deterministic points on the face
-            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == -1.0 * f[-1]])
+            sub_dets = np.array([v for v in self.deterministics if v @ f[:-1] == -1.0 * f[-1]])
             # find allowed relabellings
             sub_poss_relabellings = []
             for r in self.poss_relabellings:
@@ -71,7 +71,7 @@ class Polytope():
         subpolytopes = []
         for f in self.classes:
             # find the deterministic points on the face
-            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == -0.0 * f[-1]])
+            sub_dets = np.array([v for v in self.deterministics if v @ f[:-1] == -1.0 * f[-1]])
             # find allowed relabellings
             sub_poss_relabellings = []
             for r in self.poss_relabellings:
@@ -95,6 +95,7 @@ class Polytope():
         """ Reduces the own faces to inequivalent classes """
         if len(self.faces) == 0:
             print('Running reduce to inequiv_classes with no faces given')
+            return False
 
         ineq_bells = [self.faces[0]]
         for i, b in enumerate(self.faces):
