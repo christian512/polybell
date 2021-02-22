@@ -58,6 +58,37 @@ class Polytope():
             subpolytopes.append(sub_p)
         return subpolytopes
 
+    def get_classes(self):
+        """ Calculates all faces of a polytope and returns them as polytope objects """
+        # run Panda
+        write_known_vertices(self.deterministics, file='knownvertices.ext')
+        cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
+        out = subprocess.run(cmd, shell=True)
+        self.faces = read_inequalities('out.ine')
+        # calculate the classes
+        self.__reduce_to_inequiv()
+        # for every face generate a subpolytope object
+        subpolytopes = []
+        for f in self.classes:
+            # find the deterministic points on the face
+            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == f[-1]])
+            # find allowed relabellings
+            sub_poss_relabellings = []
+            for r in self.poss_relabellings:
+                allowed = False
+                for sd in sub_dets:
+                    if sd[r] in sub_dets:
+                        allowed = True
+                        break
+                if allowed:
+                    sub_poss_relabellings.append(r)
+            sub_poss_relabellings = np.array(sub_poss_relabellings)
+            # create new polytope
+
+            sub_p = Polytope(sub_dets, sub_poss_relabellings)
+            subpolytopes.append(sub_p)
+        return subpolytopes
+
 
 
     def __reduce_to_inequiv(self):

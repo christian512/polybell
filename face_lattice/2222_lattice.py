@@ -46,7 +46,7 @@ def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
         return all_polys
 
     # get the subpolytopes
-    sub_polys = p.get_faces()
+    sub_polys = p.get_classes()
     for f in sub_polys:
         all_polys = recursive_polytope_finder(f, p, level + 1, all_polys)
     return all_polys
