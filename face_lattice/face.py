@@ -40,13 +40,13 @@ class Polytope():
         subpolytopes = []
         for f in self.faces:
             # find the deterministic points on the face
-            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == f[-1]])
+            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == -1.0 * f[-1]])
             # find allowed relabellings
             sub_poss_relabellings = []
             for r in self.poss_relabellings:
                 allowed = False
                 for sd in sub_dets:
-                    if sd[r] in sub_dets:
+                    if np.any(np.sum((sub_dets - sd[r])**2, axis=1) < 1e-6):
                         allowed = True
                         break
                 if allowed:
@@ -71,13 +71,13 @@ class Polytope():
         subpolytopes = []
         for f in self.classes:
             # find the deterministic points on the face
-            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == f[-1]])
+            sub_dets = np.array([v for v in self.deterministics if distance(v, f[:-1]) == -0.0 * f[-1]])
             # find allowed relabellings
             sub_poss_relabellings = []
             for r in self.poss_relabellings:
                 allowed = False
                 for sd in sub_dets:
-                    if sd[r] in sub_dets:
+                    if np.any(np.sum((sub_dets - sd[r])**2, axis=1) < 1e-6):
                         allowed = True
                         break
                 if allowed:

@@ -4,6 +4,9 @@ from linearbell.utils import get_deterministic_behaviors
 import numpy as np
 from face import Polytope
 import matplotlib.pyplot as plt
+from bokeh.io import show
+from bokeh.models import Circle, MultiLine, Range1d
+from bokeh.plotting import figure, from_networkx
 import networkx as nx
 
 G = nx.Graph()
@@ -15,6 +18,7 @@ dets = get_deterministic_behaviors(inputs, inputs, outputs)
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
 faces_per_level = {}
+
 
 def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
     """ Finds all subpolytopes for face lattice structure """
@@ -38,7 +42,7 @@ def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
         faces_per_level[level] = 1
 
     # add face to graph
-    G.add_node(p.id, pos=(faces_per_level[level], -level))
+    G.add_node(p.id, pos=(faces_per_level[level], -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings))
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
@@ -56,5 +60,14 @@ def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
 bell_polytope = Polytope(dets, relabels)
 all_polytopes = recursive_polytope_finder(bell_polytope)
 pos = nx.get_node_attributes(G, 'pos')
-nx.draw(G, pos=pos, with_labels=False)
-plt.savefig('hierarchy.png')
+network_graph = from_networkx(G, pos)
+# Set node size and color
+network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
+
+# Set edge opacity and width
+network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
+HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"),("Number relabels", "@nrel")]
+plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
+              title='Face-Classes-Lattice for 2222 case')
+plot.renderers.append(network_graph)
+show(plot)
