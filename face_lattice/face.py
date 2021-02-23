@@ -119,3 +119,40 @@ class Polytope():
         relabels = self.initial_polytope.poss_relabellings
         return equiv_check_adjacency_testing(other.creating_face[:-1], self.creating_face[:-1], relabels=relabels,
                                              dets=dets)
+
+    def get_faces(self):
+        """ Calculates all faces of a polytope and returns them as polytope objects """
+        # run Panda
+        write_known_vertices(self.deterministics, file='knownvertices.ext')
+        cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
+        out = subprocess.run(cmd, shell=True)
+        self.faces = read_inequalities('out.ine').astype(float)
+        # rescale the faces
+        for i in range(self.faces.shape[0]):
+            if self.faces[i, -1] == -1:
+                continue
+            n = np.sum(self.deterministics[0])
+            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
+            self.faces[i, -1] = -1
+        # for every face generate a subpolytope object
+        subpolytopes = []
+        for f in self.faces:
+            # find the deterministic points on the face
+            sub_dets = np.array([v for v in self.deterministics if v @ f[:-1] == -1.0 * f[-1]])
+            # find allowed relabellings
+            sub_poss_relabellings = []
+            for r in self.poss_relabellings:
+                allowed = False
+                for sd in sub_dets:
+                    if np.any(np.sum((sub_dets - sd[r]) ** 2, axis=1) < 1e-6):
+                        allowed = True
+                        break
+                if allowed:
+                    sub_poss_relabellings.append(r)
+            sub_poss_relabellings = np.array(sub_poss_relabellings)
+            # create new polytope
+
+            sub_p = Polytope(sub_dets, sub_poss_relabellings, creating_face=f,
+                             parent=self, initial_polytope=self.initial_polytope)
+            subpolytopes.append(sub_p)
+        return subpolytopes
