@@ -131,9 +131,6 @@ class Polytope():
             return False
             #
 
-        if len(other.deterministics) != len(self.deterministics):
-            return False
-
         if len(other.face) == 0 or len(self.face) == 0:
             print('Comparison of polytopes that have no face')
             return False
