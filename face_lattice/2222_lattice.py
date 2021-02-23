@@ -23,19 +23,18 @@ all_polys = {}
 def recursive_polytope_finder(p, parent_poly=None, level=0):
     """ Finds all subpolytopes for face lattice structure """
     # G.add_node(p.id)
-    num_dets = len(p.deterministics)
     print(p.id)
     # add polytope to all polytopes dict
-    if num_dets not in all_polys.keys():
-        all_polys[num_dets] = [p]
+    if level not in all_polys.keys():
+        all_polys[level] = [p]
 
     else:
         # Check if polytope was already calculated
-        for other_p in all_polys[num_dets]:
+        for other_p in all_polys[level]:
             if other_p == p:
                 G.add_edge(parent_poly.id, other_p.id)
                 return all_polys
-        all_polys[num_dets].append(p)
+        all_polys[level].append(p)
     if level in faces_per_level.keys():
         faces_per_level[level] += 1
     else:
