@@ -17,41 +17,34 @@ outputs = range(2)
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
-faces_per_level = {}
 all_polys = {}
+
 
 def recursive_polytope_finder(p, parent_poly=None, level=0):
     """ Finds all subpolytopes for face lattice structure """
-    # G.add_node(p.id)
     print(p.id)
-    # add polytope to all polytopes dict
+
+    # add polytope to all polytopes dict, if no equivalent was yet found
     if level not in all_polys.keys():
         all_polys[level] = [p]
-
     else:
         # Check if polytope was already calculated
         for other_p in all_polys[level]:
             if other_p == p:
                 G.add_edge(parent_poly.id, other_p.id)
-                return all_polys
+                return True
         all_polys[level].append(p)
-    if level in faces_per_level.keys():
-        faces_per_level[level] += 1
-    else:
-        faces_per_level[level] = 1
-
     # add face to graph
-    G.add_node(p.id, pos=(faces_per_level[level], -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings))
+    G.add_node(p.id, pos=(len(all_polys[level]), -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings))
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
     if len(p.deterministics) <= 1:
         return True
-
     # get the subpolytopes
     sub_polys = p.get_classes()
     for f in sub_polys:
-         recursive_polytope_finder(f, p, level + 1)
+        recursive_polytope_finder(f, p, level + 1)
     return True
 
 
@@ -65,7 +58,7 @@ network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
 
 # Set edge opacity and width
 network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
-HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"),("Number relabels", "@nrel")]
+HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Number relabels", "@nrel")]
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
