@@ -955,16 +955,15 @@ def equiv_check_adjacency_testing(bell1, bell2, relabels, dets, tol=1e-6):
     # shift to min of v_i = 0
     v1 = v1 - np.min(v1)
     v2 = v2 - np.min(v2)
-
     # rescale that second min is = 1
     try:
         v1 = v1 / np.min(v1[v1 > tol])
     except:
-        print('v1 rescale error: ', v1)
+        pass
     try:
         v2 = v2 / np.min(v2[v2 > tol])
     except:
-        print('v2 rescale error: ', v2)
+        pass
 
     # round the vectors for better equality checks
     v1 = np.round(v1, 5)

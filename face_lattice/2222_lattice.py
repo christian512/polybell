@@ -46,7 +46,7 @@ def recursive_polytope_finder(p, parent_poly=None, level=0):
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
-    if len(p.deterministics) <= 2:
+    if len(p.deterministics) <= 1:
         return True
 
     # get the subpolytopes
