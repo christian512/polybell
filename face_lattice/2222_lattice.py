@@ -18,9 +18,9 @@ dets = get_deterministic_behaviors(inputs, inputs, outputs)
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
 faces_per_level = {}
+all_polys = {}
 
-
-def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
+def recursive_polytope_finder(p, parent_poly=None, level=0):
     """ Finds all subpolytopes for face lattice structure """
     # G.add_node(p.id)
     num_dets = len(p.deterministics)
@@ -46,14 +46,14 @@ def recursive_polytope_finder(p, parent_poly=None, level=0, all_polys={}):
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
-    if len(p.deterministics) <= 0:
-        return all_polys
+    if len(p.deterministics) <= 2:
+        return True
 
     # get the subpolytopes
     sub_polys = p.get_classes()
     for f in sub_polys:
-        all_polys = recursive_polytope_finder(f, p, level + 1, all_polys)
-    return all_polys
+         recursive_polytope_finder(f, p, level + 1)
+    return True
 
 
 # create initial polytope
@@ -70,4 +70,5 @@ HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"),("Number relabels", "@nrel
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
-save(plot, 'face_classes_lattice_2222.html')
+show(plot)
+# save(plot, 'face_classes_lattice_2222.html')

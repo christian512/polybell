@@ -13,13 +13,15 @@ import random
 class Polytope():
     """ Object Describing a polytope """
 
-    def __init__(self, deterministics, poss_relabellings):
+    def __init__(self, deterministics, poss_relabellings, face=np.array([])):
         """ initialize the polytope """
         self.id = ''.join(random.choices(string.digits + string.ascii_letters, k=30))
         self.deterministics = deterministics
         self.poss_relabellings = poss_relabellings
         self.faces = []
         self.classes = []
+        # this is the face of the parent polytope that was used to create this polytope
+        self.face = face
 
     def __str__(self):
         out = 'polytope with {} vertices and {} allowed relabellings'.format(len(self.deterministics), len(self.poss_relabellings))
@@ -33,7 +35,14 @@ class Polytope():
         write_known_vertices(self.deterministics, file='knownvertices.ext')
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
-        self.faces = read_inequalities('out.ine')
+        self.faces = read_inequalities('out.ine').astype(float)
+        # rescale the faces
+        for i in range(self.faces.shape[0]):
+            if self.faces[i, -1] == -1:
+                continue
+            n = np.sum(self.deterministics[0])
+            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
+            self.faces[i, -1] = -1
         # calculate the classes
         self.__reduce_to_inequiv()
         # for every face generate a subpolytope object
@@ -54,7 +63,7 @@ class Polytope():
             sub_poss_relabellings = np.array(sub_poss_relabellings)
             # create new polytope
 
-            sub_p = Polytope(sub_dets, sub_poss_relabellings)
+            sub_p = Polytope(sub_dets, sub_poss_relabellings, face=f)
             subpolytopes.append(sub_p)
         return subpolytopes
 
@@ -64,7 +73,14 @@ class Polytope():
         write_known_vertices(self.deterministics, file='knownvertices.ext')
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
-        self.faces = read_inequalities('out.ine')
+        self.faces = read_inequalities('out.ine').astype(float)
+        # rescale the faces
+        for i in range(self.faces.shape[0]):
+            if self.faces[i, -1] == -1:
+                continue
+            n = np.sum(self.deterministics[0])
+            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
+            self.faces[i, -1] = -1
         # calculate the classes
         self.__reduce_to_inequiv()
         # for every face generate a subpolytope object
@@ -85,7 +101,7 @@ class Polytope():
             sub_poss_relabellings = np.array(sub_poss_relabellings)
             # create new polytope
 
-            sub_p = Polytope(sub_dets, sub_poss_relabellings)
+            sub_p = Polytope(sub_dets, sub_poss_relabellings, face=f)
             subpolytopes.append(sub_p)
         return subpolytopes
 
@@ -110,7 +126,20 @@ class Polytope():
         self.classes = ineq_bells
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            if len(other.deterministics) == len(self.deterministics):
-                return np.all(self.deterministics == other.deterministics)
-        return False
+        """ Equality definition dependent on equivalence """
+        if not isinstance(other, self.__class__):
+            return False
+            #
+
+        if len(other.deterministics) != len(self.deterministics):
+            return False
+
+        if len(other.face) == 0 or len(self.face) == 0:
+            print('Comparison of polytopes that have no face')
+            return False
+        # Equivalence checking with both polytopes dets and relabellings
+        equiv1 = False
+        equiv2 = False
+        equiv1 = equiv_check_adjacency_testing(other.face[:-1], self.face[:-1], relabels=self.poss_relabellings, dets=self.deterministics)
+        equiv2 = equiv_check_adjacency_testing(other.face[:-1], self.face[:-1], relabels=other.poss_relabellings, dets=other.deterministics)
+        return equiv1 or equiv2
