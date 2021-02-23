@@ -35,7 +35,8 @@ def recursive_polytope_finder(p, parent_poly=None, level=0):
                 return True
         all_polys[level].append(p)
     # add face to graph
-    G.add_node(p.id, pos=(len(all_polys[level]), -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings))
+    G.add_node(p.id, pos=(len(all_polys[level]), -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings),
+               dims=p.dims, dets_indices=str(p.indices_deterministics))
     if parent_poly:
         G.add_edge(parent_poly.id, p.id)
     # check if there will be subpolytopes
@@ -58,7 +59,8 @@ network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
 
 # Set edge opacity and width
 network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
-HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Number relabels", "@nrel")]
+HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
+                  ("Number relabels", "@nrel"), ("Dimensions", "@dims")]
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)

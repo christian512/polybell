@@ -12,7 +12,8 @@ import random
 class Polytope():
     """ Object Describing a polytope """
 
-    def __init__(self, deterministics, poss_relabellings, creating_face=np.array([]), parent=None, initial_polytope=None):
+    def __init__(self, deterministics, poss_relabellings, creating_face=np.array([]), parent=None,
+                 initial_polytope=None):
         """ initialize the polytope """
         self.id = ''.join(random.choices(string.digits + string.ascii_letters, k=30))
         self.deterministics = deterministics
@@ -29,6 +30,15 @@ class Polytope():
         self.classes = []
         # this is the face of the parent polytope that was used to create this polytope
         self.creating_face = creating_face
+        # Calculate Dimensions
+        self.dims = np.linalg.matrix_rank(self.deterministics)
+        # indices of original deterministic points that are in this polytope
+        self.indices_deterministics = []
+        for det in self.deterministics:
+            equal = det == self.initial_polytope.deterministics
+            equal = np.all(equal, axis=1)
+            idx = np.where(equal)[0][0]
+            self.indices_deterministics.append(idx)
 
     def __str__(self):
         out = 'polytope with {} vertices and {} allowed relabellings'.format(len(self.deterministics),
@@ -103,14 +113,9 @@ class Polytope():
         if len(other.creating_face) == 0 or len(self.creating_face) == 0:
             print('Comparison of polytopes that have no face')
             return False
-        # Equivalence checking with both polytopes dets and relabellings
-        equiv1 = False
-        equiv2 = False
-        # Perform the equivalence check with the parent deterministic points, as we check the polytopes themselve for equivalence.
-        equiv1 = equiv_check_adjacency_testing(other.creating_face[:-1], self.creating_face[:-1],
-                                               relabels=self.parent.poss_relabellings,
-                                               dets=self.parent.deterministics)
-        equiv2 = equiv_check_adjacency_testing(other.creating_face[:-1], self.creating_face[:-1],
-                                               relabels=other.parent.poss_relabellings,
-                                               dets=other.parent.deterministics)
-        return equiv1 or equiv2
+        # Equivalence checking
+        # TODO: Which setting of dets and relabels should we use?
+        dets = self.initial_polytope.deterministics
+        relabels = self.initial_polytope.poss_relabellings
+        return equiv_check_adjacency_testing(other.creating_face[:-1], self.creating_face[:-1], relabels=relabels,
+                                             dets=dets)
