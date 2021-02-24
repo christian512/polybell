@@ -20,7 +20,7 @@ relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(
 all_polys = {}
 
 
-def recursive_polytope_finder(polys, level=0):
+def polytope_finder(polys, level=0):
     """ Finds all subpolytopes for face lattice structure """
     print('level: ',level)
     if len(polys) == 0:
@@ -32,7 +32,8 @@ def recursive_polytope_finder(polys, level=0):
     for p in all_polys[level]:
         if len(p.deterministics) == 1:
             continue
-        faces = p.get_faces()
+        # TODO: Here you can change if classes or faces should be taken
+        faces = p.get_classes()
         for f in faces:
             new_polys.append(f)
     # set first classes representative
@@ -46,6 +47,8 @@ def recursive_polytope_finder(polys, level=0):
     for p in new_polys:
         equiv = False
         for c in new_polys_classes:
+            # TODO: If you break here we don't check between different polytopes for equivalence
+            break
             tmp_dets = p.initial_polytope.deterministics
             tmp_relabels = p.initial_polytope.poss_relabellings
             if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
@@ -63,7 +66,7 @@ def recursive_polytope_finder(polys, level=0):
                        dims=p.dims, dets_indices=str(p.indices_deterministics))
             # add edge
             G.add_edge(p.parent.id, p.id)
-    return recursive_polytope_finder(new_polys_classes, level + 1)
+    return polytope_finder(new_polys_classes, level + 1)
 
 
 
@@ -74,7 +77,7 @@ p = bell_polytope
 G.add_node(p.id, pos=(0, 0), ndets=len(p.deterministics),
            nrel=len(p.poss_relabellings),
            dims=p.dims, dets_indices=str(p.indices_deterministics))
-all_polytopes = recursive_polytope_finder([bell_polytope], level=1)
+polytope_finder([bell_polytope], level=1)
 pos = nx.get_node_attributes(G, 'pos')
 network_graph = from_networkx(G, pos)
 # Set node size and color
@@ -87,5 +90,5 @@ HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics"
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
-show(plot)
-# save(plot, 'test.html')
+# show(plot)
+save(plot, 'step1_step2.html')
