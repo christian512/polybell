@@ -1,6 +1,6 @@
 """ Generates the 2222-case face lattice """
 
-from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_testing
+from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
 from linearbell.adjacency_decomposition import rotate
 import numpy as np
 from face import Polytope, polytope_from_face
@@ -35,7 +35,7 @@ def polytope_finder(polys, level=0):
         if len(p.deterministics) == 1:
             continue
         # TODO: Here you can change if classes or faces should be taken
-        faces = p.get_faces()
+        faces = p.get_classes()
         for f in faces:
             new_polys.append(f)
     # set first classes representative
@@ -50,7 +50,7 @@ def polytope_finder(polys, level=0):
             # TODO: Here you can stop the Step 3 equivalence check with a break
             tmp_dets = p.initial_polytope.deterministics
             tmp_relabels = p.initial_polytope.poss_relabellings
-            if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
+            if equiv_check_adjacency_panda(c.creating_face, p.creating_face, relabels=tmp_relabels,
                                              dets=tmp_dets):
                 # if np.all(c.deterministics == p.deterministics):
                 equiv = True
@@ -107,7 +107,7 @@ for level in all_polys.keys():
                 # check which is the new face on the level above
                 equiv = False
                 for f in all_polys[level + 1]:
-                    if not equiv_check_adjacency_testing(new_face.creating_face[:-1], f.creating_face[:-1],
+                    if not equiv_check_adjacency_panda(new_face.creating_face, f.creating_face,
                                                          poly.initial_polytope.poss_relabellings,
                                                          poly.initial_polytope.deterministics):
                         # if not np.all(new_face.deterministics == f.deterministics):
@@ -133,4 +133,4 @@ plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
 show(plot)
-save(plot, 'adjacency_step1_step3.html')
+save(plot, 'step1_step3.html')
