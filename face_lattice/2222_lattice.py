@@ -22,7 +22,11 @@ all_polys = {}
 
 def polytope_finder(polys, level=0):
     """ Finds all subpolytopes for face lattice structure """
-    print('level: ',level)
+    print('level: ', level)
+    # just temporary cancelling depth
+    if level >= 3:
+        return True
+    # nothing todo if no polys given
     if len(polys) == 0:
         return True
     # set all polytopes of this level
@@ -39,15 +43,13 @@ def polytope_finder(polys, level=0):
     # set first classes representative
     if len(new_polys) == 0:
         return True
-    p = new_polys[0]
-    new_polys_classes = [p]
-    G.add_node(p.id, pos=(len(new_polys_classes) - 1, -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings),
-               dims=p.dims, dets_indices=str(p.indices_deterministics))
+    # check the equivalence on the level
+    new_polys_classes = []
     # check the equivalence of the others to this, draw edges
     for p in new_polys:
         equiv = False
         for c in new_polys_classes:
-            # TODO: If you break here we don't check between different polytopes for equivalence
+            # TODO: Here you can stop the Step 3 equivalence check with a break
             break
             tmp_dets = p.initial_polytope.deterministics
             tmp_relabels = p.initial_polytope.poss_relabellings
@@ -61,13 +63,12 @@ def polytope_finder(polys, level=0):
             # add to class
             new_polys_classes.append(p)
             # add node
-            G.add_node(p.id, pos=(len(new_polys_classes)-1, -level), ndets=len(p.deterministics),
+            G.add_node(p.id, pos=(len(new_polys_classes) - 1, -level), ndets=len(p.deterministics),
                        nrel=len(p.poss_relabellings),
-                       dims=p.dims, dets_indices=str(p.indices_deterministics))
+                       dims=p.dims, dets_indices=str(p.indices_deterministics),face=str(p.creating_face))
             # add edge
             G.add_edge(p.parent.id, p.id)
     return polytope_finder(new_polys_classes, level + 1)
-
 
 
 # create initial polytope
@@ -86,9 +87,9 @@ network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
 # Set edge opacity and width
 network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
 HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
-                  ("Number relabels", "@nrel"), ("Dimensions", "@dims")]
+                  ("Number relabels", "@nrel"), ("Dimensions", "@dims"), ("Face", "@face")]
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
-# show(plot)
-save(plot, 'step1_step2.html')
+show(plot)
+#save(plot, 'step1_step2.html')
