@@ -1,6 +1,6 @@
 """ Generates the 2222-case face lattice """
 
-from linearbell.utils import get_deterministic_behaviors
+from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_testing
 import numpy as np
 from face import Polytope
 import matplotlib.pyplot as plt
@@ -20,38 +20,61 @@ relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(
 all_polys = {}
 
 
-def recursive_polytope_finder(p, parent_poly=None, level=0):
+def recursive_polytope_finder(polys, level=0):
     """ Finds all subpolytopes for face lattice structure """
-    print(p.id)
-
-    # add polytope to all polytopes dict, if no equivalent was yet found
-    if level not in all_polys.keys():
-        all_polys[level] = [p]
-    else:
-        # Check if polytope was already calculated
-        for other_p in all_polys[level]:
-            if other_p == p:
-                G.add_edge(parent_poly.id, other_p.id)
-                return True
-        all_polys[level].append(p)
-    # add face to graph
-    G.add_node(p.id, pos=(len(all_polys[level]), -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings),
-               dims=p.dims, dets_indices=str(p.indices_deterministics))
-    if parent_poly:
-        G.add_edge(parent_poly.id, p.id)
-    # check if there will be subpolytopes
-    if len(p.deterministics) <= 1:
+    print('level: ',level)
+    if len(polys) == 0:
         return True
-    # get the subpolytopes
-    sub_polys = p.get_classes()
-    for f in sub_polys:
-        recursive_polytope_finder(f, p, level + 1)
-    return True
+    # set all polytopes of this level
+    all_polys[level] = polys
+    # now for every polytope, calculate the faces
+    new_polys = []
+    for p in all_polys[level]:
+        if len(p.deterministics) == 1:
+            continue
+        faces = p.get_faces()
+        for f in faces:
+            new_polys.append(f)
+    # set first classes representative
+    if len(new_polys) == 0:
+        return True
+    p = new_polys[0]
+    new_polys_classes = [p]
+    G.add_node(p.id, pos=(len(new_polys_classes) - 1, -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings),
+               dims=p.dims, dets_indices=str(p.indices_deterministics))
+    # check the equivalence of the others to this, draw edges
+    for p in new_polys:
+        equiv = False
+        for c in new_polys_classes:
+            tmp_dets = p.initial_polytope.deterministics
+            tmp_relabels = p.initial_polytope.poss_relabellings
+            if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
+                                             dets=tmp_dets):
+                equiv = True
+                # draw an edge from parent of p to c
+                G.add_edge(p.parent.id, c.id)
+                break
+        if not equiv:
+            # add to class
+            new_polys_classes.append(p)
+            # add node
+            G.add_node(p.id, pos=(len(new_polys_classes)-1, -level), ndets=len(p.deterministics),
+                       nrel=len(p.poss_relabellings),
+                       dims=p.dims, dets_indices=str(p.indices_deterministics))
+            # add edge
+            G.add_edge(p.parent.id, p.id)
+    return recursive_polytope_finder(new_polys_classes, level + 1)
+
 
 
 # create initial polytope
 bell_polytope = Polytope(dets, relabels)
-all_polytopes = recursive_polytope_finder(bell_polytope)
+p = bell_polytope
+# add node for original polytpe
+G.add_node(p.id, pos=(0, 0), ndets=len(p.deterministics),
+           nrel=len(p.poss_relabellings),
+           dims=p.dims, dets_indices=str(p.indices_deterministics))
+all_polytopes = recursive_polytope_finder([bell_polytope], level=1)
 pos = nx.get_node_attributes(G, 'pos')
 network_graph = from_networkx(G, pos)
 # Set node size and color
@@ -65,4 +88,4 @@ plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
 show(plot)
-# save(plot, 'face_classes_lattice_2222.html')
+# save(plot, 'test.html')
