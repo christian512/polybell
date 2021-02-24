@@ -73,7 +73,6 @@ class Polytope():
                     sub_poss_relabellings.append(r)
             sub_poss_relabellings = np.array(sub_poss_relabellings)
             # create new polytope
-
             sub_p = Polytope(sub_dets, sub_poss_relabellings, creating_face=f,
                              parent=self, initial_polytope=self.initial_polytope)
             subpolytopes.append(sub_p)
@@ -89,7 +88,6 @@ class Polytope():
         for i, b in enumerate(self.faces):
             equiv = False
             for c in ineq_bells:
-                # TODO: HERE WE CAN EITHER CHOOSE ALL DETRMINISTICS OR ONLY THE ONE of the current face
                 if equiv_check_adjacency_testing(b[:-1], c[:-1], self.poss_relabellings, self.deterministics,
                                                  tol=1e-6):
                     equiv = True

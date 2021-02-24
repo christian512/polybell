@@ -23,10 +23,7 @@ all_polys = {}
 def polytope_finder(polys, level=0):
     """ Finds all subpolytopes for face lattice structure """
     print('level: ', level)
-    # just temporary cancelling depth
-    if level >= 3:
-        return True
-    # nothing todo if no polys given
+    # nothing to do if no polys given
     if len(polys) == 0:
         return True
     # set all polytopes of this level
