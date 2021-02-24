@@ -47,11 +47,11 @@ def polytope_finder(polys, level=0):
         equiv = False
         for c in new_polys_classes:
             # TODO: Here you can stop the Step 3 equivalence check with a break
-            break
             tmp_dets = p.initial_polytope.deterministics
             tmp_relabels = p.initial_polytope.poss_relabellings
-            if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
-                                             dets=tmp_dets):
+            # if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
+            #                                  dets=tmp_dets):
+            if np.all(c.deterministics == p.deterministics):
                 equiv = True
                 # draw an edge from parent of p to c
                 G.add_edge(p.parent.id, c.id)
@@ -89,4 +89,4 @@ plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
 show(plot)
-#save(plot, 'step1_step2.html')
+save(plot, 'step1_step2_step3_improved.html')
