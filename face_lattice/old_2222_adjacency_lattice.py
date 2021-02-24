@@ -4,7 +4,6 @@ from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_
 from linearbell.adjacency_decomposition import rotate, furthest_vertex
 import numpy as np
 from face import Polytope
-import matplotlib.pyplot as plt
 from bokeh.io import show, save
 from bokeh.models import Circle, MultiLine, Range1d
 from bokeh.plotting import figure, from_networkx
@@ -18,85 +17,118 @@ outputs = range(2)
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
 relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
-faces_per_level = {}
 all_polys = {}
 
 
-def recursive_polytope_finder(p, parent_poly=None, level=0):
+def recursive_polytope_finder(polys, level=0):
     """ Finds all subpolytopes for face lattice structure """
-    # G.add_node(p.id)
-    print(p.id)
-    # add polytope to all polytopes dict
-    if level not in all_polys.keys():
-        all_polys[level] = [p]
-
-    else:
-        # Check if polytope was already calculated
-        for other_p in all_polys[level]:
-            if other_p == p:
-                G.add_edge(parent_poly.id, other_p.id)
-                return True
-        all_polys[level].append(p)
-    if level in faces_per_level.keys():
-        faces_per_level[level] += 1
-    else:
-        faces_per_level[level] = 1
-
-    # add face to graph
-    G.add_node(p.id, pos=(faces_per_level[level], -level), ndets=len(p.deterministics), nrel=len(p.poss_relabellings))
-    if parent_poly:
-        G.add_edge(parent_poly.id, p.id)
-    # check if there will be subpolytopes
-    if len(p.deterministics) <= 1:
+    print('level: ', level)
+    if len(polys) == 0:
         return True
-
-    # get the subpolytopes
-    sub_polys = p.get_classes()
-    for f in sub_polys:
-        recursive_polytope_finder(f, p, level + 1)
-    return True
+    # set all polytopes of this level
+    all_polys[level] = polys
+    # now for every polytope, calculate the faces
+    new_polys = []
+    for p in all_polys[level]:
+        if len(p.deterministics) == 1:
+            continue
+        faces = p.get_faces()
+        for f in faces:
+            new_polys.append(f)
+    # set first classes representative
+    if len(new_polys) == 0:
+        return True
+    p = new_polys[0]
+    new_polys_classes = [p]
+    G.add_node(p.id, pos=(len(new_polys_classes) - 1, -level), ndets=len(p.deterministics),
+               nrel=len(p.poss_relabellings),
+               dims=p.dims, dets_indices=str(p.indices_deterministics))
+    # check the equivalence of the others to this, draw edges
+    for p in new_polys:
+        equiv = False
+        for c in new_polys_classes:
+            tmp_dets = p.initial_polytope.deterministics
+            tmp_relabels = p.initial_polytope.poss_relabellings
+            if equiv_check_adjacency_testing(c.creating_face[:-1], p.creating_face[:-1], relabels=tmp_relabels,
+                                             dets=tmp_dets):
+                equiv = True
+                # draw an edge from parent of p to c
+                G.add_edge(p.parent.id, c.id)
+                break
+        if not equiv:
+            # add to class
+            new_polys_classes.append(p)
+            # add node
+            G.add_node(p.id, pos=(len(new_polys_classes) - 1, -level), ndets=len(p.deterministics),
+                       nrel=len(p.poss_relabellings),
+                       dims=p.dims, dets_indices=str(p.indices_deterministics))
+            # add edge
+            G.add_edge(p.parent.id, p.id)
+    return recursive_polytope_finder(new_polys_classes, level + 1)
 
 
 # create initial polytope
 bell_polytope = Polytope(dets, relabels)
-recursive_polytope_finder(bell_polytope)
+p = bell_polytope
+# add node for original polytpe
+G.add_node(p.id, pos=(0, 0), ndets=len(p.deterministics),
+           nrel=len(p.poss_relabellings),
+           dims=p.dims, dets_indices=str(p.indices_deterministics))
+recursive_polytope_finder([bell_polytope], level=1)
 
-# Check which faces can be pivoted into another face and display in the Graph.
-G.remove_edges_from(list(G.edges()))
-# iterate through the levels
+# Create a copy with removed edges
+G_adj = G.copy()
+G_adj.remove_edges_from(list(G_adj.edges()))
+# Go trough the levels and determine adjacencies
 for level in all_polys.keys():
-    if level + 2 not in all_polys.keys():
-        continue
-    poly = all_polys[level][-1]
-    # Choose the first polytope of this level
-    face = all_polys[level + 1][-1]
-    # take it's first child -> in this case is the first polytope of the level below
-    ridge = all_polys[level + 2][-1]
-    # rotate the face around the ridge
-    vertex = furthest_vertex(poly.deterministics, face.creating_face[:-1])
-    new_face = rotate(poly.deterministics, vertex, face.creating_face[:-1], ridge.creating_face[:-1])
-    # check if the new face is equivalent to any on the level of the original face.
-    equiv = False
-    for test_face in all_polys[level + 1]:
-        equiv = equiv_check_adjacency_testing(test_face.creating_face[:-1], new_face, test_face.poss_relabellings,
-                                              test_face.parent_deterministics)
-        if equiv:
-            G.add_edge(face.id, ridge.id)
-            G.add_edge(ridge.id, test_face.id)
-            break
-    if not equiv:
-        print('Not equivalent <- this should not happen')
-
-pos = nx.get_node_attributes(G, 'pos')
-network_graph = from_networkx(G, pos)
+    if not level + 2 in all_polys.keys():
+        break
+    # Get polytope, faces and ridges
+    # TODO: only allow children -> Do this check with edges not with parent id, but maybe this does not change anything
+    print(level)
+    for poly in all_polys[level]:
+        for face in all_polys[level+1]:
+            if not G.has_edge(poly.id, face.id):
+                continue
+            for ridge in all_polys[level+2]:
+                if not G.has_edge(face.id, ridge.id):
+                    continue
+                # calculate furthest vertex
+                vertex = poly.deterministics[0]
+                for d in poly.deterministics:
+                    if d @ face.creating_face[:-1] < vertex @ face.creating_face[:-1]:
+                        vertex = d
+                # rotate to a new face
+                print('start rotation')
+                new_face = rotate(poly.deterministics, vertex, face.creating_face[:-1], ridge.creating_face[:-1])
+                print('done rotation')
+                # check which is the new face on level + 1
+                equiv = False
+                for f in all_polys[level + 1]:
+                    if equiv_check_adjacency_testing(f.creating_face[:-1], new_face, poly.initial_polytope.poss_relabellings,
+                                                     poly.initial_polytope.deterministics):
+                        # found the equivalent
+                        equiv = True
+                        # add an edge to G_adj
+                        G_adj.add_edge(face.id, ridge.id)
+                        G_adj.add_edge(ridge.id, f.id)
+                        break
+                if not equiv:
+                    print('This should not happen, as every rotation should lead to the another face.')
+                    print('new face: ', new_face)
+print('Drawing Graph')
+# Create network graph
+pos = nx.get_node_attributes(G_adj, 'pos')
+network_graph = from_networkx(G_adj, pos)
 # Set node size and color
 network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
 
 # Set edge opacity and width
-network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
-HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Number relabels", "@nrel")]
+network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1,)
+HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
+                  ("Number relabels", "@nrel"), ("Dimensions", "@dims")]
 plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
-              title='Adjacency-Classes-Lattice for 2222 case')
+              title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
 show(plot)
-save(plot, 'adjacency_classes_lattice_2222.html')
+# save(plot, 'adjacency_step1_step3.html')
