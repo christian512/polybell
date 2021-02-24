@@ -151,3 +151,23 @@ class Polytope():
                              parent=self, initial_polytope=self.initial_polytope)
             subpolytopes.append(sub_p)
         return subpolytopes
+
+def polytope_from_face(face, polytope):
+    """ Generates a new polytope object from a face of a parent polytope"""
+
+    sub_dets = np.array([v for v in polytope.deterministics if v @ face[:-1] == -1.0 * face[-1]])
+    # find possible relabelling
+    sub_poss_relabellings = []
+    for r in polytope.poss_relabellings:
+        allowed = False
+        for sd in sub_dets:
+            if np.any(np.sum((sub_dets - sd[r]) ** 2, axis=1) < 1e-6):
+                allowed = True
+                break
+        if allowed:
+            sub_poss_relabellings.append(r)
+    sub_poss_relabellings = np.array(sub_poss_relabellings)
+    # create new polytope
+    p = Polytope(sub_dets, sub_poss_relabellings, creating_face=face,
+                 parent=polytope, initial_polytope=polytope.initial_polytope)
+    return p
