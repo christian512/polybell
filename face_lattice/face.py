@@ -54,13 +54,6 @@ class Polytope():
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
         self.faces = read_inequalities('out.ine').astype(float)
-        # rescale the faces
-        for i in range(self.faces.shape[0]):
-            if self.faces[i, -1] == -1:
-                continue
-            n = np.sum(self.deterministics[0])
-            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
-            self.faces[i, -1] = -1
         # calculate the classes
         self.__reduce_to_inequiv()
         # for every face generate a subpolytope object
@@ -105,6 +98,16 @@ class Polytope():
                 ineq_bells.append(b)
         self.classes = ineq_bells
 
+    def __rescale_faces(self):
+        """ Rescale the faces that they are of form <= 1"""
+        # rescale the faces
+        for i in range(self.faces.shape[0]):
+            if self.faces[i, -1] == -1:
+                continue
+            n = np.sum(self.deterministics[0])
+            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
+            self.faces[i, -1] = -1
+
     def __eq__(self, other):
         """ Equality definition dependent on equivalence """
         if not isinstance(other, self.__class__):
@@ -127,13 +130,7 @@ class Polytope():
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
         self.faces = read_inequalities('out.ine').astype(float)
-        # rescale the faces
-        for i in range(self.faces.shape[0]):
-            if self.faces[i, -1] == -1:
-                continue
-            n = np.sum(self.deterministics[0])
-            self.faces[i, :-1] = self.faces[i, :-1] + (self.faces[i, -1] + 1) / n
-            self.faces[i, -1] = -1
+
         # for every face generate a subpolytope object
         subpolytopes = []
         for f in self.faces:
