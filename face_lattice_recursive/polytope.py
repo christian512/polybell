@@ -24,7 +24,6 @@ class Polytope():
         self.children = []
         # dimensions
         self.dims = np.linalg.matrix_rank(self.deterministics) - 1
-        # indices deterministics
 
     def __str__(self):
         return "polytope {} with {} deterministics and {} children ".format(self.id, self.deterministics.shape[0],

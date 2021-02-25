@@ -2,12 +2,12 @@ from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_
 import numpy as np
 from polytope import Polytope
 
-inputs = range(3)
+inputs = range(2)
 outputs = range(2)
 
 # Generate Bell Polytope
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(3, 3, 2, 2)).astype(int)
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 bell_polytope = Polytope(dets, relabels)
 
 # get first face of bell polytope
@@ -32,7 +32,6 @@ def add_polytope_at_level(poly, k):
         return False
     equiv = False
     for child in poly.parent.children:
-        break
         if equiv_check_adjacency_panda(poly.creating_face, child.creating_face, poly.parent.relabellings,
                                        poly.parent.deterministics):
             equiv = True
