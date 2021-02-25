@@ -51,7 +51,7 @@ def polytope_finder(polys, level=0):
             tmp_dets = p.initial_polytope.deterministics
             tmp_relabels = p.initial_polytope.poss_relabellings
             if equiv_check_adjacency_panda(c.creating_face, p.creating_face, relabels=tmp_relabels,
-                                             dets=tmp_dets):
+                                           dets=tmp_dets):
                 # if np.all(c.deterministics == p.deterministics):
                 equiv = True
                 # draw an edge from parent of p to c
@@ -67,8 +67,8 @@ def polytope_finder(polys, level=0):
             # add edge
             G.add_edge(p.parent.id, p.id)
 
-
     return polytope_finder(new_polys_classes, level + 1)
+
 
 # create initial polytope
 bell_polytope = Polytope(dets, relabels)
@@ -78,7 +78,7 @@ G.add_node(p.id, pos=(0, 0), ndets=len(p.deterministics),
            nrel=len(p.poss_relabellings),
            dims=p.dims, dets_indices=str(p.indices_deterministics))
 polytope_finder([bell_polytope], level=1)
-
+print('Creating Adjacency Graph')
 # Create a copy with removed edges
 G_adj = G.copy()
 G_adj.remove_edges_from(list(G_adj.edges()))
@@ -101,15 +101,19 @@ for level in all_polys.keys():
                     if d @ face.creating_face < vertex @ face.creating_face:
                         vertex = d
                 # rotation -> Don't know if this needs the full face (with rhs)?
+                print('Start rotation')
                 new_face = rotate(vertices, vertex, face.creating_face, ridge.creating_face)
-                # TODO: Generate new polytope here, as for improved Step 3 we need equalizing deterministics.
+                if np.all(new_face == 0):
+                    continue
+                print('End Rotation')
+                # Generate new polytope here, as for improved Step 3 we need equalizing deterministics.
                 new_face = polytope_from_face(new_face, poly.initial_polytope)
                 # check which is the new face on the level above
                 equiv = False
                 for f in all_polys[level + 1]:
                     if not equiv_check_adjacency_panda(new_face.creating_face, f.creating_face,
-                                                         poly.initial_polytope.poss_relabellings,
-                                                         poly.initial_polytope.deterministics):
+                                                       poly.initial_polytope.poss_relabellings,
+                                                       poly.initial_polytope.deterministics):
                         # if not np.all(new_face.deterministics == f.deterministics):
                         equiv = True
                         # add edges to adjacency graph
@@ -133,4 +137,4 @@ plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-
               title='Face-Classes-Lattice for 2222 case')
 plot.renderers.append(network_graph)
 show(plot)
-save(plot, 'step1_step3.html')
+save(plot, 'adjacency_2inputs_step1_step2_step3.html')

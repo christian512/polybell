@@ -36,8 +36,13 @@ def rotate(vertices: np.ndarray, vertex: np.ndarray, facet: np.ndarray, ridge: n
     """ Rotates a facet around a ridge """
     d_f = distance(vertex, facet)
     d_r = distance(vertex, ridge)
+    counter = 0
     first_round = True
     while d_r != 0 or first_round:
+        counter += 1
+        if counter >= 1000:
+            print('Rotation got stuck!')
+            return np.zeros(ridge.shape[0])
         first_round = False
         assert d_f % 1 == 0
         assert d_r % 1 == 0
