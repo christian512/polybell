@@ -11,13 +11,17 @@ from linearbell.utils import equiv_check_adjacency_panda
 class Polytope():
     """ Describing a polytope """
 
-    def __init__(self, deterministics, relabellings, creating_face=np.array([]), parent=None):
+    def __init__(self, deterministics, relabellings, creating_face=np.array([]), parent=None, initial_polytope=None):
         """ initialize polytope """
         self.id = ''.join(random.choices(string.digits + string.ascii_letters, k=30))
         self.deterministics = deterministics
         self.relabellings = relabellings
         # set the face that created this
         self.creating_face = creating_face
+        # if no initial polytope is given
+        self.initial_polytope = initial_polytope
+        if not self.initial_polytope:
+            self.initial_polytope = self
         # set parent
         self.parent = parent
         if not self.parent:
@@ -28,12 +32,20 @@ class Polytope():
         self.__faces = []
         # empty classes
         self.__classes = []
+        # indices of the deterministics
+        self.indices_deterministics = []
+        for det in self.deterministics:
+            equal = det == self.initial_polytope.deterministics
+            equal = np.all(equal, axis=1)
+            idx = np.where(equal)[0][0]
+            self.indices_deterministics.append(idx)
+        self.indices_deterministics = np.array(self.indices_deterministics)
 
     def __str__(self):
         return "polytope {} with {} deterministics  ".format(self.id, self.deterministics.shape[0])
 
     def __eq__(self, other):
-        if np.all(self.creating_face == other.creating_face):
+        if np.all(self.deterministics == other.deterministics):
             return True
         return False
 
@@ -94,6 +106,7 @@ class Polytope():
         assert g.shape[0] == f.shape[0]
 
         # find the initial point
+        assert polytope.deterministics.shape[1] == f.shape[0]
         products = polytope.deterministics @ f
         assert products.shape[0] == polytope.deterministics.shape[0]
         idx = np.where(products == np.amin(products))[0][0]
@@ -101,22 +114,25 @@ class Polytope():
         assert vertex @ f < f0
         # start the iteration
         counter = 0
-        while vertex @ g != g0 or counter == 0:
+        while counter < 1000:
             counter += 1
             # rotate
             h = (f0 - vertex @ f) * g - (g0 - vertex @ g) * f
             h0 = (f0 - vertex @ f) * g0 - (g0 - vertex @ g) * f0
-            assert h.shape[0] == f.shape[0]
             # update g
             g = np.copy(h)
-            g0 = h0
+            g0 = np.copy(h0)
             # find the new vertex
             products = polytope.deterministics @ g
             idx = np.where(products == np.amax(products))[0][0]
             vertex = polytope.deterministics[idx]
-        # generate new polytope
-        new_ineq = np.r_[g, -1.0 * g0]
-        return polytope_from_inequality(new_ineq, polytope)
+            # stop iteration
+            if vertex @ g == g0:
+                new_ineq = np.r_[h, -1.0 * h0]
+                return polytope_from_inequality(new_ineq, polytope)
+        # maximum number of rotations reached
+        print('Rotation got stuck')
+        return False
 
 
 def polytope_from_inequality(ineq, poly):
@@ -134,4 +150,4 @@ def polytope_from_inequality(ineq, poly):
             sub_relabellings.append(r)
     sub_relabellings = np.array(sub_relabellings)
     # create new polytope
-    return Polytope(sub_dets, sub_relabellings, creating_face=ineq, parent=poly)
+    return Polytope(sub_dets, sub_relabellings, creating_face=ineq, parent=poly, initial_polytope=poly.initial_polytope)
