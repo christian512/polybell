@@ -21,7 +21,7 @@ class Polytope():
         # set parent
         self.parent = parent
         if not self.parent:
-            self.parent == self
+            self.parent = self
         # dimensions
         self.dims = np.linalg.matrix_rank(self.deterministics) - 1
         # empty faces
@@ -30,8 +30,12 @@ class Polytope():
         self.__classes = []
 
     def __str__(self):
-        return "polytope {} with {} deterministics and {} children ".format(self.id, self.deterministics.shape[0],
-                                                                            len(self.children))
+        return "polytope {} with {} deterministics  ".format(self.id, self.deterministics.shape[0])
+
+    def __eq__(self, other):
+        if np.all(self.creating_face == other.creating_face):
+            return True
+        return False
 
     def get_all_faces(self):
         """ Finds all faces of the polytope """
@@ -77,34 +81,57 @@ class Polytope():
         return polytope_from_inequality(ineq, self)
 
     def rotate_polytope(self, ridge):
-        """ Rotates the polytope around a child.This polytope is the face, and it's parent is the 'real' polytope """
+        """ Rotates the polytope around a ridge """
         if self.parent == self:
-            print('Can not rotate as this polytope does not have a parent')
-        assert ridge in self.children
-        assert self in self.parent.children
-        # set the structure
+            print('Can not rotate as no parent polytope.')
+            return False
+        # set structure
         polytope = self.parent
-        face = self
-        # do rotation
-        vertices = np.c_[polytope.deterministics, np.ones(polytope.deterministics.shape[0])]
-        vertex = furthest_vertex(vertices, face.creating_face)
-        new_face = rotate(vertices, vertex, face.creating_face, ridge.creating_face)
-        # create a new polytope
-        return polytope_from_inequality(new_face, polytope)
+        f = np.copy(self.creating_face[:-1])
+        f0 = np.copy(-1.0 * self.creating_face[-1])
+        g = np.copy(ridge.creating_face[:-1])
+        g0 = np.copy(-1.0 * ridge.creating_face[-1])
+        assert g.shape[0] == f.shape[0]
+
+        # find the initial point
+        products = polytope.deterministics @ f
+        assert products.shape[0] == polytope.deterministics.shape[0]
+        idx = np.where(products == np.amin(products))[0][0]
+        vertex = polytope.deterministics[idx]
+        assert vertex @ f < f0
+        # start the iteration
+        counter = 0
+        while vertex @ g != g0 or counter == 0:
+            counter += 1
+            # rotate
+            h = (f0 - vertex @ f) * g - (g0 - vertex @ g) * f
+            h0 = (f0 - vertex @ f) * g0 - (g0 - vertex @ g) * f0
+            assert h.shape[0] == f.shape[0]
+            # update g
+            g = np.copy(h)
+            g0 = h0
+            # find the new vertex
+            products = polytope.deterministics @ g
+            idx = np.where(products == np.amax(products))[0][0]
+            vertex = polytope.deterministics[idx]
+        # generate new polytope
+        new_ineq = np.r_[g, -1.0 * g0]
+        return polytope_from_inequality(new_ineq, polytope)
+
 
 def polytope_from_inequality(ineq, poly):
     """ Generates a polytope from an inequality """
     sub_dets = np.array([v for v in poly.deterministics if v @ ineq[:-1] == -1.0 * ineq[-1]])
     # find possible relabelling
-    sub_poss_relabellings = []
-    for r in poly.poss_relabellings:
+    sub_relabellings = []
+    for r in poly.relabellings:
         allowed = False
         for sd in sub_dets:
             if np.any(np.sum((sub_dets - sd[r]) ** 2, axis=1) < 1e-6):
                 allowed = True
                 break
         if allowed:
-            sub_poss_relabellings.append(r)
-    sub_poss_relabellings = np.array(sub_poss_relabellings)
+            sub_relabellings.append(r)
+    sub_relabellings = np.array(sub_relabellings)
     # create new polytope
-    return Polytope(sub_dets, sub_poss_relabellings, creating_face=ineq, parent=poly)
+    return Polytope(sub_dets, sub_relabellings, creating_face=ineq, parent=poly)
