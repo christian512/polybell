@@ -30,11 +30,12 @@ for i in range(len(faces)):
         new_r = f.get_valid_face_relabelling(r)
         if not new_r:
             print('Face {} , ridge {} : Ridge is not valid'.format(i, j))
-            new_r = r
-        if new_r != r:
-            print('Face {} , ridge {} : Using other representation of ridge'.format(i, j))
+            continue
+        #if new_r != r:
+        #    print('Face {} , ridge {} : Using other representation of ridge'.format(i, j))
         new_f = f.rotate_polytope(new_r)
-        if new_f != f:
-            print('Face {} , ridge {} : Lead to new face'.format(i, j))
+        if new_f == f:
+            print('Face {} , ridge {} : Lead to same face'.format(i, j))
         if new_f not in faces:
-            print('Face {} around ridge {} leads to non valid face'.format(i, j))
+            if not new_f.equiv_under_bell(faces):
+                print('Face {} around ridge {} leads to non valid face'.format(i, j))

@@ -4,8 +4,11 @@ import subprocess
 import string
 import random
 from linearbell.panda_helper import run_panda_vertices_on_facet, read_inequalities, write_known_vertices
-from linearbell.adjacency_decomposition import furthest_vertex, rotate
 from linearbell.utils import equiv_check_adjacency_panda
+from bokeh.io import show, save
+from bokeh.models import Circle, MultiLine, Range1d
+from bokeh.plotting import figure, from_networkx
+import networkx as nx
 
 
 class Polytope():
@@ -198,13 +201,38 @@ def polytope_from_inequality(ineq, poly):
     # find possible relabelling
     sub_relabellings = []
     for r in poly.relabellings:
-        allowed = False
+        allowed = True
         for sd in sub_dets:
-            if np.any(np.sum((sub_dets - sd[r]) ** 2, axis=1) < 1e-6):
-                allowed = True
+            if np.all(np.sum((sub_dets - sd[r]) ** 2, axis=1) > 1e-6):
+                allowed = False
                 break
         if allowed:
             sub_relabellings.append(r)
     sub_relabellings = np.array(sub_relabellings)
     # create new polytope
     return Polytope(sub_dets, sub_relabellings, creating_face=ineq, parent=poly, initial_polytope=poly.initial_polytope)
+
+def print_face_lattice(all_polys):
+    """ Prints all polytopes given in a dict, where the keys are the levels """
+    # Create networkx graph
+    G = nx.Graph()
+    # add the nodes
+    for level in all_polys.keys():
+        for j in range(len(all_polys[level])):
+            p = all_polys[level][j]
+            G.add_node(p.id, pos=(j, -level), ndets=len(p.deterministics),
+                       nrel=len(p.relabellings),
+                       dims=p.dims, dets_indices=str(p.indices_deterministics))
+    pos = nx.get_node_attributes(G, 'pos')
+    network_graph = from_networkx(G, pos)
+    # Set node size and color
+    network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
+
+    # Set edge opacity and width
+    network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
+    HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
+                      ("Number relabels", "@nrel"), ("Dimensions", "@dims")]
+    plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
+                  title='Face-Classes-Lattice for 2222 case')
+    plot.renderers.append(network_graph)
+    return plot
