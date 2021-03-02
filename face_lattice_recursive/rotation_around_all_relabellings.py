@@ -2,7 +2,8 @@
 
 from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
 import numpy as np
-from polytope import Polytope, polytope_from_inequality
+from polytope import Polytope, polytope_from_inequality, create_nx_graph, create_bokeh_plot
+from bokeh.io import show, save
 
 inputs = range(2)
 outputs = range(2)
@@ -19,6 +20,7 @@ all_polys[0] = [bell_polytope]
 
 def recursive_classes_lattice(level):
     """ Recursive construction of a classes face lattice """
+    print('Level: ', level)
     if len(all_polys[level]) == 0:
         return True
     all_polys[level + 1] = []
@@ -36,11 +38,12 @@ def recursive_classes_lattice(level):
 # build up the lattice
 recursive_classes_lattice(0)
 
-# TODO: Get network graph
+# Get network graph
+G = create_nx_graph(all_polys)
 
 # select faces and ridges to test
-faces = all_polys[7]
-ridges = all_polys[8]
+faces = all_polys[1]
+ridges = all_polys[2]
 print('Number of faces: ', len(faces))
 print('number of ridges: ', len(ridges))
 
@@ -55,7 +58,7 @@ for i in range(len(faces)):
         # identifier string
         prepend = 'face {}, ridge {}: '.format(i, j)
         # check if the ridge is valid and get the correct polytope representation
-        new_ridge = f1.get_valid_face(ridge)
+        new_ridge = f1.get_valid_face_relabelling(ridge)
         if not new_ridge:
             print(prepend + 'Not a valid ridge')
             continue
@@ -72,13 +75,22 @@ for i in range(len(faces)):
             # rotate f1 around the new ridge
             f2 = f1.rotate_polytope(new_ridge)
             if np.all(f2.creating_face == 0):
-                print('all zeros')
+                print(prepend + 'all zeros')
                 continue
             if not f1.equiv_under_parent(f2):
                 if not f1.equiv_under_bell(f2):
-                    found_new = True
-                    print(prepend + 'Found new face!')
-                    # TODO: Add edges to the Graph
-                    assert f2.equiv_under_bell(faces), 'Found completely new class'
 
-# TODO: Draw the graph
+                    o = f2.equiv_under_parent(faces)
+                    if not o:
+                        o = f2.equiv_under_bell(faces)
+                    if not o:
+                        print(prepend + 'Found completely new class: ' + str(f2.creating_face))
+                    # add edges to the graph
+                    if o:
+                        # print(prepend + 'Found new class!')
+                        G.add_edge(faces[i].id, ridges[j].id)
+                        G.add_edge(ridges[j].id, o.id)
+
+# plot the graph
+plot = create_bokeh_plot(G)
+show(plot)

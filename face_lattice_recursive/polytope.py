@@ -5,7 +5,6 @@ import string
 import random
 from linearbell.panda_helper import run_panda_vertices_on_facet, read_inequalities, write_known_vertices
 from linearbell.utils import equiv_check_adjacency_panda
-from bokeh.io import show, save
 from bokeh.models import Circle, MultiLine, Range1d
 from bokeh.plotting import figure, from_networkx
 import networkx as nx
@@ -140,9 +139,14 @@ class Polytope():
 
     def equiv_under_parent(self, other):
         """ Checks if two polytopes are equivalent under the symmetry of the parent """
-        assert self.parent == other.parent, 'Parents of the polytopes to compare are different'
-        return equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.parent.relabellings,
-                                           self.parent.deterministics)
+        if type(other) == list:
+            for o in other:
+                if self.equiv_under_parent(o):
+                    return o
+            return False
+        ret1 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.parent.relabellings, self.parent.deterministics)
+        ret2 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, other.parent.relabellings, other.parent.deterministics)
+        return ret1 or ret2
 
     def equiv_under_bell(self, other):
         """ Checks if two polytopes are equivalent under the symmetry of the Bell Polytope """
@@ -183,7 +187,7 @@ class Polytope():
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of possible face are not matching')
             return False
-        for r in self.relabellings:
+        for r in self.initial_polytope.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
             relabelled_ineq = np.r_[relabelled_ineq, poss_face.creating_face[-1]]
@@ -224,6 +228,35 @@ def print_face_lattice(all_polys):
             G.add_node(p.id, pos=(j, -level), ndets=len(p.deterministics),
                        nrel=len(p.relabellings),
                        dims=p.dims, dets_indices=str(p.indices_deterministics), face=str(p.creating_face))
+    pos = nx.get_node_attributes(G, 'pos')
+    network_graph = from_networkx(G, pos)
+    # Set node size and color
+    network_graph.node_renderer.glyph = Circle(size=15, fill_color='skyblue')
+
+    # Set edge opacity and width
+    network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
+    HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
+                      ("Number relabels", "@nrel"), ("Dimensions", "@dims"), ("Face", "@face")]
+    plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
+                  title='Face-Classes-Lattice for 2222 case')
+    plot.renderers.append(network_graph)
+    return plot
+
+def create_nx_graph(all_polys):
+    """ Generates a networkx graph"""
+    # Create networkx graph
+    G = nx.Graph()
+    # add the nodes
+    for level in all_polys.keys():
+        for j in range(len(all_polys[level])):
+            p = all_polys[level][j]
+            G.add_node(p.id, pos=(j, -level), ndets=len(p.deterministics),
+                       nrel=len(p.relabellings),
+                       dims=p.dims, dets_indices=str(p.indices_deterministics), face=str(p.creating_face))
+    return G
+
+def create_bokeh_plot(G):
+    """ Generates a bokeh plot from a networkx graph"""
     pos = nx.get_node_attributes(G, 'pos')
     network_graph = from_networkx(G, pos)
     # Set node size and color
