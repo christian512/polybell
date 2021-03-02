@@ -130,8 +130,6 @@ class Polytope():
             if vertex @ g == g0:
                 new_ineq = np.r_[h, -1.0 * h0]
                 new_poly = polytope_from_inequality(new_ineq, polytope)
-                if new_poly == self:
-                    print('Rotation resulted in the same polytope')
                 return new_poly
         # maximum number of rotations reached
         print('Rotation got stuck')
@@ -145,12 +143,22 @@ class Polytope():
 
     def equiv_under_bell(self, other):
         """ Checks if two polytopes are equivalent under the symmetry of the Bell Polytope """
+        # if multiple other polytopes are given
+        if type(other) == list:
+            for o in other:
+                if self.equiv_under_bell(o):
+                    return True
+            return False
+        # Here starts if other is an actual polytope
         assert self.initial_polytope == other.initial_polytope, 'Initial Polytope of both polytopes is not the same'
         return equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.initial_polytope.relabellings,
                                            self.initial_polytope.deterministics)
 
     def check_valid_face(self, poss_face):
         """ Checks if a given face is a valid face """
+        # Check by Parent
+        if poss_face.parent == self:
+            return True
         # the dimensions is one less than the self dimension
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of Possible face are not matching')
@@ -161,17 +169,20 @@ class Polytope():
                 return False
         return True
 
-    def check_valid_face_relabelling(self, poss_face):
+    def get_valid_face_relabelling(self, poss_face):
         """
         Checks if a given face is a valid face under every relabelling of the polytope
         For the relabelling we can use the Relabellings of the Bell Polytope
          """
+        if poss_face.parent == self:
+            return poss_face
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of possible face are not matching')
             return False
         for r in self.initial_polytope.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
+            relabelled_ineq = np.r_[relabelled_ineq, poss_face.creating_face[-1]]
             # take the deterministic points that equalize this -> this way the deterministic points are only from polytope
             sub_dets = np.array(
                 [v for v in self.deterministics if v @ relabelled_ineq[:-1] == -1.0 * relabelled_ineq[-1]])
