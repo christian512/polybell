@@ -157,20 +157,21 @@ class Polytope():
         return equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.initial_polytope.relabellings,
                                            self.initial_polytope.deterministics)
 
-    def check_valid_face(self, poss_face):
+    def get_valid_face(self, poss_face):
         """ Checks if a given face is a valid face """
         # Check by Parent
         if poss_face.parent == self:
-            return True
+            return poss_face
         # the dimensions is one less than the self dimension
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of Possible face are not matching')
             return False
-        # Check if each deterministic point of the face is in the polytope
-        for d in poss_face.deterministics:
-            if not np.any(np.sum((self.deterministics - d) ** 2, axis=1) < 1e-6):
-                return False
-        return True
+        # get the deterministics that equalize the creating face
+        ineq = poss_face.creating_face
+        sub_dets = np.array([v for v in self.deterministics if v @ ineq[:-1] == -1.0 * ineq[-1]])
+        if self.dims - 1 == np.linalg.matrix_rank(sub_dets) - 1:
+            return polytope_from_inequality(ineq, self)
+        return False
 
     def get_valid_face_relabelling(self, poss_face):
         """
@@ -182,7 +183,7 @@ class Polytope():
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of possible face are not matching')
             return False
-        for r in self.initial_polytope.relabellings:
+        for r in self.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
             relabelled_ineq = np.r_[relabelled_ineq, poss_face.creating_face[-1]]
@@ -222,7 +223,7 @@ def print_face_lattice(all_polys):
             p = all_polys[level][j]
             G.add_node(p.id, pos=(j, -level), ndets=len(p.deterministics),
                        nrel=len(p.relabellings),
-                       dims=p.dims, dets_indices=str(p.indices_deterministics))
+                       dims=p.dims, dets_indices=str(p.indices_deterministics), face=str(p.creating_face))
     pos = nx.get_node_attributes(G, 'pos')
     network_graph = from_networkx(G, pos)
     # Set node size and color
@@ -231,7 +232,7 @@ def print_face_lattice(all_polys):
     # Set edge opacity and width
     network_graph.edge_renderer.glyph = MultiLine(line_alpha=0.5, line_width=1)
     HOVER_TOOLTIPS = [("Number Deterministics", "@ndets"), ("Indices Deterministics", "@dets_indices"),
-                      ("Number relabels", "@nrel"), ("Dimensions", "@dims")]
+                      ("Number relabels", "@nrel"), ("Dimensions", "@dims"), ("Face", "@face")]
     plot = figure(tooltips=HOVER_TOOLTIPS, x_range=Range1d(0, 20), y_range=Range1d(-8, 2),
                   title='Face-Classes-Lattice for 2222 case')
     plot.renderers.append(network_graph)
