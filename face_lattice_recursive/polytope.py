@@ -172,11 +172,12 @@ class Polytope():
         for r in self.initial_polytope.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
-            # generate a polytope from the relabelled face
-            relabelled_poss_face = polytope_from_inequality(relabelled_ineq, self)
-            # check if the face is a valid face for the relabelled polytope
-            if self.check_valid_face(relabelled_poss_face):
-                return relabelled_poss_face
+            # take the deterministic points that equalize this -> this way the deterministic points are only from polytope
+            sub_dets = np.array(
+                [v for v in self.deterministics if v @ relabelled_ineq[:-1] == -1.0 * relabelled_ineq[-1]])
+            # check dimensions -> if they are correct the face contains only valid dets -> is a valid face
+            if self.dims - 1 == np.linalg.matrix_rank(sub_dets) - 1:
+                return polytope_from_inequality(relabelled_ineq, self)
         return False
 
 
