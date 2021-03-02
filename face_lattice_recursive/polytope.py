@@ -150,7 +150,7 @@ class Polytope():
         if type(other) == list:
             for o in other:
                 if self.equiv_under_bell(o):
-                    return True
+                    return o
             return False
         # Here starts if other is an actual polytope
         assert self.initial_polytope == other.initial_polytope, 'Initial Polytope of both polytopes is not the same'
