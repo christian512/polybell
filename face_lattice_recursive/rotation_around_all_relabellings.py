@@ -5,7 +5,7 @@ import numpy as np
 from polytope import Polytope, polytope_from_inequality, create_nx_graph, create_bokeh_plot
 from bokeh.io import show, save
 
-inputs = range(3)
+inputs = range(2)
 outputs = range(2)
 
 # dict to store all polytopes
@@ -13,7 +13,7 @@ all_polys = {}
 
 # Generate Bell Polytope
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(3, 3, 2, 2)).astype(int)
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 bell_polytope = Polytope(deterministics=dets, relabellings=relabels)
 all_polys[0] = [bell_polytope]
 
@@ -28,7 +28,7 @@ def recursive_classes_lattice(level):
         if p.dims <= 0:
             continue
         # iterate through each face-class of this polytope
-        for c in p.get_all_classes():
+        for c in p.get_all_faces():
             # check if the class is equivalent under the bell polytope to already found polytopes
             if not c.equiv_under_bell(all_polys[level + 1]):
                 all_polys[level + 1].append(c)
@@ -42,8 +42,8 @@ recursive_classes_lattice(0)
 G = create_nx_graph(all_polys)
 
 # select faces and ridges to test
-faces = all_polys[1]
-ridges = all_polys[2]
+faces = all_polys[3]
+ridges = all_polys[4]
 print('Number of faces: ', len(faces))
 print('number of ridges: ', len(ridges))
 
@@ -86,11 +86,13 @@ for i in range(len(faces)):
                         o = f2.equiv_under_bell(faces)
                     if not o:
                         print(prepend + 'Found completely new class: ' + str(f2.creating_face))
+                        # assert o
                     # add edges to the graph
                     if o:
-                        # print(prepend + 'Found new class!')
+                        print(prepend + 'Found new class!')
                         G.add_edge(faces[i].id, ridges[j].id)
                         G.add_edge(ridges[j].id, o.id)
+                        break
 
 # plot the graph
 plot = create_bokeh_plot(G)

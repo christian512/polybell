@@ -270,3 +270,8 @@ def create_bokeh_plot(G):
                   title='Face-Classes-Lattice for 2222 case')
     plot.renderers.append(network_graph)
     return plot
+
+def create_matplotlib_plot(G):
+    """ Creates a matplotlib plot from the Graph G"""
+    # TODO: Implement.
+    return True
