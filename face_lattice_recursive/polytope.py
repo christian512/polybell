@@ -163,9 +163,6 @@ class Polytope():
 
     def get_valid_face(self, poss_face):
         """ Checks if a given face is a valid face """
-        # Check by Parent
-        if poss_face.parent == self:
-            return poss_face
         # the dimensions is one less than the self dimension
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of Possible face are not matching')
@@ -187,7 +184,7 @@ class Polytope():
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of possible face are not matching')
             return False
-        for r in self.initial_polytope.relabellings:
+        for r in self.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
             relabelled_ineq = np.r_[relabelled_ineq, poss_face.creating_face[-1]]

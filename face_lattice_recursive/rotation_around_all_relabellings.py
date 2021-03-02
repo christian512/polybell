@@ -42,10 +42,13 @@ recursive_classes_lattice(0)
 G = create_nx_graph(all_polys)
 
 # select faces and ridges to test
-faces = all_polys[3]
-ridges = all_polys[4]
+faces = all_polys[5]
+ridges = all_polys[6]
 print('Number of faces: ', len(faces))
 print('number of ridges: ', len(ridges))
+
+# list of face indices that found new classes -> should be all
+faces_rotating_to_new_faces = []
 
 # iterate through each face
 for i in range(len(faces)):
@@ -62,38 +65,24 @@ for i in range(len(faces)):
         if not new_ridge:
             print(prepend + 'Not a valid ridge')
             continue
-        # set the ridge to be the valid ridge
-        ridge = new_ridge
-        # iterate through the relabellings of the face and rotate face around each relabelled version of the ridge
-        # TODO: Actually it seems not to be necessary to go through all relabellings here.
-        for relabel in f1.relabellings:
-            # relabel ridge
-            new_ineq = ridge.creating_face[relabel]
-            new_ineq = np.r_[new_ineq, ridge.creating_face[-1]]
-            new_ridge = polytope_from_inequality(new_ineq, f1)
-            new_ridge = f1.get_valid_face(new_ridge)
-            assert new_ridge
-            # rotate f1 around the new ridge
-            f2 = f1.rotate_polytope(new_ridge)
-            if np.all(f2.creating_face == 0):
-                print(prepend + 'all zeros')
-                continue
-            if not f1.equiv_under_parent(f2):
-                if not f1.equiv_under_bell(f2):
 
-                    o = f2.equiv_under_parent(faces)
-                    if not o:
-                        o = f2.equiv_under_bell(faces)
-                    if not o:
-                        print(prepend + 'Found completely new class: ' + str(f2.creating_face))
-                        # assert o
-                    # add edges to the graph
-                    if o:
-                        print(prepend + 'Found new class!')
-                        G.add_edge(faces[i].id, ridges[j].id)
-                        G.add_edge(ridges[j].id, o.id)
-                        break
-
+        # rotate f1 around the new ridge
+        f2 = f1.rotate_polytope(new_ridge)
+        if np.all(f2.creating_face == 0):
+            print(prepend + 'all zeros')
+            continue
+        # check that we already have this face from panda computation before
+        o = f2.equiv_under_bell(faces)
+        assert o, prepend + 'Found completely new class: ' + str(f2.creating_face)
+        # add edges to the graph
+        if o:
+            if i not in faces_rotating_to_new_faces:
+                faces_rotating_to_new_faces.append(i)
+            print(prepend + 'Found new class!')
+            G.add_edge(faces[i].id, ridges[j].id)
+            G.add_edge(ridges[j].id, o.id)
+# Check that each face leads to a new face
+assert list(range(len(faces))) == faces_rotating_to_new_faces
 # plot the graph
 plot = create_bokeh_plot(G)
 show(plot)
