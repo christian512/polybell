@@ -179,12 +179,10 @@ class Polytope():
         Checks if a given face is a valid face under every relabelling of the polytope
         For the relabelling we can use the Relabellings of the Bell Polytope
          """
-        if poss_face.parent == self:
-            return poss_face
         if self.dims - 1 != poss_face.dims:
             print('Dimensions of possible face are not matching')
             return False
-        for r in self.relabellings:
+        for r in self.initial_polytope.relabellings:
             # relabel creating face of the possible face
             relabelled_ineq = poss_face.creating_face[r]
             relabelled_ineq = np.r_[relabelled_ineq, poss_face.creating_face[-1]]
@@ -205,7 +203,7 @@ def polytope_from_inequality(ineq, poly):
     for r in poly.relabellings:
         allowed = True
         for sd in sub_dets:
-            if np.all(np.sum((sub_dets - sd[r]) ** 2, axis=1) > 1e-6):
+            if np.all(np.sum((sub_dets - sd[r]) ** 2, axis=1) > 1e-4):
                 allowed = False
                 break
         if allowed:
