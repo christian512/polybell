@@ -5,7 +5,7 @@ import numpy as np
 from polytope import Polytope, polytope_from_inequality, create_nx_graph, create_bokeh_plot
 from bokeh.io import show, save
 
-inputs = range(2)
+inputs = range(3)
 outputs = range(2)
 
 # dict to store all polytopes
@@ -13,7 +13,7 @@ all_polys = {}
 
 # Generate Bell Polytope
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
-relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
+relabels = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(3, 3, 2, 2)).astype(int)
 bell_polytope = Polytope(deterministics=dets, relabellings=relabels)
 all_polys[0] = [bell_polytope]
 
@@ -65,6 +65,7 @@ for i in range(len(faces)):
         # set the ridge to be the valid ridge
         ridge = new_ridge
         # iterate through the relabellings of the face and rotate face around each relabelled version of the ridge
+        # TODO: Actually it seems not to be necessary to go through all relabellings here.
         for relabel in f1.relabellings:
             # relabel ridge
             new_ineq = ridge.creating_face[relabel]
