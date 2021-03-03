@@ -42,8 +42,8 @@ recursive_classes_lattice(0)
 G = create_nx_graph(all_polys)
 
 # select faces and ridges to test
-faces = all_polys[2]
-ridges = all_polys[3]
+faces = all_polys[7]
+ridges = all_polys[8]
 print('Number of faces: ', len(faces))
 print('number of ridges: ', len(ridges))
 
