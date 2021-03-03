@@ -144,8 +144,10 @@ class Polytope():
                 if self.equiv_under_parent(o):
                     return o
             return False
-        ret1 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.parent.relabellings, self.parent.deterministics)
-        ret2 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, other.parent.relabellings, other.parent.deterministics)
+        ret1 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, self.parent.relabellings,
+                                           self.parent.deterministics)
+        ret2 = equiv_check_adjacency_panda(self.creating_face, other.creating_face, other.parent.relabellings,
+                                           other.parent.deterministics)
         return ret1 or ret2
 
     def equiv_under_bell(self, other):
@@ -170,7 +172,8 @@ class Polytope():
         # get the deterministics that equalize the creating face
         ineq = poss_face.creating_face
         sub_dets = np.array([v for v in self.deterministics if v @ ineq[:-1] == -1.0 * ineq[-1]])
-        if self.dims - 1 == np.linalg.matrix_rank(sub_dets) - 1:
+        new_dims = np.linalg.matrix_rank(sub_dets) - 1
+        if self.dims - 1 == new_dims:
             return polytope_from_inequality(ineq, self)
         return False
 
@@ -212,6 +215,7 @@ def polytope_from_inequality(ineq, poly):
     # create new polytope
     return Polytope(sub_dets, sub_relabellings, creating_face=ineq, parent=poly, initial_polytope=poly.initial_polytope)
 
+
 def print_face_lattice(all_polys):
     """ Prints all polytopes given in a dict, where the keys are the levels """
     # Create networkx graph
@@ -237,6 +241,7 @@ def print_face_lattice(all_polys):
     plot.renderers.append(network_graph)
     return plot
 
+
 def create_nx_graph(all_polys):
     """ Generates a networkx graph"""
     # Create networkx graph
@@ -249,6 +254,7 @@ def create_nx_graph(all_polys):
                        nrel=len(p.relabellings),
                        dims=p.dims, dets_indices=str(p.indices_deterministics), face=str(p.creating_face))
     return G
+
 
 def create_bokeh_plot(G):
     """ Generates a bokeh plot from a networkx graph"""
@@ -265,6 +271,7 @@ def create_bokeh_plot(G):
                   title='Face-Classes-Lattice for 2222 case')
     plot.renderers.append(network_graph)
     return plot
+
 
 def create_matplotlib_plot(G):
     """ Creates a matplotlib plot from the Graph G"""

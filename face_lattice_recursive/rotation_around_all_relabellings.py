@@ -69,9 +69,7 @@ for i in range(len(faces)):
         assert f1.parent.get_valid_face(f1) == f1
         # rotate f1 around the new ridge
         f2 = f1.rotate_polytope(new_ridge)
-        # check that the ridge is shared
-        # TODO: There are some problems with the assertions below
-        # assert f2.get_valid_face(new_ridge), prepend + str(new_ridge.creating_face)
+        # TODO: Here we have some trouble to back transform to f2 via the new_ridge
         if np.all(f2.creating_face == 0):
             print(prepend + 'all zeros')
             continue
@@ -79,6 +77,10 @@ for i in range(len(faces)):
         o = f2.equiv_under_bell(faces)
         if not o:
             print(prepend + 'Found completely new class: ' + str(f2.creating_face))
+            print(prepend + 'ridge.indices_deterministics: ' + str(ridge.indices_deterministics))
+            print(prepend + 'new_ridge.indices_deterministics: ' + str(new_ridge.indices_deterministics))
+            print(prepend + 'f1.indices_deterministics: ' + str(f1.indices_deterministics))
+            print(prepend + 'f2.indices_deterministics: ' + str(f2.indices_deterministics))
             continue
         # add edges to the graph
         if o:
