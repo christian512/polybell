@@ -22,7 +22,7 @@ classes = [face]
 new_classes = [face]
 while new_classes:
     c = new_classes.pop()
-    for r in c.get_all_faces():
+    for r in c.get_all_classes():
         res = c.rotate(r)
         if not res.equiv_under_parent(classes):
             classes.append(res)
