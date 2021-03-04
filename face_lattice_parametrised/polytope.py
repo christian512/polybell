@@ -60,6 +60,17 @@ class ParamPolytope():
             return True
         return False
 
+    def get_single_face(self):
+        """ Returns a single face """
+        if len(self.__faces) != 0:
+            return self.__faces[0]
+        # Run panda to get faces
+        write_known_vertices(self.vertices, file='knownvertices.ext')
+        cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
+        out = subprocess.run(cmd, shell=True)
+        inequality = read_inequalities('out.ine').astype(float)[0]
+        return parampolytope_from_inequality(inequality, self)
+
     def get_all_faces(self):
         """ Finds all faces of the polytope """
         if len(self.__faces) != 0:
@@ -88,7 +99,7 @@ class ParamPolytope():
                 self.__classes.append(f)
         return self.__classes
 
-    def rotate_polytope(self, ridge):
+    def rotate(self, ridge):
         # TODO: Adjust this for the new Parametrised representation
         """ Rotates the polytope around a ridge """
         if self.parent == self:

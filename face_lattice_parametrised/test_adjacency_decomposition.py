@@ -17,11 +17,16 @@ permutations_vertices = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(3,
 
 # Generate structure
 bell_polytope = ParamPolytope(vertices_param, permutations_vertices)
-faces = bell_polytope.get_all_faces()
-classes = bell_polytope.get_all_classes()
-for c in faces:
-    ridges = c.get_all_faces()
-    # Rotate face0 around each ridge
-    for r in ridges:
-        result = c.rotate(r)
-        assert result.equiv_under_parent(classes)
+face = bell_polytope.get_single_face()
+classes = [face]
+new_classes = [face]
+while new_classes:
+    c = new_classes.pop()
+    for r in c.get_all_faces():
+        res = c.rotate(r)
+        if not res.equiv_under_parent(classes):
+            classes.append(res)
+            new_classes.append(res)
+            print('number of classes: ', len(classes))
+            print('number of new classes: ', len(new_classes))
+
