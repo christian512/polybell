@@ -161,6 +161,24 @@ class ParamPolytope():
                 return True
         return False
 
+    def equiv_under_initial(self, other):
+        """ Checks if two polytopes are equivalent under the symmetry of the parent """
+        if type(other) == list:
+            for o in other:
+                if self.equiv_under_initial(o):
+                    return o
+            return False
+        assert self.initial_polytope == other.initial_polytope, 'Trying to check equivalence for polytopes with unequal parents'
+        if self.vertices.shape[0] != other.vertices.shape[0]:
+            return False
+        for r in self.initial_polytope.permutations_vertices:
+            # check if the polytopes have the same vertices under the relabelling
+            d = dict(enumerate(r))
+            new_vertices_indices = sorted([d[x] for x in self.indices_vertices])
+            if sorted(other.indices_vertices) == new_vertices_indices:
+                return True
+        return False
+
 
 def parampolytope_from_inequality(ineq, poly):
     """ Generates a polytope from an inequality """

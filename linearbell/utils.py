@@ -8,7 +8,7 @@ from scipy import sparse
 # set quiet environment for guro solver
 env = gp.Env(empty=True)
 env.setParam('OutputFlag', 0)
-env.start()
+# env.start()
 
 
 def get_configs(inputs_a, inputs_b, outputs_a, outputs_b):
