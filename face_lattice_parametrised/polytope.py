@@ -13,7 +13,8 @@ import networkx as nx
 class ParamPolytope():
     """ Describing a polytope """
 
-    def __init__(self, vertices, permutations_vertices, creating_face=np.array([]), indices_vertices=[],parent=None, initial_polytope=None):
+    def __init__(self, vertices, permutations_vertices, creating_face=np.array([]), indices_vertices=[], parent=None,
+                 initial_polytope=None):
         """
 
         Parameters
@@ -127,11 +128,13 @@ class ParamPolytope():
             # rotate
             h = (f0 - vertex @ f) * g - (g0 - vertex @ g) * f
             h0 = (f0 - vertex @ f) * g0 - (g0 - vertex @ g) * f0
-            # update g
-            g = np.copy(h)
-            g0 = np.copy(h0)
+            # update g and divide by GCD
+            gcd = np.gcd.reduce(np.r_[h.astype(int), int(h0)])
+            g = h / gcd
+            g0 = h0 / gcd
             # find the new vertex
             products = polytope.vertices @ g
+            products = np.round(products, decimals=5)
             idx = np.where(products == np.amax(products))[0][0]
             vertex = polytope.vertices[idx]
             # stop iteration
@@ -204,5 +207,6 @@ def parampolytope_from_inequality(ineq, poly):
     vertices_on_face = np.array(vertices_on_face)
     permutation_vertices_on_face = np.array(permutation_vertices_on_face)
     # create new polytope
-    return ParamPolytope(vertices_on_face, permutation_vertices_on_face, creating_face=ineq, indices_vertices=indices_vertices_on_face, parent=poly,
+    return ParamPolytope(vertices_on_face, permutation_vertices_on_face, creating_face=ineq,
+                         indices_vertices=indices_vertices_on_face, parent=poly,
                          initial_polytope=poly.initial_polytope)
