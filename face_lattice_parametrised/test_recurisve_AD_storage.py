@@ -2,20 +2,21 @@ from linearbell.utils import get_deterministic_behaviors, get_configs, get_param
 import numpy as np
 from polytope import ParamPolytope
 
-inputs = range(3)
+inputs_a = range(4)
+inputs_b = range(3)
 outputs = range(2)
-configs = get_configs(inputs, inputs, outputs, outputs)
-configs_param = get_parametrisation_configs(inputs, inputs, outputs, outputs)
+configs = get_configs(inputs_a, inputs_b, outputs, outputs)
+configs_param = get_parametrisation_configs(inputs_a, inputs_b, outputs, outputs)
 
 # dict to store all polytopes
 all_inequivalent_polytopes = {}
 number_all_visited_polytopes = {}
 
 # Generate vertices and it's permutations for the bell polytope
-vertices = get_deterministic_behaviors(inputs, inputs, outputs)
-vertices_param = np.array(
-    [parametrise_behavior(p, configs, configs_param, inputs, inputs, outputs, outputs) for p in vertices])
-permutations_vertices = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(3, 3, 2, 2)).astype(int)
+vertices = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
+#vertices_param = np.array(
+#    [parametrise_behavior(p, configs, configs_param, inputs_a, inputs_b, outputs, outputs) for p in vertices])
+permutations_vertices = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(4, 3, 2, 2)).astype(int)
 
 # Generate Bell polytope -> actually it does not matter here if we use vertices or parametrised vertices
 bell_polytope = ParamPolytope(vertices, permutations_vertices)
@@ -53,4 +54,4 @@ def get_all_face_classes(polytope, level=0, max_level=1):
     return classes
 
 
-classes = get_all_face_classes(bell_polytope, max_level=3)
+classes = get_all_face_classes(bell_polytope, max_level=1)

@@ -67,7 +67,7 @@ class ParamPolytope():
             return self.__faces[0]
         # Run panda to get faces
         write_known_vertices(self.vertices, file='knownvertices.ext')
-        cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
+        cmd = 'panda knownvertices.ext -t 1 > out.ine'
         out = subprocess.run(cmd, shell=True)
         inequality = read_inequalities('out.ine').astype(float)[0]
         return parampolytope_from_inequality(inequality, self)
