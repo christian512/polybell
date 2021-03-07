@@ -205,6 +205,8 @@ def parampolytope_from_inequality(ineq, poly):
             continue
         permutation_vertices_on_face.append(r)
     vertices_on_face = np.array(vertices_on_face)
+    if len(vertices_on_face) <= 2:
+        print('Number of vertices on face: ', len(vertices_on_face))
     permutation_vertices_on_face = np.array(permutation_vertices_on_face)
     # create new polytope
     return ParamPolytope(vertices_on_face, permutation_vertices_on_face, creating_face=ineq,
