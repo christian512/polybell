@@ -61,6 +61,16 @@ class ParamPolytope():
             return True
         return False
 
+    def add_faces(self,faces):
+        """ Adds faces to the polytope """
+        for f in faces:
+            if f not in self.__faces:
+                self.__faces.append(f)
+                if not f.equiv_under_parent(self.__classes):
+                    self.__classes.append(f)
+        return True
+
+
     def get_single_face(self):
         """ Returns a single face """
         if len(self.__faces) != 0:
@@ -85,6 +95,8 @@ class ParamPolytope():
         for ineq in inequalities:
             p = parampolytope_from_inequality(ineq, self)
             self.__faces.append(p)
+        # also set classes
+        self.get_all_classes()
         return self.__faces
 
     def get_all_classes(self):
