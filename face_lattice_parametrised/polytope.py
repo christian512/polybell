@@ -182,17 +182,18 @@ class ParamPolytope():
             for o in other:
                 res = self.equiv_under_initial(o)
                 if res:
-                    return o
+                    return res
             return False
         assert self.initial_polytope == other.initial_polytope, 'Trying to check equivalence for polytopes with unequal parents'
         if self.vertices.shape[0] != other.vertices.shape[0]:
             return False
-        for r in self.initial_polytope.permutations_vertices:
+        for i in range(self.initial_polytope.permutations_vertices.shape[0]):
+            r = self.initial_polytope.permutations_vertices[i]
             # check if the polytopes have the same vertices under the relabelling
             d = dict(enumerate(r))
             new_vertices_indices = sorted([d[x] for x in other.indices_vertices])
             if sorted(self.indices_vertices) == new_vertices_indices:
-                return True
+                return other
         return False
 
 

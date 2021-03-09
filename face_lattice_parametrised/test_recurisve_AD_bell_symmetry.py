@@ -34,12 +34,12 @@ def get_all_face_classes(polytope, level=0, max_level=1):
     else:
         number_all_visited_polytopes[poly_level] += 1
 
+    # check if this polytope is already considered under the parent symmetry
     if not polytope.equiv_under_initial(all_inequivalent_polytopes[poly_level]):
         all_inequivalent_polytopes[poly_level].append(polytope)
     else:
-        print('could save this step')
-        # TODO: Get the faces from the relabelled version here
-        pass
+        # as a symmetric version of this polytope was already considered we don't have to calculate again.
+        return []
 
     # add face level
     if face_level not in all_inequivalent_polytopes.keys():
@@ -75,10 +75,9 @@ def get_all_face_classes(polytope, level=0, max_level=1):
         for r in ridges:
             res = c.rotate(r)
             # if the face was not found, add it to the inequivalent faces
-            if not res.equiv_under_initial(all_inequivalent_polytopes[face_level]):
+            if not res.equiv_under_initial(classes):
                 classes.append(res)
                 new_classes.append(res)
-                all_inequivalent_polytopes[face_level].append(res)
                 if level == 0:
                     print('number of classes: ', len(classes))
     polytope.add_faces(classes)
