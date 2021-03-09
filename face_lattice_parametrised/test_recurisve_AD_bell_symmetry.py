@@ -37,6 +37,7 @@ def get_all_face_classes(polytope, level=0, max_level=1):
     if not polytope.equiv_under_initial(all_inequivalent_polytopes[poly_level]):
         all_inequivalent_polytopes[poly_level].append(polytope)
     else:
+        print('could save this step')
         # TODO: Get the faces from the relabelled version here
         pass
 

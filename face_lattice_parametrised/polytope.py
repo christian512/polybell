@@ -42,9 +42,9 @@ class ParamPolytope():
         # dimensions
         self.dims = np.linalg.matrix_rank(self.vertices)
         # empty faces
-        self.__faces = []
+        self._faces = []
         # empty classes
-        self.__classes = []
+        self._classes = []
         # indices of the vertices
         self.indices_vertices = indices_vertices
         if not self.indices_vertices:
@@ -65,17 +65,17 @@ class ParamPolytope():
     def add_faces(self,faces):
         """ Adds faces to the polytope """
         for f in faces:
-            if f not in self.__faces:
-                self.__faces.append(f)
-                if not f.equiv_under_parent(self.__classes):
-                    self.__classes.append(f)
+            if f not in self._faces:
+                self._faces.append(f)
+                if not f.equiv_under_parent(self._classes):
+                    self._classes.append(f)
         return True
 
 
     def get_single_face(self):
         """ Returns a single face """
-        if len(self.__faces) != 0:
-            return self.__faces[0]
+        if len(self._faces) != 0:
+            return self._faces[0]
         # Run panda to get faces
         write_known_vertices(self.vertices, file='knownvertices.ext')
         cmd = 'panda knownvertices.ext -t 1 > out.ine'
@@ -85,8 +85,8 @@ class ParamPolytope():
 
     def get_all_faces(self):
         """ Finds all faces of the polytope """
-        if len(self.__faces) != 0:
-            return self.__faces
+        if len(self._faces) != 0:
+            return self._faces
         # Run panda to get faces
         write_known_vertices(self.vertices, file='knownvertices.ext')
         cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
@@ -95,23 +95,23 @@ class ParamPolytope():
         # generate polytopes from faces
         for ineq in inequalities:
             p = parampolytope_from_inequality(ineq, self)
-            self.__faces.append(p)
+            self._faces.append(p)
         # also set classes
         self.get_all_classes()
-        return self.__faces
+        return self._faces
 
     def get_all_classes(self):
         """ Finds all classes of faces of a polytope """
-        if len(self.__classes) != 0:
-            return self.__classes
-        if len(self.__faces) == 0:
+        if len(self._classes) != 0:
+            return self._classes
+        if len(self._faces) == 0:
             self.get_all_faces()
         # Reduce the faces to inequivalent ones
-        self.__classes = [self.__faces[0]]
-        for f in self.__faces:
-            if not f.equiv_under_parent(self.__classes):
-                self.__classes.append(f)
-        return self.__classes
+        self._classes = [self._faces[0]]
+        for f in self._faces:
+            if not f.equiv_under_parent(self._classes):
+                self._classes.append(f)
+        return self._classes
 
     def rotate(self, ridge):
         """ Rotates the polytope around a ridge """
@@ -190,8 +190,8 @@ class ParamPolytope():
         for r in self.initial_polytope.permutations_vertices:
             # check if the polytopes have the same vertices under the relabelling
             d = dict(enumerate(r))
-            new_vertices_indices = sorted([d[x] for x in self.indices_vertices])
-            if sorted(other.indices_vertices) == new_vertices_indices:
+            new_vertices_indices = sorted([d[x] for x in other.indices_vertices])
+            if sorted(self.indices_vertices) == new_vertices_indices:
                 return True
         return False
 
