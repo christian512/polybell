@@ -13,7 +13,7 @@ import networkx as nx
 class ParamPolytope():
     """ Describing a polytope """
 
-    def __init__(self, vertices, permutations_vertices, creating_face=np.array([]), indices_vertices=[], parent=None,
+    def __init__(self, vertices, permutations_vertices, permutations_coordinates, creating_face=np.array([]), indices_vertices=[], parent=None,
                  initial_polytope=None):
         """
 
@@ -28,6 +28,7 @@ class ParamPolytope():
         self.id = ''.join(random.choices(string.digits + string.ascii_letters, k=30))
         self.vertices = vertices
         self.permutations_vertices = permutations_vertices
+        self.permutations_coordinates = permutations_coordinates
         # set the face that created this
         self.creating_face = creating_face
         # if no initial polytope is given
@@ -113,7 +114,6 @@ class ParamPolytope():
         return self.__classes
 
     def rotate(self, ridge):
-        # TODO: Adjust this for the new Parametrised representation
         """ Rotates the polytope around a ridge """
         if self.parent == self:
             print('Can not rotate as no parent polytope.')
@@ -180,7 +180,8 @@ class ParamPolytope():
         """ Checks if two polytopes are equivalent under the symmetry of the parent """
         if type(other) == list:
             for o in other:
-                if self.equiv_under_initial(o):
+                res = self.equiv_under_initial(o)
+                if res:
                     return o
             return False
         assert self.initial_polytope == other.initial_polytope, 'Trying to check equivalence for polytopes with unequal parents'
@@ -221,7 +222,8 @@ def parampolytope_from_inequality(ineq, poly):
         print('Error no vertex on face')
         return None
     permutation_vertices_on_face = np.array(permutation_vertices_on_face)
+    permutation_coordinates_on_face = np.array([])
     # create new polytope
-    return ParamPolytope(vertices_on_face, permutation_vertices_on_face, creating_face=ineq,
+    return ParamPolytope(vertices_on_face, permutation_vertices_on_face, permutation_coordinates_on_face, creating_face=ineq,
                          indices_vertices=indices_vertices_on_face, parent=poly,
                          initial_polytope=poly.initial_polytope)

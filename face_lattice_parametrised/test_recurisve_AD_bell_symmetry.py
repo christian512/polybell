@@ -17,9 +17,10 @@ vertices = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 vertices_param = np.array(
    [parametrise_behavior(p, configs, configs_param, inputs_a, inputs_b, outputs, outputs) for p in vertices])
 permutations_vertices = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
+permutations_coordinates = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
 # Generate Bell polytope -> actually it does not matter here if we use vertices or parametrised vertices
-bell_polytope = ParamPolytope(vertices_param, permutations_vertices)
+bell_polytope = ParamPolytope(vertices_param, permutations_vertices, permutations_coordinates)
 
 
 def get_all_face_classes(polytope, level=0, max_level=1):
