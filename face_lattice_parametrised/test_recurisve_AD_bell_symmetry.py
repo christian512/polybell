@@ -17,10 +17,9 @@ vertices = get_deterministic_behaviors(inputs_a, inputs_b, outputs)
 vertices_param = np.array(
    [parametrise_behavior(p, configs, configs_param, inputs_a, inputs_b, outputs, outputs) for p in vertices])
 permutations_vertices = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
-permutations_coordinates = np.loadtxt('../data/relabels/{}{}{}{}.gz'.format(2, 2, 2, 2)).astype(int)
 
 # Generate Bell polytope -> actually it does not matter here if we use vertices or parametrised vertices
-bell_polytope = ParamPolytope(vertices_param, permutations_vertices, permutations_coordinates)
+bell_polytope = ParamPolytope(vertices_param, permutations_vertices)
 
 
 def get_all_face_classes(polytope, level=0, max_level=1):
@@ -49,7 +48,7 @@ def get_all_face_classes(polytope, level=0, max_level=1):
     # if max recursion depth is reached, use Double Description to get all classes
     if level == max_level:
         # check if face level is already in the data
-
+        # TODO: Maybe return here only all_classes w/o equivalence check on higher level as this takes long.
         classes = []
         # check if an equivalent face was already found
         for f in polytope.get_all_faces():
@@ -62,7 +61,7 @@ def get_all_face_classes(polytope, level=0, max_level=1):
 
     # get a single face
     face = polytope.get_single_face()
-    # generate classes
+    # check if the face is new. But keep it in new faces, as we need one to rotate around.
     classes = []
     if not face.equiv_under_initial(all_inequivalent_polytopes[face_level]):
         classes.append(face)
@@ -75,7 +74,7 @@ def get_all_face_classes(polytope, level=0, max_level=1):
         for r in ridges:
             res = c.rotate(r)
             # if the face was not found, add it to the inequivalent faces
-            if not res.equiv_under_initial(classes):
+            if not res.equiv_under_parent(classes):
                 classes.append(res)
                 new_classes.append(res)
                 if level == 0:
@@ -83,6 +82,5 @@ def get_all_face_classes(polytope, level=0, max_level=1):
     polytope.add_faces(classes)
     return classes
 
-
-classes = get_all_face_classes(bell_polytope, max_level=7)
+classes = get_all_face_classes(bell_polytope, max_level=5)
 print('Number of classes found: {}'.format(len(classes)))
