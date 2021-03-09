@@ -34,6 +34,12 @@ def get_all_face_classes(polytope, level=0, max_level=1):
         number_all_visited_polytopes[poly_level] += 1
         if not polytope.equiv_under_initial(all_inequivalent_polytopes[poly_level]):
             all_inequivalent_polytopes[poly_level].append(polytope)
+        else:
+            return []
+
+    # if there are to few vertices return parent
+    if len(polytope.indices_vertices) == 2:
+        level = max_level
 
     # if max recursion depth is reached, use Double Description to get all classes
     if level == max_level:
@@ -57,10 +63,9 @@ def get_all_face_classes(polytope, level=0, max_level=1):
             if not res.equiv_under_parent(classes):
                 classes.append(res)
                 new_classes.append(res)
-                all_inequivalent_polytopes[face_level].append(res)
                 if level == 0:
                     print('number of classes: ', len(classes))
     return classes
 
 
-classes = get_all_face_classes(bell_polytope, max_level=5)
+classes = get_all_face_classes(bell_polytope, max_level=10)
