@@ -74,11 +74,17 @@ def write_panda_input_inequalities(lhs, rhs, idx_equalities=[], dets=None, symme
     return string
 
 
-def write_known_vertices(vertices, file='knownvertices.ext', denom_limit=9999999):
+def write_known_vertices(vertices, file='knownvertices.ext', relabellings_vertices=[], denom_limit=9999999):
     """ Writes known vertices to a file """
-    s = "Vertices: \n"
+    s = ""
+    if len(relabellings_vertices) > 0:
+        s += "VERTEXMAPS: \n"
+        for r in relabellings_vertices:
+            for val in r:
+                s += str(int(val)) + ' '
+            s += '\n'
+    s += "Vertices: \n"
     for i in range(vertices.shape[0]):
-        # TODO: Change to setting it to fractions
         arr = [Fraction(x).limit_denominator(denom_limit) for x in vertices[i]]
         for val in arr:
             s += str(val) + ' '
