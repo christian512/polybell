@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-relabels_dets = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(4, 3, 2, 2)).astype(int)
+relabels_dets = np.loadtxt('../data/relabels_dets/{}{}{}{}.gz'.format(4, 4, 2, 2)).astype(int)
 print('loaded relabels, extracting disjoint cycles')
 
 # storage for all cycles
@@ -51,7 +51,7 @@ f.close()
 print('Number of exported cycles: ', relabels_dets.shape[0])
 
 # store vertices for polytope
-dets = get_deterministic_behaviors(range(4), range(3), range(2))
+dets = get_deterministic_behaviors(range(4), range(4), range(2))
 out = ""
 for d in dets:
     out += str(list(d.astype(int))) + ",\n"

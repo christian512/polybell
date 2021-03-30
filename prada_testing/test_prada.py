@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-input_output_configs = [(2, 2, 2, 2), (3,3,2,2), (4,3,2,2)]
-number_of_inequalities_to_find = [2, 3, 6]
+input_output_configs = [(4,3,2,2)]
+number_of_inequalities_to_find = [12480]
 recursion_levels_to_test = [0]
 for config, num_ineqs in zip(input_output_configs, number_of_inequalities_to_find):
     times = []
