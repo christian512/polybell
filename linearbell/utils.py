@@ -103,6 +103,60 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
 
     return allowed_permutations
 
+def get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b):
+    """ Returns a set of generators for the relabellings """
+    poss_relabellings_on_coordinates = []
+    # setup configurations
+    configurations = [(a, b, x, y) for a, b, x, y in product(outputs_a, outputs_b, inputs_a, inputs_b)]
+    # set the current inputs / outputs
+    x_curr, y_curr, a_curr, b_curr = inputs_a[0], inputs_b[0], outputs_a[0], outputs_b[0]
+    # Relabellings of a
+    # TODO: Here you probably have to do this for all b,x,y
+    x_curr, y_curr, a_curr, b_curr = inputs_a[0], inputs_b[0], outputs_a[0], outputs_b[0]
+    for a_new in outputs_a:
+        if a_new == a_curr:
+            continue
+        perm = list(range(len(configurations)))
+        for x_curr, y_curr, b_curr in product(inputs_a, inputs_b, outputs_b):
+            idx_old = configurations.index((a_curr, b_curr, x_curr, y_curr))
+            idx_new = configurations.index((a_new, b_curr, x_curr, y_curr))
+            perm[idx_old] = idx_new
+            perm[idx_new] = idx_old
+        poss_relabellings_on_coordinates.append(perm)
+    x_curr, y_curr, a_curr, b_curr = inputs_a[0], inputs_b[0], outputs_a[0], outputs_b[0]
+    for b_new in outputs_b:
+        if b_new == b_curr:
+            continue
+        perm = list(range(len(configurations)))
+        for x_curr, y_curr, a_curr in product(inputs_a, inputs_b, outputs_a):
+            idx_old = configurations.index((a_curr, b_curr, x_curr, y_curr))
+            idx_new = configurations.index((a_curr, b_new, x_curr, y_curr))
+            perm[idx_old] = idx_new
+            perm[idx_new] = idx_old
+        poss_relabellings_on_coordinates.append(perm)
+    x_curr, y_curr, a_curr, b_curr = inputs_a[0], inputs_b[0], outputs_a[0], outputs_b[0]
+    for x_new in inputs_a:
+        if x_new == x_curr:
+            continue
+        perm = list(range(len(configurations)))
+        for y_curr, a_curr, b_curr in product(inputs_b, outputs_a, outputs_b):
+            idx_old = configurations.index((a_curr, b_curr, x_curr, y_curr))
+            idx_new = configurations.index((a_curr, b_curr, x_new, y_curr))
+            perm[idx_old] = idx_new
+            perm[idx_new] = idx_old
+        poss_relabellings_on_coordinates.append(perm)
+    x_curr, y_curr, a_curr, b_curr = inputs_a[0], inputs_b[0], outputs_a[0], outputs_b[0]
+    for y_new in inputs_b:
+        if y_new == y_curr:
+            continue
+        perm = list(range(len(configurations)))
+        for x_curr, a_curr, b_curr in product(inputs_a, outputs_a, outputs_b):
+            idx_old = configurations.index((a_curr, b_curr, x_curr, y_curr))
+            idx_new = configurations.index((a_curr, b_curr, x_curr, y_new))
+            perm[idx_old] = idx_new
+            perm[idx_new] = idx_old
+        poss_relabellings_on_coordinates.append(perm)
+    return np.array(poss_relabellings_on_coordinates, dtype=int)
 
 def get_possible_liftings(inputs, outputs):
     """
