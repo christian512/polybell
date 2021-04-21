@@ -1,10 +1,12 @@
 """ Helper functions for GAP """
 
-def relabels_dets_to_disjoint_cycles(relabels_dets):
+def relabels_dets_to_disjoint_cycles(relabels_dets, show_progress = 0):
     """ Converts the relabellings on deterministic points to disjoint cycles """
     all_cycles = []
 
-    for relabel in relabels_dets:
+    for i, relabel in enumerate(relabels_dets):
+        if show_progress:
+            print('Get cycle {} / {}'.format(i, len(relabels_dets)))
         # convert to dict
         d = {}
         for i in range(relabel.shape[0]):
