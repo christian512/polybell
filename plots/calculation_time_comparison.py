@@ -6,7 +6,6 @@ xlabels = ["w/o symmetries", "w/ symmetries"]
 mybars = plt.bar(x, times, 0.6)
 plt.xticks(x, xlabels)
 plt.yticks([],[])
-plt.title('Calculation Time [s]')
 # get rid of the frame
 for spine in plt.gca().spines.values():
     spine.set_visible(False)
