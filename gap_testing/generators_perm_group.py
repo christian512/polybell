@@ -7,5 +7,5 @@ inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), rang
 generators = get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b)
 vertices = get_deterministic_behaviors(inputs_a, inputs_b, outputs_a)
 automorphisms = get_relabels_dets(vertices, generators, show_progress=1)
-disjoint_cylces = relabels_dets_to_disjoint_cycles(automorphisms)
-
+disjoint_cycles = relabels_dets_to_disjoint_cycles(automorphisms)
+print(disjoint_cycles)
