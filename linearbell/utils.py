@@ -175,7 +175,7 @@ def get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b):
         generators.append(perm)
     # exchange of parties if number of inputs and outputs is equal on both sides
     if len(inputs_a) == len(inputs_b) and len(outputs_a) == len(outputs_b):
-        perm = list(range(len(generators)))
+        perm = list(range(len(configurations)))
         for a, b, x, y in configurations:
             idx_old = configurations.index((a, b, x, y))
             idx_new = configurations.index((b, a, y, x))

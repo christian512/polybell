@@ -8,4 +8,5 @@ generators = get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b
 vertices = get_deterministic_behaviors(inputs_a, inputs_b, outputs_a)
 automorphisms = get_relabels_dets(vertices, generators, show_progress=1)
 disjoint_cycles = relabels_dets_to_disjoint_cycles(automorphisms)
+print("Number of relabelling generators: ", len(generators))
 print(disjoint_cycles)
