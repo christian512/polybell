@@ -105,6 +105,7 @@ def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
 
     return allowed_permutations
 
+
 def get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b):
     """ Returns a set of relabelling generators for the symmetry group """
     generators = []
@@ -171,6 +172,15 @@ def get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b):
                 # change perm
                 perm[idx_old] = idx_new
                 perm[idx_new] = idx_old
+        generators.append(perm)
+    # exchange of parties if number of inputs and outputs is equal on both sides
+    if len(inputs_a) == len(inputs_b) and len(outputs_a) == len(outputs_b):
+        perm = list(range(len(generators)))
+        for a, b, x, y in configurations:
+            idx_old = configurations.index((a, b, x, y))
+            idx_new = configurations.index((b, a, y, x))
+            perm[idx_old] = idx_new
+            perm[idx_new] = idx_old
         generators.append(perm)
     return np.array(generators, dtype=int)
 
