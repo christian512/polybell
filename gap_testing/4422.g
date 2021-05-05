@@ -14,6 +14,10 @@ GRP_RED := Group((65,129)(66,130)(67,131)(68,132)(69,133)(70,134)(71,135)(72,136
 
 # Storage for all polytopes found
 all_polys := [];
+max_recursion := 20;
+for i in [1..max_recursion] do
+    Add(all_polys, []);
+od;
 
 # setup files
 outfile := IO_File("/home/chris/fromgap.pipe", "w");
@@ -24,15 +28,19 @@ while true do
         # read command from input
         str := IO_ReadLine(infile);
         if str <> "" then
-            Print("GAP read: ", str);
-            # Conver to Gap object
+            # Print("GAP read: ", str);
+            # Convert to Gap object
             arr := JsonStringToGap(str);
-            level := arr[1];
+            level := arr[1]+1;
+            # Check that length of the all_polys list has the same length as the
+            if level > max_recursion then
+                Print("WATCH OUT: MAX RECURSION LEVEL IN GAP REACHED!");
+            fi;
             Remove(arr, 1);
-            Print("Level: ", level, "\n");
+            # Print("Level: ", level, "\n");
             # iterate over all polytopes
             equiv := 0;
-            for poly in all_polys do
+            for poly in all_polys[level] do
                 res := RepresentativeAction(GRP_RED, poly, arr, OnSets);
                 if res <> fail then
                     equiv := 1;
@@ -41,8 +49,8 @@ while true do
                 fi;
             od;
             if equiv = 0 then
-                Add(all_polys, arr);
-                Print("All_polys: ", all_polys, "\n");
+                Add(all_polys[level], arr);
+                Print("level:", level, " // number polys: ", Length(all_polys[level]), "\n");
                 IO_WriteLine(outfile, "false");
             fi;
         fi;

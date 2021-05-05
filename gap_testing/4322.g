@@ -9,8 +9,13 @@ GRP_RED := Group((33,65)(34,66)(35,67)(36,68)(37,69)(38,70)(39,71)(40,72)(41,73)
 (1,65)(2,66)(3,67)(4,68)(5,69)(6,70)(7,71)(8,72)(9,73)(10,74)(11,75)(12,76)(13,77)(14,78)(15,79)(16,80)(17,81)(18,82)(19,83)(20,84)(21,85)(22,86)(23,87)(24,88)(25,89)(26,90)(27,91)(28,92)(29,93)(30,94)(31,95)(32,96)(33,97)(34,98)(35,99)(36,100)(37,101)(38,102)(39,103)(40,104)(41,105)(42,106)(43,107)(44,108)(45,109)(46,110)(47,111)(48,112)(49,113)(50,114)(51,115)(52,116)(53,117)(54,118)(55,119)(56,120)(57,121)(58,122)(59,123)(60,124)(61,125)(62,126)(63,127)(64,128),
 (1,5)(2,6)(3,7)(4,8)(9,13)(10,14)(11,15)(12,16)(17,21)(18,22)(19,23)(20,24)(25,29)(26,30)(27,31)(28,32)(33,37)(34,38)(35,39)(36,40)(41,45)(42,46)(43,47)(44,48)(49,53)(50,54)(51,55)(52,56)(57,61)(58,62)(59,63)(60,64)(65,69)(66,70)(67,71)(68,72)(73,77)(74,78)(75,79)(76,80)(81,85)(82,86)(83,87)(84,88)(89,93)(90,94)(91,95)(92,96)(97,101)(98,102)(99,103)(100,104)(105,109)(106,110)(107,111)(108,112)(113,117)(114,118)(115,119)(116,120)(121,125)(122,126)(123,127)(124,128));
 
+
 # Storage for all polytopes found
 all_polys := [];
+max_recursion := 20;
+for i in [1..max_recursion] do
+    Add(all_polys, []);
+od;
 
 # setup files
 outfile := IO_File("/home/chris/fromgap.pipe", "w");
@@ -21,15 +26,19 @@ while true do
         # read command from input
         str := IO_ReadLine(infile);
         if str <> "" then
-            Print("GAP read: ", str);
-            # Conver to Gap object
+            # Print("GAP read: ", str);
+            # Convert to Gap object
             arr := JsonStringToGap(str);
-            level := arr[1];
+            level := arr[1]+1;
+            # Check that length of the all_polys list has the same length as the
+            if level > max_recursion then
+                Print("WATCH OUT: MAX RECURSION LEVEL IN GAP REACHED!");
+            fi;
             Remove(arr, 1);
-            Print("Level: ", level, "\n");
+            # Print("Level: ", level, "\n");
             # iterate over all polytopes
             equiv := 0;
-            for poly in all_polys do
+            for poly in all_polys[level] do
                 res := RepresentativeAction(GRP_RED, poly, arr, OnSets);
                 if res <> fail then
                     equiv := 1;
@@ -38,8 +47,8 @@ while true do
                 fi;
             od;
             if equiv = 0 then
-                Add(all_polys, arr);
-                Print("All_polys: ", all_polys, "\n");
+                Add(all_polys[level], arr);
+                Print("level:", level, " // number polys: ", Length(all_polys[level]), "\n");
                 IO_WriteLine(outfile, "false");
             fi;
         fi;
