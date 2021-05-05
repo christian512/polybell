@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
-
+plt.rcParams.update({'font.size': 14})
 times = [195, 14.5]
 x = [0,1]
-xlabels = ["w/o symmetries", "w/ symmetries"]
+xlabels = ["without symmetries", "with symmetries"]
 mybars = plt.bar(x, times, 0.6)
 plt.xticks(x, xlabels)
 plt.yticks([],[])
