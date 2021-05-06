@@ -52,6 +52,30 @@ def get_deterministic_behaviors(inputs_a, inputs_b, outputs):
     return np.array(deterministics)
 
 
+def get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs_b):
+    """ Returns all deterministic behaviors corresponding to inputs/outputs for two parties"""
+    dim = len(inputs_a) * len(inputs_b) * len(outputs_a) * len(outputs_b)
+    # hidden variables
+    lhvs_a = product(outputs_a, repeat=len(inputs_a))
+    lhvs_b = product(outputs_b, repeat=len(inputs_b))
+    deterministics = []
+    for lhv_a, lhv_b in product(lhvs_a, lhvs_b):
+            # initialize empty behavior
+            counter = 0
+            d = np.zeros(dim)
+            # iterate over possible outcomes and check whether its defined by the LHV
+            for a, b in product(range(len(outputs_a)), range(len(outputs_b))):
+                for x, y in product(range(len(inputs_a)), range(len(inputs_b))):
+                    if lhv_a[x] == a and lhv_b[y] == b:
+                        d[counter] = 1.0
+                    counter += 1
+            deterministics.append(d)
+            print(len(deterministics))
+    # check length
+    assert len(deterministics) == (len(outputs_a) ** len(inputs_a)) * (len(outputs_b) ** len(inputs_b)), deterministics
+    return np.array(deterministics)
+
+
 def get_allowed_relabellings(inputs_a, inputs_b, outputs_a, outputs_b):
     """
     Get the allowed relabellings for given inputs
