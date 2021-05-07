@@ -28,7 +28,7 @@ while true do
             arr := JsonStringToGap(str);
             # Extract Level
             level := arr[1][1] + 1;
-            Print("Level ", level, "\n");
+
             Remove(arr,1);
             if level > max_recursion then
                 Print("WATCH OUT: MAX RECURSION LEVEL IN GAP REACHED");
@@ -48,6 +48,7 @@ while true do
                 if equiv = 0 then
                     Add(all_polys[level], cpoly);
                     Add(response, i-1);
+                    Print("Level ", level, ": ",  Length(all_polys[level]), "\n");
                 fi;
             od;
             # write false in case there is no equivalent polytope
