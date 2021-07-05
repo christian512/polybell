@@ -51,7 +51,7 @@ class Polytope():
         """ Calculates all faces of a polytope and returns them as polytope objects """
         # run Panda
         write_known_vertices(self.deterministics, file='knownvertices.ext')
-        cmd = 'panda_org knownvertices.ext -t 1 --method=dd > out.ine'
+        cmd = 'panda knownvertices.ext -t 1 --method=dd > out.ine'
         out = subprocess.run(cmd, shell=True)
         self.faces = read_inequalities('out.ine').astype(float)
         # calculate the classes
