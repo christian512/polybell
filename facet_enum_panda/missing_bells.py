@@ -3,6 +3,7 @@
 from linearbell.utils import get_configs, get_deterministic_behaviors, equiv_check_adjacency_testing
 from linearbell.representations import get_configs_mat, transform_vec_to_mat, transform_mat_to_vec
 import numpy as np
+from linearbell.panda_helper import read_inequalities
 from scipy.io import loadmat
 
 # setup the configuration
@@ -11,26 +12,27 @@ outputs = range(2)
 configs_mat = get_configs_mat(inputs, inputs, outputs, outputs)
 configs = get_configs(inputs, inputs, outputs, outputs)
 dets = get_deterministic_behaviors(inputs, inputs, outputs)
-relabels = np.loadtxt('../data/relabels/4422.gz').astype(int)
 
-# load inequalities found by partial recursion
-facets_tmp = np.loadtxt('../data/facets_panda/4422.txt')
+
+# load inequalities found by partial recursion given as b * p + a <= 0
+# facets_tmp = np.loadtxt('../data/facets_panda/4422.txt')
+facets_tmp = read_inequalities('../randa_testing/4422.txt')
 facets_partial = []
 for facet in facets_tmp:
-    # Last entry gives the negative of the rhs, we want the RHS to be one
-    # Thus divide by (-1 / last entry)
-    # if the last entry is zero, we have to add 1 / (num_outputs ** 2) to each entry
-    divisor = facet[-1]
-    if divisor == 0:
-        f = facet[:-1] + 1 / (len(outputs) ** 2)
-    else:
-        assert divisor < 0
-        f = facet[:-1] / np.abs(divisor)
+    # transform to b * p >= 1
+    for d in dets:
+        assert facet[:-1] @ d <= -1.0 * facet[-1], 'Assumption not correct'
+    facet = -1 * facet
+    divisor = -1 * facet[-1]
+    f = facet[:-1] + (1 - divisor) / (len(outputs) ** 2)
+    for d in dets:
+        assert d @ f >= 1, 'Error in rescaling of inequality: d @ f = {} \n d = {} \n f = {} \n divisor = {}'.format(
+            d @ f, d, f, divisor)
+
     facets_partial.append(f)
 facets_partial = np.array(facets_partial)
-
-# load inequalities found by TOM
-facets_tmp = loadmat('../data/facets_known/Inequalities_Only_4422_Raw.mat')
+# load inequalities found by TOM, Given in form Tr(b*p) >= 1
+facets_tmp = loadmat('../data/facets/Inequalities_Only_4422_Raw.mat')
 facets_known = []
 for k in facets_tmp.keys():
     mat = facets_tmp[k]
@@ -38,9 +40,11 @@ for k in facets_tmp.keys():
     mat_copy = transform_vec_to_mat(configs, configs_mat, f)
     assert np.all(mat == mat_copy)
     # Transformation to get local bound 1
-    facets_known.append(-1.0 * f + 2 / (len(outputs)**2))
+    facets_known.append(f)
+    # facets_known.append(-1.0 * f + 2 / (len(outputs)**2))
 facets_known = np.array(facets_known)
 
+relabels = np.loadtxt('../data/relabels/4422.gz').astype(int)
 # Check the equivalence of all the known inequalities to the ones found by PANDA
 facets_not_found = []
 for i in range(facets_known.shape[0]):
@@ -55,3 +59,5 @@ for i in range(facets_known.shape[0]):
 
 facets_not_found = np.array(facets_not_found)
 print('Number of facets not found by partial recursive algorithm: ', facets_not_found.shape[0])
+
+np.savetxt('../data/facets/heuristic_adm_4422_notfound.txt', facets_not_found)
