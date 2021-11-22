@@ -10,12 +10,6 @@ we check if there exists any bell inequality of lifted form
   Result was that only for m = 2, 4 there are bell inequalities
   of lifted form. We checked for up to m = 10.
 
-*  **joint_lifted_bell_extended_pr_box.py** - This implements the
-    same idea as above. However here we use joint lifting, which 
-   was an idea that we had during discussions about liftings.
-   There was a counter example, that concluded that these joint liftings
-   are not realizable or are preserving bell inequality properties.
-   
 * **partial_lifted_bell_extended_pr_box.py** - Checks whether there exist 
 partially lifted forms of bell inequalities for arbitrary input and 3 outputs.
   This is the case for 3 inputs, where both parties can have partial liftings.
