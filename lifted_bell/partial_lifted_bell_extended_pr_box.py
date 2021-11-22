@@ -19,7 +19,7 @@ inputs_b = range(mb)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
-# for which inputs should the output NOT be a lifting
+# for which inputs should the output NOT be a lifting, here for all b's it should not be lifted and for one a it can be lifted
 no_lift_a = list(range(ma-1))
 no_lift_b = list(range(mb))
 
