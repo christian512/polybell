@@ -11,14 +11,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument(dest='m', help="number of inputs for ALICE and BOB")
 parser.add_argument(dest='num_no_lift', help='number of inputs w/o lifted failure output for ALICE and BOB')
 args = parser.parse_args()
-ma = int(args.ma)
+m = int(args.m)
 num_no_lift = int(args.num_no_lift)
 
-assert num_no_lift <= ma, 'Number of inputs must be larger than number of inputs w/o lifted failure output'
+assert num_no_lift <= m, 'Number of inputs must be larger than number of inputs w/o lifted failure output'
 
 # set input parameters
-inputs_a = range(ma)
-inputs_b = range(ma)
+inputs_a = range(m)
+inputs_b = range(m)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
@@ -79,3 +79,5 @@ for lift_a in poss_lifts_a:
     if bell @ pr_red < 1 - tol and bell @ pr_low_eff > 1:
         bells.append(bell)
         print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
+
+print('Found {} in {} lifting cases'.format(len(bells), niter))

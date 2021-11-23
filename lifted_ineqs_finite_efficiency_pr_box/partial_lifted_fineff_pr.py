@@ -88,6 +88,6 @@ for lift_a in poss_lifts_a:
         if bell @ pr_red < 1 - tol and bell @ pr_low_eff > 1:
             bells.append(bell)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
-print('num bell expressions: {}'.format(len(bells)))
+print('Found {} Bell Inequalities in {} lifting cases'.format(len(bells), niter))
 # store the bell expressions to file
 np.savetxt(file, np.array(bells))
