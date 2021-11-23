@@ -8,20 +8,22 @@ import argparse
 from linearbell.representations import get_configs_mat, transform_vec_to_mat
 
 parser = argparse.ArgumentParser()
-parser.add_argument(dest='ma', help="number of inputs for ALICE")
-parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argument(dest='m', help="number of inputs for ALICE and BOB")
+parser.add_argument(dest='num_no_lift', help='number of inputs w/o lifted failure output for ALICE and BOB')
 args = parser.parse_args()
 ma = int(args.ma)
-mb = int(args.mb)
+num_no_lift = int(args.num_no_lift)
+
+assert num_no_lift <= ma, 'Number of inputs must be larger than number of inputs w/o lifted failure output'
 
 # set input parameters
 inputs_a = range(ma)
-inputs_b = range(mb)
+inputs_b = range(ma)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
 # for which inputs should the output NOT be a lifting
-no_lift_a = list(range(ma-1))
+no_lift = list(range(num_no_lift))
 
 # set efficiency
 epsilon = 0.01
@@ -61,7 +63,7 @@ bells = []
 for lift_a in poss_lifts_a:
     # set the no lift variable for party A
     lift_a = list(lift_a)
-    for na in no_lift_a:
+    for na in no_lift:
         lift_a[na] = -1
     print("{} / {}".format(counter, niter))
     counter += 1

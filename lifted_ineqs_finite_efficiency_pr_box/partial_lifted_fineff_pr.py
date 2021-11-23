@@ -9,9 +9,16 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argumnet(dest='num_no_lift_a', help="number of inputs w/0 lifted failure output for ALICE")
+parser.add_argument(dest='num_no_lift_b', help="number of inputs w/0 lifted failure output for BOB")
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
+num_no_lift_a = int(args.num_no_lift_a)
+num_no_lift_b = int(args.num_no_lift_b)
+
+assert num_no_lift_a <= ma, 'Number of inputs must be larger than number of inputs w/o lifted failure output'
+assert num_no_lift_b <= mb, 'Number of inputs must be larger than number of inputs w/o lifted failure output'
 
 # set input parameters
 inputs_a = range(ma)
@@ -19,9 +26,9 @@ inputs_b = range(mb)
 outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
-# for which inputs should the output NOT be a lifting, here for all b's it should not be lifted and for one a it can be lifted
-no_lift_a = list(range(ma-1))
-no_lift_b = list(range(mb))
+# for which inputs should the output NOT be a lifting
+no_lift_a = list(range(num_no_lift_a))
+no_lift_b = list(range(num_no_lift_b))
 
 # set efficiency
 epsilon = 0.01
@@ -33,8 +40,8 @@ tol = 1e-3
 
 # set file
 file = '../data/pr_box_finite_efficiency_bell_lifted_partial/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
-                                                                          len(outputs_wo_failure),
-                                                                          len(outputs_wo_failure))
+                                                                                  len(outputs_wo_failure),
+                                                                                  len(outputs_wo_failure))
 
 # get deterministics for the non output
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_failure)
@@ -48,7 +55,8 @@ configs_failure = get_configs(inputs_a, inputs_b, outputs_failure, outputs_failu
 
 # create extended pr_box and low efficiency pr box
 pr_ext = [general_pr_box_extended(a, b, x, y, eta + epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
-pr_low_eff = [general_pr_box_extended(a, b, x, y, eta - epsilon, outputs_wo_failure) for (a, b, x, y) in configs_failure]
+pr_low_eff = [general_pr_box_extended(a, b, x, y, eta - epsilon, outputs_wo_failure) for (a, b, x, y) in
+              configs_failure]
 pr_ext = np.array(pr_ext)
 pr_low_eff = np.array(pr_low_eff)
 
@@ -83,4 +91,3 @@ for lift_a in poss_lifts_a:
 print('num bell expressions: {}'.format(len(bells)))
 # store the bell expressions to file
 np.savetxt(file, np.array(bells))
-
