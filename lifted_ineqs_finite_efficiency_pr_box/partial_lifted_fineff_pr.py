@@ -9,7 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
-parser.add_argumnet(dest='num_no_lift_a', help="number of inputs w/0 lifted failure output for ALICE")
+parser.argument(dest='num_no_lift_a', help="number of inputs w/0 lifted failure output for ALICE")
 parser.add_argument(dest='num_no_lift_b', help="number of inputs w/0 lifted failure output for BOB")
 args = parser.parse_args()
 ma = int(args.ma)
