@@ -74,7 +74,7 @@ while true do
                 if equiv = 0 then
                     Add(all_polys[level], cpoly);
                     Add(response, i-1);
-                    Print("Level ", level, ": ",  Length(all_polys[level]), "");
+                    Print("Level ", level, ": ",  Length(all_polys[level]), "\\n");
                 fi;
             od;
             # write false in case there is no equivalent polytope
