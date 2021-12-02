@@ -69,5 +69,6 @@ for lift_a in poss_lifts_a:
             bells.append(bell_exp)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 
+print('Found {} Bell Inequalities in {} lifting cases'.format(len(bells), niter))
 # store the bell expressions to file
 np.savetxt(file, np.array(bells))

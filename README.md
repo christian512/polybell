@@ -1,6 +1,5 @@
 # Bell Inequalities, Linear Programming and Vertex Enumeration
 
-**This is still work in progress (code can always run faster...)**
 
 This repo is my collection of codes for finding Bell Inequalities for no-signalling probability distributions. I use different 
 techniques of Linear Programming and Vertex Enumeration for finding those inequalities in different cases. One main topic 
@@ -16,8 +15,7 @@ The repository is structured using different directories. Here is a small overvi
 is a Readme in each directory.
 
 * **data** : contains all data generated using the codes in this repository
-* **facet_enum** : codes for enumerating facets (without using vertex enumeration codes)
-* **lifted_bell** : small tests for lifting bell inequalities (but mostly abandoned)
+* * **lifted_bell** : Lifted Bell Inequalities for finite efficiency PR-Boxes.
 * **linearbell** : this is the package directory, where all functionality is stored that is used throughout the repository
 * **notebooks** : some explanatory notebooks
 * **vertex_enum** : vertex enumeration to find bell inequalities (using MPLRS)

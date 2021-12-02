@@ -29,7 +29,9 @@ To start the enumeration by running RANDA:
 randa randa_files/3322.ext > out.ine
 ```
 Here *out.ine* will contain the enumerated Inequalities. There are multiple optional parameters that can be given to *randa*, 
-which you can find [here](https://github.com/christian512/randa)
+which you can find [here](https://github.com/christian512/randa). We recommend giving the options *-t <number_of_threads>* and *-r <recursion_depth>*.
+
+**Note**: To quit gap you have to type *quit();* two times!
 
 #### vertices_on_facet.py
 Calculates the vertices on facets, where the FACETS are given by Toms representation. **THIS CAN BE MOVED TO ELSEWHERE, e.g. examples**.

@@ -6,7 +6,7 @@ from gurobipy import GRB
 from scipy import sparse
 
 # set quiet environment for guro solver
-env = gp.Env(empty=True)
+env = gp.Env()
 env.setParam('OutputFlag', 0)
 
 
