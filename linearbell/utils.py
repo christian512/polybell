@@ -1,16 +1,7 @@
 from itertools import product, permutations
 from scipy.optimize import linprog
 import numpy as np
-import gurobipy as gp
-from gurobipy import GRB
 from scipy import sparse
-
-# set quiet environment for guro solver
-env = gp.Env()
-env.setParam('OutputFlag', 0)
-
-
-# env.start()
 
 
 def get_configs(inputs_a, inputs_b, outputs_a, outputs_b):
@@ -536,6 +527,11 @@ def find_local_weight_scipy(p, dets, method='interior-point', options={"maxiter"
 
 def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
     """ Finds the local weights for a behavior and given deterministic points """
+    # import gurobi
+    import gurobipy as gp
+    from gurobipy import GRB
+    env = gp.Env()
+    env.setParam('OutputFlag', 0)
     # create a model
     m = gp.Model('local_weight_dual', env=env)
     m.setParam("Method", method)
@@ -558,6 +554,11 @@ def find_local_weight_primal(p, dets, method=-1, tol=1e-6):
 
 
 def find_local_weight_dual(p, dets, method=-1, tol=1e-6):
+    # import gurobi
+    import gurobipy as gp
+    from gurobipy import GRB
+    env = gp.Env()
+    env.setParam('OutputFlag', 0)
     # create a model
     m = gp.Model('local_weight_dual', env=env)
     m.setParam("Method", method)
