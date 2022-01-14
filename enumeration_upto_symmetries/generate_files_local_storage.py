@@ -1,11 +1,9 @@
 """ Writing the vertices to a file and printing the generators of the automorphism group for a bell scenario """
 
-from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets, \
-    get_configs, get_parametrisation_configs, parametrise_behavior
+from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
 from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
 from linearbell.panda_helper import write_known_vertices
 import argparse
-import numpy as np
 
 # parse the inputs
 parser = argparse.ArgumentParser()
@@ -19,18 +17,9 @@ args = parser.parse_args()
 ma, mb, na, nb = int(args.ma), int(args.mb), int(args.na), int(args.nb)
 inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), range(nb)
 
-# setup configurations for extended and parametrised behavior
-configs = get_configs(inputs_a, inputs_b, outputs_a, outputs_b)
-configs_param = get_parametrisation_configs(inputs_a, inputs_b, outputs_a, outputs_b)
-
 # Write Vertices to a File
 vertices = get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs_b)
-vertices_param = []
-for v in vertices:
-    v_param = parametrise_behavior(v, configs, configs_param, inputs_a, inputs_b, outputs_a, outputs_b)
-    vertices_param.append(v_param)
-vertices_param = np.array(vertices_param)
-write_known_vertices(vertices_param, 'randa_files/{}{}{}{}.ext'.format(ma, mb, na, nb))
+write_known_vertices(vertices, 'randa_files/{}{}{}{}.ext'.format(ma, mb, na, nb))
 
 # Calculate the generators
 generators = get_relabelling_generators(inputs_a, inputs_b, outputs_a, outputs_b)
@@ -44,15 +33,7 @@ gap_script_start = """LoadPackage("json");
 GRP_RED := Group("""
 
 gap_script_end = """);
-# Storage for all polytopes found
-all_polys := [];
-max_recursion := 30;
-for i in [1..max_recursion] do
-    Add(all_polys, []);
-od;
-
 # setup files
-
 outfile := IO_File(Concatenation(IO_getcwd(), "/fromgap.pipe"), "w");
 infile := IO_File(Concatenation(IO_getcwd(), "/togap.pipe"), "r");
 
@@ -63,32 +44,34 @@ while true do
             # Print("GAP READ: ", str);
             # Convert to GAP Object
             arr := JsonStringToGap(str);
-            # Extract Level
-            level := arr[1][1] + 1;
-
-            Remove(arr,1);
-            if level > max_recursion then
-                Print("WATCH OUT: MAX RECURSION LEVEL IN GAP REACHED");
-            fi;
-
+            # First is the recursion level
+            recursion_level := arr[1][1] + 1;
+            # Print("Recursion Level: ", recursion_level, "\\n");
+            # Second is the list of Facets to test
+            tarr := arr[2];
+            # Third is the list of known facets
+            karr := arr[3];
+            
+            # Response to return to RANDA
             response := [];
-            for i in [1..Length(arr)] do
-                cpoly := arr[i];
+            # Iterate through all arrays to test
+            for i in [1..Length(tarr)] do
+                tpoly := tarr[i];
                 equiv := 0;
-                for tpoly in all_polys[level] do
-                    res := RepresentativeAction(GRP_RED, tpoly, cpoly, OnSets);
+                for kpoly in karr do
+                    res := RepresentativeAction(GRP_RED, tpoly, kpoly, OnSets);
                     if res <> fail then
                         equiv := 1;
                         break;
                     fi;
                 od;
                 if equiv = 0 then
-                    Add(all_polys[level], cpoly);
+                    Add(karr, tpoly);
                     Add(response, i-1);
-                    Print("Level ", level, ": ",  Length(all_polys[level]), "\\n");
                 fi;
             od;
-            # write false in case there is no equivalent polytope
+            
+            # Respond
             if Length(response) = 0 then
                 IO_WriteLine(outfile, "false");
             else
@@ -96,9 +79,10 @@ while true do
             fi;
         fi;
 od;
+
 """
 
 gap_script = gap_script_start + disjoint_cycles + gap_script_end
-f = open('gap_scripts/{}{}{}{}_parametrised.g'.format(ma, mb, na, nb), 'w+')
+f = open('gap_scripts/{}{}{}{}_local.g'.format(ma, mb, na, nb), 'w+')
 f.write(gap_script)
 f.close()

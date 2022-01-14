@@ -41,9 +41,10 @@ for i in [1..max_recursion] do
 od;
 
 # setup files
-
 outfile := IO_File(Concatenation(IO_getcwd(), "/fromgap.pipe"), "w");
 infile := IO_File(Concatenation(IO_getcwd(), "/togap.pipe"), "r");
+
+Print("Running GAP Equivalence check server with global storage option \\n");
 
 while true do
         # read command from input
@@ -52,17 +53,19 @@ while true do
             # Print("GAP READ: ", str);
             # Convert to GAP Object
             arr := JsonStringToGap(str);
-            # Extract Level
+            
+            # First is recrusion level
             level := arr[1][1] + 1;
+            # Seond is the list of facets to test
+            tarr := arr[2];
 
-            Remove(arr,1);
             if level > max_recursion then
                 Print("WATCH OUT: MAX RECURSION LEVEL IN GAP REACHED");
             fi;
 
             response := [];
-            for i in [1..Length(arr)] do
-                cpoly := arr[i];
+            for i in [1..Length(tarr)] do
+                cpoly := tarr[i];
                 equiv := 0;
                 for tpoly in all_polys[level] do
                     res := RepresentativeAction(GRP_RED, tpoly, cpoly, OnSets);
@@ -88,6 +91,6 @@ od;
 """
 
 gap_script = gap_script_start + disjoint_cycles + gap_script_end
-f = open('gap_scripts/{}{}{}{}.g'.format(ma, mb, na, nb), 'w+')
+f = open('gap_scripts/{}{}{}{}_global.g'.format(ma, mb, na, nb), 'w+')
 f.write(gap_script)
 f.close()
