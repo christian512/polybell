@@ -16,12 +16,13 @@ import os
 # parser.add_argument(dest='nb', help='number of outputs for BOB')
 # args = parser.parse_args()
 
-# set the scenario
+np.random.seed(42)
 
 # test_configs = [[2,2,2,2], [3,2,2,2], [2,2,3,2], [3,3,2,2], [5,2,2,2], [4,3,2,2], [3,2,2,3], [5,3,2,2]]
-test_configs = [[2,2,2,2], [3,2,2,2], [2,2,3,2], [3,3,2,2], [5,2,2,2], [4,3,2,2], [3,2,2,3]]
-num_runs = 1
-f = open('speed_dd_random.txt', 'w+')
+test_configs = [[2,2,2,2],[3,2,2,2], [2,2,3,2], [3,3,2,2], [5,2,2,2], [3,2,2,3], [3,2,3,2], [2,2,3,3]]
+
+num_runs = 10
+f = open('speed_dd_asc.txt', 'w+')
 for tconfig in test_configs:
     ma, mb, na, nb = tconfig
     inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), range(nb)
@@ -38,11 +39,11 @@ for tconfig in test_configs:
         # Run panda with given options
         print('Starting Panda')
         start = time.time()
-        os.system("panda -t 1 -m dd {}".format(vertex_file))
+        os.system("panda -t 1 -s lex_asc -m dd {}".format(vertex_file))
         exc_time = time.time() - start
         print('took: {} s'.format(exc_time))
         avg_time += exc_time
 
     avg_time = avg_time / num_runs
-    f.write('{}{}{}{} : {} \n'.format(ma,mb,na,nb, avg_time))
+    f.write('{}{}{}{} : {} ms \n'.format(ma,mb,na,nb, avg_time*1000))
 f.close()
