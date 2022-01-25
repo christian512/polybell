@@ -16,7 +16,6 @@ args = parser.parse_args()
 
 # set the scenario
 ma, mb, na, nb = int(args.ma), int(args.mb), int(args.na), int(args.nb)
-ma, mb, na, nb = 5,3,2,2
 inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), range(nb)
 
 # Write Vertices to a File
