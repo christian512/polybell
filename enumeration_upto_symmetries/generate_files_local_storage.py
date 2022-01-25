@@ -4,6 +4,7 @@ from linearbell.utils import get_relabelling_generators, get_deterministic_behav
 from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
 from linearbell.panda_helper import write_known_vertices
 import argparse
+import numpy as np
 
 # parse the inputs
 parser = argparse.ArgumentParser()
