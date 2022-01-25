@@ -1,5 +1,5 @@
 """ Writing the vertices to a file and printing the generators of the automorphism group for a bell scenario """
-
+import numpy as np
 from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
 from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
 from linearbell.panda_helper import write_known_vertices
@@ -15,10 +15,12 @@ args = parser.parse_args()
 
 # set the scenario
 ma, mb, na, nb = int(args.ma), int(args.mb), int(args.na), int(args.nb)
+ma, mb, na, nb = 2,2,2,2
 inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), range(nb)
 
 # Write Vertices to a File
 vertices = get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs_b)
+vertices = vertices[np.lexsort(np.rot90(vertices))]
 write_known_vertices(vertices, 'randa_files/{}{}{}{}.ext'.format(ma, mb, na, nb))
 
 # Calculate the generators

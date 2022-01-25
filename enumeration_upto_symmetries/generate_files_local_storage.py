@@ -19,6 +19,7 @@ inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), rang
 
 # Write Vertices to a File
 vertices = get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs_b)
+vertices = vertices[np.lexsort(np.rot90(vertices))]
 write_known_vertices(vertices, 'randa_files/{}{}{}{}.ext'.format(ma, mb, na, nb))
 
 # Calculate the generators
