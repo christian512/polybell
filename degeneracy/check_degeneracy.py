@@ -39,6 +39,7 @@ print('Number of vertices on each facet: ', num_vert_per_facet)
 print('Dimension of polytope: ', dim )
 print('Maximal number of vertices on each facet: ', np.max(num_vert_per_facet))
 print('Minimal number of vertices on each facet: ', np.min(num_vert_per_facet))
+print('Average number of vertices on each facet: ', np.average(num_vert_per_facet))
 
 if dim < np.max(num_vert_per_facet):
     print('Polytope is non-simplical')
