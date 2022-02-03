@@ -61,7 +61,6 @@ def get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs
                         d[counter] = 1.0
                     counter += 1
             deterministics.append(d)
-            print(len(deterministics))
     # check length
     assert len(deterministics) == (len(outputs_a) ** len(inputs_a)) * (len(outputs_b) ** len(inputs_b)), deterministics
     return np.array(deterministics)
