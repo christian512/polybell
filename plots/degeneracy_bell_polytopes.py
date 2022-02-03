@@ -48,6 +48,7 @@ for scenario in scenarios:
     min_vert_per_facet_for_scenarios.append(np.min(num_vert_per_facet))
     avg_vert_per_facet_for_scenarios.append(np.average(num_vert_per_facet))
 
+plt.rcParams.update({'font.size': 12})
 fig, ax = plt.subplots()
 ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 plt.scatter(dimensions_for_scenarios, max_vert_per_facet_for_scenarios, label='Maximal Incidence',zorder=1)
