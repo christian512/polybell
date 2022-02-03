@@ -12,8 +12,6 @@ from linearbell.representations import get_configs_mat, transform_mat_to_vec
 # import facets
 matrix_ineqs = scipy.io.loadmat('Inequalities_Only_4422_Affine.mat')
 
-
-
 # get configurations
 ma,mb,na,nb = 4,4,2,2
 configs = get_configs(range(ma), range(mb), range(na), range(nb))

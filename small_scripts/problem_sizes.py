@@ -1,10 +1,10 @@
 import numpy as np
 fac = np.math.factorial
 
-ma = 7
+ma = 3
 mb = 3
 na = 2
-nb = 2
+nb = 3
 
 
 dim = ma*(na-1)*mb*(nb-1) + ma * (na-1) + mb*(nb-1)
