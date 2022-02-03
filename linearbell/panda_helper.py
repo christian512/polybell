@@ -104,10 +104,11 @@ def write_known_inequalities(lhs, rhs, file='knowninequalities.ine', denom_limit
         arr = [Fraction(x).limit_denominator(denom_limit).denominator for x in lhs[i]]
         arr.append(Fraction(rhs[i]).limit_denominator(denom_limit).denominator)
         factor = np.product(np.unique(arr))
+        s += '  '
         # write the inequalitiy
         for j in range(lhs.shape[1]):
             val = int(lhs[i, j] * factor)
-            s += str(val) + ' '
+            s += str(val) + '  '
         s += str(int(-1 * rhs[i] * factor)) + '\n'
     f = open(file, 'w+')
     f.write(s)
