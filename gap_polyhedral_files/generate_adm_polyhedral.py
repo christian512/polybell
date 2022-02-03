@@ -32,19 +32,21 @@ gap_script = gap_script[:-2] + "]; \n"
 # Generators
 gap_script += "GRP := Group(" + disjoint_cycles + "); \n"
 # Function Execution
-gap_script += """MaxRecursionLvl:= 2;
+gap_script += """MaxRecursionLvl:= 7;
 
-eRec := GetIAI_FromEXT_GRP(EXT, GRP, 0);
+eRec := GetIAI_FromEXT_GRP(EXT, GRP, 500);
 FuncStabilizer:=eRec.FuncStabilizer;
 FuncIsomorphy:=eRec.FuncIsomorphy;
 FuncInvariant:=eRec.FuncInvariant;
 
 IsRespawn:=function(OrdGRP, EXT, TheDepth)
-  if TheDepth < MaxRecursionLvl then
-    return true;
-  else
+  if TheDepth > MaxRecursionLvl then
     return false;
   fi;
+  if Length(EXT) < 100 then
+    return false;
+  fi;
+  return true;
 end;
 
 IsBankSave:=function(EllapsedTime, OrdGRP, EXT, TheDepth)
