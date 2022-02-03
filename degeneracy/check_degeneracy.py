@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # set scenario
-ma,mb,na,nb = 3,3,2,3
+ma,mb,na,nb = 4,4,2,2
 dim = ma*(na-1)*mb*(nb-1) + ma * (na-1) + mb*(nb-1)
 print('Calculations for the {}{}{}{} scenario'.format(ma,mb,na,nb))
 
@@ -41,7 +41,7 @@ print('Maximal number of vertices on each facet: ', np.max(num_vert_per_facet))
 print('Minimal number of vertices on each facet: ', np.min(num_vert_per_facet))
 print('Average number of vertices on each facet: ', np.average(num_vert_per_facet))
 
-if dim < np.max(num_vert_per_facet):
+if dim <= np.min(num_vert_per_facet):
     print('Polytope is non-simplical')
 
 
