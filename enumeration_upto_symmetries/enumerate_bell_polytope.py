@@ -110,10 +110,10 @@ if args.dd_method:
 elif args.sampling_method:
     print('The results were generated using the sampling Adjacency Decomposition method')
 else:
-    print('The results were generated using the {} equivalence test'.format(args.equiv_method))
+    print('The results were generated using the {} equivalence test in the AdjacencyDecomposition method'.format(args.equiv_method))
 
-# Wait for RANDA to finish and then kill GAP
+# Wait for RANDA and GAP to finish
 randa_proc.wait()
-os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
+gap_proc.wait()
 
 

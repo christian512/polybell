@@ -29,6 +29,9 @@ while true do
             
             # First is recrusion level
             level := arr[1][1] + 1;
+            if level < 0 then
+                break;
+            fi;
             # Seond is the list of facets to test
             tarr := arr[2];
 
@@ -82,6 +85,9 @@ while true do
             arr := JsonStringToGap(str);
             # First is the recursion level
             recursion_level := arr[1][1] + 1;
+            if recursion_level < 0 then
+                break;
+            fi;
             # Print("Recursion Level: ", recursion_level, "\\n");
             # Second is the list of Facets to test
             tarr := arr[2];
@@ -128,15 +134,18 @@ GRP_RED := Group(%s);
 outfile := IO_File(Concatenation(IO_getcwd(), "/fromgap.pipe"), "w");
 infile := IO_File(Concatenation(IO_getcwd(), "/togap.pipe"), "r");
 
-while true do
+str := IO_ReadLine(infile);
+while str <> "break" do
         # read command from input
-        str := IO_ReadLine(infile);
         if str <> "" then
-            # Print("GAP READ: ", str);
+            #Print("GAP READ: ", str);
             # Convert to GAP Object
             arr := JsonStringToGap(str);
             # First is the recursion level
             recursion_level := arr[1][1] + 1;
+            if recursion_level < 0 then
+                break;
+            fi;
             # Print("Recursion Level: ", recursion_level, "\\n");
             # Second is the list of Facets to test
             tarr := arr[2];
@@ -176,5 +185,6 @@ while true do
                 IO_WriteLine(outfile, response);
             fi;
         fi;
+        str := IO_ReadLine(infile); 
 od;
 """
