@@ -32,7 +32,7 @@ except:
 print('Loaded matrices from Matlab file.')
 
 # get configurations
-mb, ma, nb, na= int(args.ma), int(args.mb), int(args.na), int(args.nb)
+ma, mb, na, nb = int(args.ma), int(args.mb), int(args.na), int(args.nb)
 configs = get_configs(range(ma), range(mb), range(na), range(nb))
 configs_mat = get_configs_mat(range(ma), range(mb), range(na), range(nb))
 

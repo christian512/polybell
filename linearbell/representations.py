@@ -9,9 +9,9 @@ import numpy as np
 def get_configs_mat(inputs_a, inputs_b, outputs_a, outputs_b):
     """ Returns the configurations in a matrix form """
     configs = []
-    for y, b in product(inputs_b, outputs_b):
+    for x, a in product(inputs_a, outputs_a):
         c = []
-        for x, a in product(inputs_a, outputs_a):
+        for y, b in product(inputs_b, outputs_b):
             c.append((a, b, x, y))
         configs.append(c)
     return configs
