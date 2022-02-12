@@ -15,9 +15,20 @@ with open(args.input_file_1) as f:
 with open(args.input_file_2) as f:
     f2 = f.readlines()
 
+# Find indices
+start1 = 0
+for i in range(len(f1)):
+    if 'Inequalities' in f1[i]:
+        start1 = i
+        break
+start2 = 0
+for i in range(len(f2)):
+    if 'Inequalities' in f2[i]:
+        start2 = i
+        break
+
+
 # generate new file
-start1 = f1.index('Inequalities:\n')
-start2 = f2.index('Inequalities:\n')
 res  = f1[start1:] + f2[start2 + 1:]
 
 # save new file
