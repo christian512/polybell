@@ -70,16 +70,17 @@ for i in range(num_runs):
     print('Starting run {} / {}'.format(i+1, num_runs))
     # Run the GAP Program using Popen.
     cmd = 'gap --quitonbreak ' + gap_filename
-    gap_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-    # wait for GAP to finish initial launch
-    time.sleep(5)
+    if not args.dd_method:
+        gap_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        # wait for GAP to finish initial launch
+        time.sleep(5)
 
-    # define behavior for receiving a SIGINT (e.g. pressing ctrl+c)
-    def handler(signum, frame):
-        print("\n Ctrl-c was pressed. Stopping GAP and RANDA.")
-        os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
-        exit(1)
-    signal.signal(signal.SIGINT, handler)
+        # define behavior for receiving a SIGINT (e.g. pressing ctrl+c)
+        def handler(signum, frame):
+            print("\n Ctrl-c was pressed. Stopping GAP ")
+            os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
+            exit(1)
+        signal.signal(signal.SIGINT, handler)
 
     # Start the RANDA program
     sampling_flag = 0
@@ -100,7 +101,8 @@ for i in range(num_runs):
     print('finished after {} ms'.format(run_time * 1000))
 
     # Wait for GAP to finish
-    gap_proc.wait()
+    if not args.dd_method:
+        gap_proc.wait()
 
 times = np.array(times)
 
