@@ -4,7 +4,7 @@ import argparse
 from gap_program_templates import *
 from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
 from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
-from linearbell.panda_helper import write_known_vertices
+from linearbell.panda_helper import write_known_vertices, read_inequalities
 import numpy as np
 import subprocess
 import time
@@ -93,12 +93,15 @@ for i in range(num_runs):
     if args.dd_method:
         cmd = 'randa -t 1 -m dd ' + randa_filename
 
-    # execture command
+
+    cmd = cmd + ' > out.ine'
+    # execute command
     start = time.time()
     randa_proc = subprocess.run(cmd, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
     run_time = time.time() - start
     times.append(run_time)
-    print('finished after {} ms'.format(run_time * 1000))
+    ineqs = read_inequalities('out.ine')
+    print('finished after {} ms and found {} facets'.format(run_time * 1000, ineqs.shape[0]))
 
     # Wait for GAP to finish
     if not args.dd_method:
