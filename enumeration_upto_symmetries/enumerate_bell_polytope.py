@@ -6,7 +6,7 @@ import sys
 from gap_program_templates import *
 from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
 from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
-from linearbell.panda_helper import write_known_vertices
+from linearbell.panda_helper import write_known_vertices, read_inequalities
 import numpy as np
 import subprocess
 import time
@@ -50,22 +50,26 @@ if args.dd_method:
     randa_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     print('Started the RANDA program.')
 
+
     # define behavior for receiving a SIGINT (e.g. pressing ctrl+c)
     def handler(signum, frame):
         print("\n Ctrl-c was pressed. Stopping GAP and RANDA.")
         os.killpg(os.getpgid(randa_proc.pid), signal.SIGTERM)
         os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
         exit(1)
+
+
     signal.signal(signal.SIGINT, handler)
     # Read output from RANDA process
     while randa_proc.poll() is None:
         line = randa_proc.stdout.readline()
         if line:
             print(line)
+    ineqs = read_inequalities(outfile)
+    print('Found {} inequalities for the {}{}{}{}-scenario.'.format(ineqs.shape[0], ma, mb, na, nb))
     print('The inequality classes were written to: ' + outfile)
     randa_proc.wait()
     sys.exit(0)
-
 
 # +++ AD METHOD +++
 
