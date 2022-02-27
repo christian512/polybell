@@ -1,49 +1,56 @@
-# Bell Inequalities, Linear Programming and Vertex Enumeration
+# Polyhedral Algorithms for Enumerating Bell Inequality Classes
 
-
-This repo is my collection of codes for finding Bell Inequalities for no-signalling probability distributions. I use different 
-techniques of Linear Programming and Vertex Enumeration for finding those inequalities in different cases. One main topic 
-is  finding Inequalities for the finite efficiency PR Box, which is a probability distribution relevant to finite efficient detectors.
-
-I try to make 
-the codes as reusable as possible and collect general codes in a package that might later lead to it's own repository.
+This repository includes functionality to generate facet-classes (Bell Inequality classes) for the two-party Bell
+polytope, which I developed for my master thesis. To generate a single Bell inequality, I utilise the technique of
+Linear Programming with the fast solvers provided by [*Gurobi*](https://www.gurobi.com/). To enumerate all Bell Inequalities
+or all Bell Inequality classes I provide codes to apply dual description algorithms for convex polyhedra. Especially, I make use 
+of the symmetric Adjacency Decomposition Method. The Adjacency Decomposition method is implemented in a [different repository](https://github.com/christian512/randa)
+and the functionality regarding computational group theory uses functions from [*GAP*](https://www.gap-system.org/).
 
 
 ## Overview
 
-The repository is structured using different directories. Here is a small overview. For more detailed information there
-is a Readme in each directory.
+The repository is structured using different directories. Here, I give an overview over the provided programs. For more detailed information there
+is a *README*-file in each directory.
 
-* **data** : contains all data generated using the codes in this repository
-* * **lifted_bell** : Lifted Bell Inequalities for finite efficiency PR-Boxes.
-* **linearbell** : this is the package directory, where all functionality is stored that is used throughout the repository
-* **notebooks** : some explanatory notebooks
-* **vertex_enum** : vertex enumeration to find bell inequalities (using MPLRS)
+
+* [**degeneracy**](./degeneracy/readme.md) : Identifying degeneracy of the Bell polytopes.
+* [**enumeration_upto_symmetries**](./enumeration_upto_symmetries/readme.md) : Enumerate (Bell) polytopes using different dual description algorithms.
+* [**equivalence_testing**](./equivalence_testing/readme.md) : Test the equivalences of facets 
+* **facet_classes** : Facet-classes of enumerated  Bell polytopes.
+* [**gap_polyhedral_scripts**](./gap_polyhedral_scripts/readme.md) : Scripts for enumerating polyhedra with the [*polyhedral-package*](http://mathieudutour.altervista.org/Polyhedral/index.html) for GAP.
+
 
 ## Virtual environment setup
-We provide a *requirements.txt* file for the needed pip-packages in the virtual environment. 
-**Make sure you activated your new virtual environment (based on python 3)**.
-You can install these by:
+
+We provide a *requirements.txt* file for the needed pip-packages in the virtual environment.
+**Make sure you activated your new virtual environment (based on python 3)**. You can install these by:
+
 ```bash
 pip install -r requirements.txt
 ```
-As we are providing the functionalities of this repository as a package itself, we have to install this package 
-directly from the local repository. To do so, run the following command from the main directory, where the *setup.py* is 
-located:
+
+As we are providing the functionalities of this repository as a package itself, we have to install this package directly
+from the local repository. To do so, run the following command from the main directory, where the *setup.py* is located:
+
 ```bash
 python -m pip install -e .
 ```
+
 For setup of the external software check the next section.
 
-## Software setup 
+## Software setup
+
 The external software I use in this repository:
+
 * Gurobi as a fast solver for linear programs
-* LRS for running vertex enumeration 
+* LRS for running vertex enumeration
 * MPLRS for running LRS in parallel
 
 ### Gurobi Setup
-Some of the codes use the commercial Gurobi solver. You need a license to run the solver, but you can get a free academic
-at their website.
+
+Some of the codes use the commercial Gurobi solver. You need a license to run the solver, but you can get a free
+academic at their website.
 
 To install Gurobi follow this guide to install the software and set the environment variables:
 
@@ -57,21 +64,6 @@ More information for the pyhton installation here:
 
 https://support.gurobi.com/hc/en-us/articles/360044290292-How-do-I-install-Gurobi-for-Python-
 
-### (MP)LRS setup
-LRS is a code for vertex enumeration using an implementation of the reverse search algorithm. Additionally one can also 
-use the MPLRS implementation, which runs the LRS vertex enumeration in parallel. 
-
-Since there is no python interface for the library, I provide some simple helper functions in *linearbell/lrs_helper.py*.
-This might be worth it's own repository...
-
-The documentation and installation notes are maintained here:
-
-http://cgm.cs.mcgill.ca/~avis/C/lrs.html
-# Sources
-
-* [*Bell nonlocality*, *Brunner et. al. (2014)*](https://arxiv.org/abs/1303.2849)
-* [*Bell inequalities from no-signalling distribution*, *Cope & Colbeck (2019)*](https://arxiv.org/abs/1812.10017)
-* add paper on MPLRS and others from computer
 
 
 
