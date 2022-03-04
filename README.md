@@ -20,9 +20,16 @@ is a *README*-file in each directory.
 * **facet_classes** : Facet-classes of enumerated  Bell polytopes.
 * [**gap_polyhedral_scripts**](./gap_polyhedral_scripts/readme.md) : Scripts for enumerating polyhedra with the [*polyhedral-package*](http://mathieudutour.altervista.org/Polyhedral/index.html) for GAP.
 
+## Installation
 
-## Virtual environment setup
 
+
+
+## Manual Installation
+
+
+
+### Python environment
 We provide a *requirements.txt* file for the needed pip-packages in the virtual environment.
 **Make sure you activated your new virtual environment (based on python 3)**. You can install these by:
 
@@ -37,15 +44,10 @@ from the local repository. To do so, run the following command from the main dir
 python -m pip install -e .
 ```
 
-For setup of the external software check the next section.
+### RANDA installation
 
-## Software setup
+### GAP installation
 
-The external software I use in this repository:
-
-* Gurobi as a fast solver for linear programs
-* LRS for running vertex enumeration
-* MPLRS for running LRS in parallel
 
 ### Gurobi Setup
 
