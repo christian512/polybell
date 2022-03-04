@@ -1,4 +1,4 @@
-from linearbell.utils import get_deterministic_behaviors, get_allowed_relabellings, check_equiv_bell, get_relabels_dets
+from polybell.utils import get_deterministic_behaviors, get_allowed_relabellings, check_equiv_bell, get_relabels_dets
 import numpy as np
 import argparse
 

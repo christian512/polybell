@@ -2,9 +2,9 @@
 This script uses GAP to check the equivalence of facets given in the PANDA file format.
 """
 import argparse
-from linearbell.panda_helper import read_inequalities, write_known_inequalities
-from linearbell.utils import get_deterministic_behaviors_two_party, get_relabelling_generators, get_relabels_dets
-from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
+from polybell.panda_helper import read_inequalities, write_known_inequalities
+from polybell.utils import get_deterministic_behaviors_two_party, get_relabelling_generators, get_relabels_dets
+from polybell.gap_helper import relabels_dets_to_disjoint_cycles
 import numpy as np
 import os
 

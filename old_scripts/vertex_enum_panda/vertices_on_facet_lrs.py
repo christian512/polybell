@@ -5,7 +5,7 @@ ridges. However Fourier-Motzkin can not be parallized and generate a lot of redu
 This is why we will use LRS to check if it is faster to run it.
 """
 import numpy as np
-from linearbell.lrs_helper import polytope_v_representation, run_lrs_v_repr, run_redund, polyhedra_h_representation, run_lrs_h_repr
+from polybell.lrs_helper import polytope_v_representation, run_lrs_v_repr, run_redund, polyhedra_h_representation, run_lrs_h_repr
 
 raw_file = '../data/example_vertices_on_facet/raw3322.txt'
 vertex_file = 'vertices.ext'

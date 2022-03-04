@@ -1,8 +1,8 @@
 """ A class which handles a face """
 
-from linearbell.panda_helper import write_known_vertices, read_inequalities
-from linearbell.utils import equiv_check_adjacency_testing
-from linearbell.adjacency_decomposition import distance
+from polybell.panda_helper import write_known_vertices, read_inequalities
+from polybell.utils import equiv_check_adjacency_testing
+from polybell.adjacency_decomposition import distance
 import numpy as np
 import subprocess
 import string

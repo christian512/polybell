@@ -1,5 +1,5 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
+from polybell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
     get_parametrisation_configs, parametrise_behavior, check_equiv_bell
 from lrs_helper import polytope_v_representation, run_lrs_v_repr, polyhedra_h_representation, run_lrs_h_repr
 import numpy as np

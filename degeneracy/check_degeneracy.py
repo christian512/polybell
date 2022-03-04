@@ -2,8 +2,8 @@
 This file checks the degeneracy of a polytope by checking how many vertices are on its facet.
 """
 
-from linearbell.panda_helper import read_inequalities
-from linearbell.utils import get_deterministic_behaviors_two_party
+from polybell.panda_helper import read_inequalities
+from polybell.utils import get_deterministic_behaviors_two_party
 import numpy as np
 import matplotlib.pyplot as plt
 

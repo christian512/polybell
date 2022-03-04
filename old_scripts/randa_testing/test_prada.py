@@ -1,5 +1,5 @@
-from linearbell.utils import get_deterministic_behaviors
-from linearbell.panda_helper import write_known_vertices, read_inequalities
+from polybell.utils import get_deterministic_behaviors
+from polybell.panda_helper import write_known_vertices, read_inequalities
 import subprocess
 import matplotlib.pyplot as plt
 import numpy as np

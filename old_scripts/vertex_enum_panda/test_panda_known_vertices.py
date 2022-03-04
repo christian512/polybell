@@ -1,7 +1,7 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, get_configs, find_local_weight_dual, general_pr_box, \
+from polybell.utils import get_deterministic_behaviors, get_configs, find_local_weight_dual, general_pr_box, \
     check_equiv_bell_vertex_enum_non_rescale
-from linearbell.panda_helper import write_panda_input_inequalities, run_panda, write_known_vertices, read_vertices_rays
+from polybell.panda_helper import write_panda_input_inequalities, run_panda, write_known_vertices, read_vertices_rays
 import numpy as np
 import time
 

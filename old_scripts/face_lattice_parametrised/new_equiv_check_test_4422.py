@@ -1,7 +1,7 @@
 """ Checking if the new equivalence check works for 4422 """
 
-from linearbell.utils import get_deterministic_behaviors, get_configs, get_parametrisation_configs, parametrise_behavior
-from linearbell.representations import transform_mat_to_vec, get_configs_mat
+from polybell.utils import get_deterministic_behaviors, get_configs, get_parametrisation_configs, parametrise_behavior
+from polybell.representations import transform_mat_to_vec, get_configs_mat
 import numpy as np
 from polytope import ParamPolytope, parampolytope_from_inequality
 from scipy.io import loadmat

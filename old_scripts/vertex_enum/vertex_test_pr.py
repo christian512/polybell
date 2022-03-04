@@ -1,5 +1,5 @@
-from linearbell.utils import *
-from linearbell.lrs_helper import read_v_file
+from polybell.utils import *
+from polybell.lrs_helper import read_v_file
 
 # setup parameters
 ma = 2

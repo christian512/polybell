@@ -1,5 +1,5 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, get_allowed_relabellings, get_relabels_dets
+from polybell.utils import get_deterministic_behaviors, get_allowed_relabellings, get_relabels_dets
 import numpy as np
 
 # Get arguments

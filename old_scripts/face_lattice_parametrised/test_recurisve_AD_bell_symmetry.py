@@ -1,4 +1,4 @@
-from linearbell.utils import get_deterministic_behaviors, get_configs, get_parametrisation_configs, parametrise_behavior
+from polybell.utils import get_deterministic_behaviors, get_configs, get_parametrisation_configs, parametrise_behavior
 import numpy as np
 from polytope import ParamPolytope
 

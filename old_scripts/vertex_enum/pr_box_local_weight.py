@@ -1,6 +1,6 @@
-from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
+from polybell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, \
     get_parametrisation_configs, parametrise_behavior
-from linearbell.lrs_helper import polyhedra_h_representation, run_lrs_h_repr, run_redund
+from polybell.lrs_helper import polyhedra_h_representation, run_lrs_h_repr, run_redund
 import numpy as np
 
 # number of inputs / outputs

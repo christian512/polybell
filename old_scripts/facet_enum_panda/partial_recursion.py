@@ -1,8 +1,8 @@
 import argparse
-from linearbell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale, \
+from polybell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale, \
     equiv_check_adjacency_testing
-from linearbell.panda_helper import write_known_vertices, read_inequalities, run_panda_vertices_on_facet
-from linearbell.adjacency_decomposition import rotate, furthest_vertex, distance
+from polybell.panda_helper import write_known_vertices, read_inequalities, run_panda_vertices_on_facet
+from polybell.adjacency_decomposition import rotate, furthest_vertex, distance
 import numpy as np
 import subprocess
 import time

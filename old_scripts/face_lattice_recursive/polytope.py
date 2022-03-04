@@ -3,8 +3,8 @@ import numpy as np
 import subprocess
 import string
 import random
-from linearbell.panda_helper import run_panda_vertices_on_facet, read_inequalities, write_known_vertices
-from linearbell.utils import equiv_check_adjacency_panda
+from polybell.panda_helper import run_panda_vertices_on_facet, read_inequalities, write_known_vertices
+from polybell.utils import equiv_check_adjacency_panda
 from bokeh.models import Circle, MultiLine, Range1d
 from bokeh.plotting import figure, from_networkx
 import networkx as nx

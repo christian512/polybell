@@ -1,9 +1,9 @@
 """ Here we analyse which Bell expressions we're missing out with the partial recursion strategy. """
 
-from linearbell.utils import get_configs, get_deterministic_behaviors, equiv_check_adjacency_testing
-from linearbell.representations import get_configs_mat, transform_vec_to_mat, transform_mat_to_vec
+from polybell.utils import get_configs, get_deterministic_behaviors, equiv_check_adjacency_testing
+from polybell.representations import get_configs_mat, transform_vec_to_mat, transform_mat_to_vec
 import numpy as np
-from linearbell.panda_helper import read_inequalities
+from polybell.panda_helper import read_inequalities
 from scipy.io import loadmat
 
 # setup the configuration

@@ -2,10 +2,10 @@
 Checking if there is a lifted PR box for the finite efficiency PR box with m inputs
 """
 import numpy as np
-from linearbell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
+from polybell.utils import get_deterministic_behaviors, get_possible_liftings, get_configs, general_pr_box_extended, \
     partially_reduce_extended_pr_box, find_local_weight_dual, update_partial_lifted_bell_expression
 import argparse
-from linearbell.representations import get_configs_mat, transform_vec_to_mat
+from polybell.representations import get_configs_mat, transform_vec_to_mat
 
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='m', help="number of inputs for ALICE and BOB")

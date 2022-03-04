@@ -1,7 +1,7 @@
 """ Calculates the vertices on the facet """
 
-from linearbell.utils import get_deterministic_behaviors, get_configs
-from linearbell.representations import get_configs_mat, transform_mat_to_vec
+from polybell.utils import get_deterministic_behaviors, get_configs
+from polybell.representations import get_configs_mat, transform_mat_to_vec
 
 import numpy as np
 from scipy.io import loadmat

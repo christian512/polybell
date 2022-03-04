@@ -1,7 +1,7 @@
 """ Generates the 2222-case face lattice """
 
-from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_testing
-from linearbell.adjacency_decomposition import rotate, furthest_vertex
+from polybell.utils import get_deterministic_behaviors, equiv_check_adjacency_testing
+from polybell.adjacency_decomposition import rotate, furthest_vertex
 import numpy as np
 from face import Polytope
 from bokeh.io import show, save

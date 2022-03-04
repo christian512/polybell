@@ -1,7 +1,7 @@
 """ Generates the 2222-case face lattice """
 
-from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
-from linearbell.adjacency_decomposition import rotate
+from polybell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
+from polybell.adjacency_decomposition import rotate
 import numpy as np
 from face import Polytope, polytope_from_face
 import matplotlib.pyplot as plt

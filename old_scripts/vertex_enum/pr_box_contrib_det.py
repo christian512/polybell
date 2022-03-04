@@ -1,5 +1,5 @@
-from linearbell.utils import *
-from linearbell.lrs_helper import polyhedra_h_representation, run_redund, run_lrs_h_repr
+from polybell.utils import *
+from polybell.lrs_helper import polyhedra_h_representation, run_redund, run_lrs_h_repr
 
 # number of inputs and outputs
 ma = 2

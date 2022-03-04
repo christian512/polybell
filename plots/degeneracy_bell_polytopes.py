@@ -2,8 +2,8 @@
 Generating a plot to show that Bell polytopes are non-simplical, i.e. facet enumeration is degenerate
 """
 
-from linearbell.panda_helper import read_inequalities
-from linearbell.utils import get_deterministic_behaviors_two_party
+from polybell.panda_helper import read_inequalities
+from polybell.utils import get_deterministic_behaviors_two_party
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator

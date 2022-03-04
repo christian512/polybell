@@ -3,8 +3,8 @@ This script tests panda. It will find Bell Inequalities for finite efficiency PR
 """
 
 import argparse
-from linearbell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, check_equiv_bell_vertex_enum_non_rescale
-from linearbell.panda_helper import write_panda_input_inequalities, run_panda, read_vertices_rays
+from polybell.utils import get_deterministic_behaviors, get_configs, general_pr_box_extended, check_equiv_bell_vertex_enum_non_rescale
+from polybell.panda_helper import write_panda_input_inequalities, run_panda, read_vertices_rays
 import numpy as np
 
 parser = argparse.ArgumentParser()

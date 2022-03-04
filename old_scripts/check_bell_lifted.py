@@ -9,7 +9,7 @@ Result:
 It seems that the Bell Inequalities that the Heuristic ADM algorithm missed out on are not of lifted form.
 
 """
-from linearbell.utils import get_configs, get_deterministic_behaviors
+from polybell.utils import get_configs, get_deterministic_behaviors
 import numpy as np
 
 inputs = range(4)

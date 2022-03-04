@@ -1,8 +1,8 @@
 import argparse
 import numpy as np
 import subprocess
-from linearbell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale
-from linearbell.panda_helper import write_known_vertices, read_inequalities
+from polybell.utils import get_deterministic_behaviors, check_equiv_bell_vertex_enum_non_rescale
+from polybell.panda_helper import write_known_vertices, read_inequalities
 
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")

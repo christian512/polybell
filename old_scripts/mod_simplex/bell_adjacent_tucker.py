@@ -1,5 +1,5 @@
 import numpy as np
-from linearbell.utils import get_deterministic_behaviors, parametrise_behavior, get_configs, \
+from polybell.utils import get_deterministic_behaviors, parametrise_behavior, get_configs, \
     get_parametrisation_configs, deparametrise_bell_expression, equiv_check_adjacency_testing
 from itertools import combinations
 from scipy.special import binom

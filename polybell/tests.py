@@ -1,7 +1,7 @@
 from itertools import product
 import numpy as np
-from linearbell.utils import *
-from linearbell.lrs_helper import *
+from polybell.utils import *
+from polybell.lrs_helper import *
 
 
 def test_general_pr_box_two_input_two_output_case():

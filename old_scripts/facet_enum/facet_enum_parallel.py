@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import numpy as np
-from linearbell.utils import find_local_weight_dual, facet_inequality_check, check_equiv_bell
-from linearbell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings, \
+from polybell.utils import find_local_weight_dual, facet_inequality_check, check_equiv_bell
+from polybell.utils import extremal_ns_binary_vertices, get_deterministic_behaviors, get_allowed_relabellings, \
     get_relabels_dets
 import argparse
 import os

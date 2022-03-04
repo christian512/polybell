@@ -1,6 +1,6 @@
 """ This tests how the rotation of faces around representative of a class works """
 
-from linearbell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
+from polybell.utils import get_deterministic_behaviors, equiv_check_adjacency_panda
 import numpy as np
 from polytope import Polytope
 

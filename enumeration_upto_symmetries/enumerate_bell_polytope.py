@@ -4,9 +4,9 @@ import argparse
 import sys
 
 from gap_program_templates import *
-from linearbell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
-from linearbell.gap_helper import relabels_dets_to_disjoint_cycles
-from linearbell.panda_helper import write_known_vertices, read_inequalities
+from polybell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
+from polybell.gap_helper import relabels_dets_to_disjoint_cycles
+from polybell.panda_helper import write_known_vertices, read_inequalities
 import numpy as np
 import subprocess
 import time

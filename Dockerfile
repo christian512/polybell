@@ -12,8 +12,8 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install the Python Framework
 WORKDIR /home
-COPY . /home/linearbell
-WORKDIR /home/linearbell
+RUN git clone https://github.com/christian512/polybell.git
+WORKDIR /home/polybell
 RUN python -m pip install -r requirements.txt
 RUN python -m pip install -e .
 RUN python -m pip install -i https://pypi.gurobi.com gurobipy

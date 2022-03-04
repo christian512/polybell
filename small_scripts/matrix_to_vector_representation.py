@@ -6,9 +6,9 @@ to the representation that we use within this repository
 import argparse
 import scipy.io
 import numpy as np
-from linearbell.utils import get_configs
-from linearbell.panda_helper import write_known_inequalities
-from linearbell.representations import get_configs_mat, transform_mat_to_vec
+from polybell.utils import get_configs
+from polybell.panda_helper import write_known_inequalities
+from polybell.representations import get_configs_mat, transform_mat_to_vec
 
 # parse the inputs
 parser = argparse.ArgumentParser()

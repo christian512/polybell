@@ -9,7 +9,7 @@ The file is run by the command "_python generate_files.py ma mb na nb", where *m
 
 The two programs, GAP and RANDA, communicate using so called *unnamed pipes*. These need to be created once manually by running:
 ```shell
-cd linearbell/enumeration_upto_symmetries
+cd polybell/enumeration_upto_symmetries
 mkfifo fromgap.pipe
 mkfifo togap.pipe
 ```
