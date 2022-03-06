@@ -19,10 +19,3 @@ All options for this scripted are displayed if you call
 ```shell
 python enumerate_bell_polytope.py -h
 ```
-
-
-
-#### vertices_on_facet.py
-Calculates the vertices on facets, where the FACETS are given by Toms representation. **THIS CAN BE MOVED TO ELSEWHERE, e.g. examples**.
-
-

@@ -101,3 +101,4 @@ if args.output_file:
     rhs = -1.0 * inequiv_facets[:, -1]
     write_known_inequalities(lhs, rhs, args.output_file)
     print('wrote inequivalent facets to {}'.format(args.output_file))
+os.system("rm indices_inequiv_facets.txt")
