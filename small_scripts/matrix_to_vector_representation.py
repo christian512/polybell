@@ -17,7 +17,7 @@ parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='na', help='number of outputs for ALICE')
 parser.add_argument(dest='nb', help='number of outputs for BOB')
 parser.add_argument(dest='input_file', type=str,
-                    help='Path to input file (relative to this script). Input needs to be given in the standard PANDA/PORTA format.')
+                    help='Path to input file (relative to this script). Input needs to be given in  MATLAB format.')
 parser.add_argument(dest='output_file', type=str, help='Output filename')
 
 args = parser.parse_args()
@@ -52,4 +52,4 @@ rhs = -1.0 * np.ones(lhs.shape[0])
 
 # write out known inequalities
 write_known_inequalities(lhs,rhs,args.output_file)
-print('Wrote Inequalities in vetor form to: {}'.format(args.output_file))
+print('Wrote Inequalities in vector form to: {}'.format(args.output_file))
