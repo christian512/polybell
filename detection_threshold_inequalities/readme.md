@@ -8,6 +8,3 @@ We apply Linear Programs to find Bell Inequalities and check for every possible 
 * **partial_lifted_symmetric_fineff_pr.py** - Searches for Inequalities where the failure output is only for some inputs treated equally to a valid output.
 Additionally the liftings is required to be symmetric, i.e. applied equally to both parties.
   
-* **analyse_bell_inequalities.ipynb** - Analyses the bell inequalities output by 
-one of these scripts above.
-  
