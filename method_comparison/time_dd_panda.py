@@ -1,5 +1,3 @@
-""" Writing the vertices to a file and printing the generators of the automorphism group for a bell scenario """
-
 from polybell.utils import get_relabelling_generators, get_deterministic_behaviors_two_party, get_relabels_dets
 from polybell.gap_helper import relabels_dets_to_disjoint_cycles
 from polybell.panda_helper import write_known_vertices
@@ -10,23 +8,13 @@ import os
 
 np.random.seed(42)
 
-# parse the inputs
-# parser = argparse.ArgumentParser()
-# parser.add_argument(dest='ma', help="number of inputs for ALICE")
-# parser.add_argument(dest='mb', help='number of inputs for BOB')
-# parser.add_argument(dest='na', help='number of outputs for ALICE')
-# parser.add_argument(dest='nb', help='number of outputs for BOB')
-# args = parser.parse_args()
+test_configs = [[2, 2, 2, 2], [3, 2, 2, 2], [2, 2, 3, 2], [3, 3, 2, 2], [5, 2, 2, 2], [3, 2, 2, 3], [3, 2, 3, 2],
+                [2, 2, 3, 3]]
 
-# set the scenario
-
-# test_configs = [[2,2,2,2], [3,2,2,2], [2,2,3,2], [3,3,2,2], [5,2,2,2], [4,3,2,2], [3,2,2,3], [5,3,2,2]]
-test_configs = [ [2,2,2,2],[3,2,2,2], [2,2,3,2], [3,3,2,2], [5,2,2,2], [3,2,2,3], [3,2,3,2], [2,2,3,3]]
 num_runs = 10
-f = open('speed_ad_des.txt', 'w+')
+f = open('speed_dd_asc.txt', 'w+')
 for tconfig in test_configs:
     ma, mb, na, nb = tconfig
-    print()
     inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), range(nb)
 
     # Write Vertices to a File
@@ -36,16 +24,16 @@ for tconfig in test_configs:
         np.random.shuffle(vertices)
         # shuffle the vertices randomly
         vertex_file = 'vertices/{}{}{}{}.ext'.format(ma, mb, na, nb)
-        print('Panda: ' + vertex_file)
+        print('computing ' + vertex_file)
         write_known_vertices(vertices, vertex_file)
         # Run panda with given options
         print('Starting Panda')
         start = time.time()
-        os.system("panda -t 1 -s lex_desc -m ad {}".format(vertex_file))
+        os.system("panda -t 1 -s lex_asc -m dd {}".format(vertex_file))
         exc_time = time.time() - start
         print('took: {} s'.format(exc_time))
         avg_time += exc_time
 
     avg_time = avg_time / num_runs
-    f.write('{}{}{}{} : {} ms \n'.format(ma,mb,na,nb, avg_time*1000))
+    f.write('{}{}{}{} : {} ms \n'.format(ma, mb, na, nb, avg_time * 1000))
 f.close()
