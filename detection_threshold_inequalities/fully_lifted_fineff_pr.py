@@ -9,6 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
+parser.add_argument('-e', dest='efficiency_tolerance', help='Numerical tolerance for the efficency', default=0.01, type=float)
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
@@ -20,15 +21,16 @@ outputs_failure = range(3)
 outputs_wo_failure = range(2)
 
 # set efficiency
-epsilon = 0.01
+epsilon = args.efficiency_tolerance
 eta = 4 / (len(inputs_a) + 4)
 print('epsilon: {}'.format(epsilon))
 
 # tolerance for checking the bell expression
 tol = 1e-6
 
+
 # set file
-file = '../data/pr_box_finite_efficiency_bell_lifted/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b), len(outputs_wo_failure), len(outputs_wo_failure))
+file = '{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b), len(outputs_wo_failure), len(outputs_wo_failure))
 
 # get deterministics for the non output
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_wo_failure)
@@ -69,6 +71,8 @@ for lift_a in poss_lifts_a:
             bells.append(bell_exp)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 
+print('Used {} as tolerance in the efficiency'.format(epsilon))
+print('Used PR-Box with efficiency: {}'.format(eta+epsilon))
 print('Found {} Bell Inequalities in {} lifting cases'.format(len(bells), niter))
 # store the bell expressions to file
 np.savetxt(file, np.array(bells))
