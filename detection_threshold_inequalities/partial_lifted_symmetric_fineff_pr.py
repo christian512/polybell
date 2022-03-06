@@ -10,6 +10,8 @@ from polybell.representations import get_configs_mat, transform_vec_to_mat
 parser = argparse.ArgumentParser()
 parser.add_argument(dest='m', help="number of inputs for ALICE and BOB")
 parser.add_argument(dest='num_no_lift', help='number of inputs w/o lifted failure output for ALICE and BOB')
+parser.add_argument('-e', dest='efficiency_tolerance', help='Numerical tolerance for the efficency', default=0.01,
+                    type=float)
 args = parser.parse_args()
 m = int(args.m)
 num_no_lift = int(args.num_no_lift)
@@ -26,7 +28,7 @@ outputs_wo_failure = range(2)
 no_lift = list(range(num_no_lift))
 
 # set efficiency
-epsilon = 0.01
+epsilon = args.efficiency_tolerance
 eta = 4 / (len(inputs_a) + 4)
 print('epsilon[ % of eta]: {} %'.format(epsilon / eta * 100))
 
@@ -34,9 +36,9 @@ print('epsilon[ % of eta]: {} %'.format(epsilon / eta * 100))
 tol = 1e-3
 
 # set file
-file = '../data/pr_box_finite_efficiency_bell_lifted_partial/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
-                                                                                  len(outputs_wo_failure),
-                                                                                  len(outputs_wo_failure))
+file = '{}{}{}{}_partial_symmetric.txt'.format(len(inputs_a), len(inputs_b),
+                                               len(outputs_wo_failure),
+                                               len(outputs_wo_failure))
 
 # get deterministics for the non output
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_failure)
@@ -80,4 +82,7 @@ for lift_a in poss_lifts_a:
         bells.append(bell)
         print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
 
+print('Used {} as tolerance in the efficiency'.format(epsilon))
+print('Used PR-Box with efficiency: {}'.format(eta+epsilon))
 print('Found {} in {} lifting cases'.format(len(bells), niter))
+np.savetxt(file, bells)

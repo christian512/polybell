@@ -11,6 +11,8 @@ parser.add_argument(dest='ma', help="number of inputs for ALICE")
 parser.add_argument(dest='mb', help='number of inputs for BOB')
 parser.add_argument(dest='num_no_lift_a', help="number of inputs w/0 lifted failure output for ALICE")
 parser.add_argument(dest='num_no_lift_b', help="number of inputs w/0 lifted failure output for BOB")
+parser.add_argument('-e', dest='efficiency_tolerance', help='Numerical tolerance for the efficency', default=0.01,
+                    type=float)
 args = parser.parse_args()
 ma = int(args.ma)
 mb = int(args.mb)
@@ -30,18 +32,18 @@ outputs_wo_failure = range(2)
 no_lift_a = list(range(num_no_lift_a))
 no_lift_b = list(range(num_no_lift_b))
 
-# set efficiency
-epsilon = 0.01
-eta = 4 / (len(inputs_a) + 4)
+# set threshold efficiency by choosing the lower number of inputs
+epsilon = args.efficiency_tolerance
+eta = 4 / (min(ma, mb) + 4)
 print('epsilon[ % of eta]: {} %'.format(epsilon / eta * 100))
 
 # tolerance for checking the bell expression
 tol = 1e-3
 
 # set file
-file = '../data/pr_box_finite_efficiency_bell_lifted_partial/{}{}{}{}.txt'.format(len(inputs_a), len(inputs_b),
-                                                                                  len(outputs_wo_failure),
-                                                                                  len(outputs_wo_failure))
+file = '{}{}{}{}_partial.txt'.format(len(inputs_a), len(inputs_b),
+                                     len(outputs_wo_failure),
+                                     len(outputs_wo_failure))
 
 # get deterministics for the non output
 dets = get_deterministic_behaviors(inputs_a, inputs_b, outputs_failure)
@@ -88,6 +90,9 @@ for lift_a in poss_lifts_a:
         if bell @ pr_red < 1 - tol and bell @ pr_low_eff > 1:
             bells.append(bell)
             print('Found a Bell expression : {}'.format(bell_exp @ pr_red))
+
+print('Used {} as tolerance in the efficiency'.format(epsilon))
+print('Used PR-Box with efficiency: {}'.format(eta + epsilon))
 print('Found {} Bell Inequalities in {} lifting cases'.format(len(bells), niter))
 # store the bell expressions to file
 np.savetxt(file, np.array(bells))
