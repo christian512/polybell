@@ -39,12 +39,18 @@ sudo docker build -t polybell .
 The installation process might take a while. You can now spawn a container from the generated image, which allows you to run any code from this repository. Start the container by:
 
 ```bash
-sudo docker run polybell
+sudo docker run -it polybell
 ```
 You now have access to a Bash-Terminal within the container. You can change the directory (using the `cd` command) and run the Python-codes by:
 ```bash
 python <script_name> <arguments>
 ```
+To get a full list of options for all scripts, you can use the `-h` flag:
+
+```bash
+python <script_name> -h
+```
+
 Please refer to the README-files listed before, for a description of the codes.
 
 ## Manual Installation
