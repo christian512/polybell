@@ -35,7 +35,7 @@ inputs_a, inputs_b, outputs_a, outputs_b = range(ma), range(mb), range(na), rang
 # Write Vertices to a File
 vertices = get_deterministic_behaviors_two_party(inputs_a, inputs_b, outputs_a, outputs_b)
 vertices = vertices[np.lexsort(np.rot90(vertices))]
-randa_filename = 'vertices/{}{}{}{}.ext'.format(ma, mb, na, nb)
+randa_filename = '{}{}{}{}.ext'.format(ma, mb, na, nb)
 write_known_vertices(vertices, randa_filename)
 
 # Create the generators of the symmetry group
@@ -56,6 +56,7 @@ if args.dd_method:
         print("\n Ctrl-c was pressed. Stopping GAP and RANDA.")
         os.killpg(os.getpgid(randa_proc.pid), signal.SIGTERM)
         os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
+        os.remove(randa_filename)
         exit(1)
 
 
@@ -84,7 +85,7 @@ elif args.equiv_method == 'global':
 elif args.equiv_method == 'local':
     print('Generating GAP program with local equivalence test')
     script = template_local_equiv_test % disjoint_cycles
-gap_filename = 'gap_scripts/{}{}{}{}_{}.g'.format(ma, mb, na, nb, args.equiv_method)
+gap_filename = '{}{}{}{}_{}.g'.format(ma, mb, na, nb, args.equiv_method)
 f = open(gap_filename, 'w+')
 f.write(script)
 f.close()
@@ -123,6 +124,10 @@ def handler(signum, frame):
     print("\n Ctrl-c was pressed. Stopping GAP and RANDA.")
     os.killpg(os.getpgid(randa_proc.pid), signal.SIGTERM)
     os.killpg(os.getpgid(gap_proc.pid), signal.SIGTERM)
+    os.remove(gap_filename)
+    os.remove(randa_filename)
+    os.remove('fromgap.pipe')
+    os.remove('togap.pipe')
     exit(1)
 
 
@@ -144,3 +149,9 @@ else:
 # Wait for RANDA and GAP to finish
 randa_proc.wait()
 gap_proc.wait()
+
+# remove files
+os.remove(gap_filename)
+os.remove(randa_filename)
+os.remove('fromgap.pipe')
+os.remove('togap.pipe')

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM gurobi/optimizer:latest
 RUN apt-get update
 ENV TZ=Europe/Berlin
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -7,8 +7,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get install -y git wget make
 
 # Install Python3
-RUN apt-get install -y python3 python3-pip
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get install -y python3-pip
 
 # Install the Python Framework
 WORKDIR /home
@@ -43,6 +42,3 @@ RUN make
 RUN make install
 WORKDIR /home
 CMD /bin/bash
-
-# Install GUROBI
-

@@ -20,7 +20,7 @@ is a *README*-file in each directory.
 * **facet_classes** : Facet-classes of enumerated  Bell polytopes.
 * [**gap_polyhedral_scripts**](./gap_polyhedral_scripts/readme.md) : Scripts for enumerating polyhedra with the [*polyhedral-package*](http://mathieudutour.altervista.org/Polyhedral/index.html) for GAP.
 * [**method_comparison**](./method_comparison/readme.md) : Run-time comparison of different dual description methods applied on the Bell polytope.
-* [**plots**](.plots/readme.md) : Codes for generating the plots in my thesis.
+* plots : Codes for generating the plots in my thesis.
 * **polybell** : All functions that are used in the other scripts to handle Bell inequalities, which can be used to write new programs.
 * [**small_scripts**](./small_scripts/readme.md) : Collection of some small scripts. 
 
